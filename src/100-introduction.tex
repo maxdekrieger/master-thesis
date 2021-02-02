@@ -2,9 +2,46 @@
 
 \chapter{\label{chap:introduction}Introduction}
 
-  Research questions:
-  \begin{itemize}
-    \item Is it possible to capture the WebDSL static semantics with SDF3 and Statix?
-    \item Is the implementation of the WebDSL static semantics in SDF3 and Statix performant?
-    \item Is the WebDSL static semantics implemented in SDF3 and Statix elegant for the user?
-  \end{itemize}
+  % Broad picture
+  Many different programming languages exist, with many different properties and advantages.
+
+  % Programming langauge front-end introduction
+  The implementation of a programmig languages can be seperated into two parts: the front-end and the back-end. 
+
+  The front-end is the part of the programming language with which the user interacts (the syntax, early feedback using analysis results) and the back-end is the part that makes the programming language operational (optimization, code generation).
+
+  While the back-end of a programming langauge makes it work, the front-end defines how a user experiences the progrmaming language. % TO-DO: need citation here
+
+  % WebDSL introduction
+  Programming languages are constantly evolving, requiring updates to its specification and implementation. One such language is WebDSL.
+
+  WebDSL is a domain specific language for developing web applications, developed at the Delft University of Technology.
+
+  % Problem description
+  Because of its academic nature, many research projects added features to the language, all contributing to the success of existing WebDSL applications.
+
+  The downside of having many different contributors adding new features, is that the development experience that comes from the front-end leaves much to be desired. % too harsh?
+
+  Currently, the WebDSL implementation is composed of multiple definitions in meta-DSLs supported by the Spoofax language workbench: the syntax is defined in SDF2 and the desugaring, typechecking, optimization and code generation is defined in the term transformation language Stratego.
+
+  The interleaving of all the latter processes in the same Stratego environment poses a threat to the readability and maintainability of the WebDSL language.
+
+  % Goal
+  In this thesis, we will be focusing on modernizing the WebDSL front-end, by implementing the syntax definition in SDF3 and the static analyses in Statix.
+
+  % SDF3
+
+  % Statix
+
+  % Contributions
+  \section{Contributions}
+    This thesis provides the following contributions:
+
+    \begin{itemize}
+      \item We present the biggest case study for SDF3 and Statix thusfar.
+      \item We present a new, modernized WebDSL front-end.
+    \end{itemize}
+
+  % Outline
+  \section{Outline}
+    The rest of this thesis is structured as follows... % TO-DO
