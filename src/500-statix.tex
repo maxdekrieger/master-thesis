@@ -2,28 +2,37 @@
 
 \chapter{\label{chap:statix}WebDSL in Statix}
 
-  \begin{itemize}
-    \item Introduce Statix
-  \end{itemize}
+  \section{Introduction to Statix}
 
-  \autocite{HEMEL2011150}
+    \begin{itemize}
+      \item Syntax
+      \item Scope graphs
+      \item Signatures
+      \item Namespaces and queries
+    \end{itemize}
+  
+  \section{WebDSL Type System Specification}
 
+    Formal typing rules here
 
-  Covered by current implementation:
-  \begin{itemize}
-    \item Action code
-    \item Entities
-    \item Entity extension
-    \item \emph{Access control (TO-DO: name and type resolution)}
-    \item \emph{UI (TO-DO: everything except definitions)}
-  \end{itemize}
+  \section{Implementation}
 
-  TO-DO:
-  \begin{itemize}
-    \item Template elements
-    \item Access control name resolution
-    \item Module system
-    \item Native Java Classes
-    \item HQL
-    \item Form submit action code such as returns, goto, replace, etc
-  \end{itemize}
+    \begin{itemize}
+      \item (Basics: variable declaration, reference resolving)
+      \item Declare before use
+      \item Binary operators: compatibility, least upper bound as result
+      \item Entities as classes
+      \item Inheritance
+      \item Entity extension
+      \item Function / template overloading
+    \end{itemize}
+  
+    Statix spec TO-DOs that most likely are interesting:
+    \begin{itemize}
+      \item Module system
+      \item HQL
+      \item Access control reference checking
+      \item Inclusing \texttt{built-in.app} in analysis
+    \end{itemize}
+
+  \section{Possibly: Compose HQL and WebDSL's Type System using Aron's Thesis}

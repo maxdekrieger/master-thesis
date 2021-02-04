@@ -2,6 +2,33 @@
 
 \chapter{\label{chap:sdf3}WebDSL in SDF3}
 
-  \begin{itemize}
-    \item Introduce SDF3
-  \end{itemize}
+  \section{Introduction to SDF3}
+
+    \begin{itemize}
+      \item Syntax
+      \item Disambiguation
+    \end{itemize}
+  
+  \section{WebDSL Grammar}
+
+  \section{Preparation for Statix}
+
+    With the intention to use Statix for implementing the WebDSL static analyses, the grammar sorts and constructors have strict requirements. Statix is a strongly typed language and requires all input to adhere to the declared sorts and constructors.
+
+    \begin{itemize}
+      \item Statix signature generator.
+      \item In favor of clean Statix code, remove injections: increase in amount of AST terms.
+      \item No optional sorts allowed, increase in amount of context-free sorts and desugaring rules.
+    \end{itemize}
+
+  \section{Disambiguation}
+  
+    Since the \texttt{amb(\_,\_)} constructor is not declarable in Statix, having an ambiguity in the AST leads to the analysis not executing. This increases the need for disambiguation.
+
+    Challenges and solutions:
+    \begin{itemize}
+      \item Keywords in WebDSL: SDF3 template options not optimal.
+      \item String interpolation: Convert to one String constructor with a list of parts.
+      \item Optional separators: In SDF2 multiple productions could have the same constructor, in SDF3 multiple constructors make for an increase in reject and desugaring rules.
+      \item Optional alias vs. cast expression: use non-transitive priority rule.
+    \end{itemize}
