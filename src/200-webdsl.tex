@@ -40,9 +40,42 @@
 
   \section{Functions}
 
-  \begin{itemize}
-    \item Syntax
-    \item Entities as classes
-    \item Hooks for entity setters
-    \item Extending functions
-  \end{itemize}
+    \begin{itemize}
+      \item Syntax
+      \item Entities as classes
+      \item Hooks for entity setters
+      \item Extending functions
+    \end{itemize}
+
+  \section{Current Implementation}
+
+    \subsection{Spoofax Language Workbench}
+
+      \begin{itemize}
+        \item History
+        \item Goal
+        \item Achievements
+      \end{itemize}
+
+    \subsection{Current Implementation of WebDSL}
+
+      \begin{itemize}
+        \item Large Stratego specification where desugaring, static analysis, optimization and code-generation are interleaved (exaggeration?)
+        \item Side effects using dynamic rules.
+        \item Unexpected consequences of changes due to limited static analysis in untyped setting.
+      \end{itemize}
+
+      Go over some interesting WebDSL features and how they are implemented:
+      \begin{itemize}
+        \item Access control
+        \item Template overloading and overriding
+        \item Entity extension
+      \end{itemize}
+
+  \section{Modernization goal}
+
+    \begin{itemize}
+      \item A complete and maintainable SDF3 and Statix specification of WebDSL.
+      \item Gather insight into the capabilities, elegance and performance of SDF3 and Statix.
+      \item (Incrementalization for free leveraging the parallel Statix solver)
+    \end{itemize}
