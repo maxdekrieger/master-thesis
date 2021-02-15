@@ -11,15 +11,50 @@
   
   \section{WebDSL Grammar}
 
+  \section{Migration from SDF2 to SDF3}
+
+    \begin{itemize}
+      \item Preparation for migration:
+        \begin{itemize}
+          \item Remove alternations
+          \item Remove restrictions
+          \item Remove parameterized sorts and parameterized imports
+        \end{itemize}
+      \item Duplicate constructors, normalize constructors with Stratego desugaring
+      \item Priority chains are not transferred
+      \item Comments removed
+      \item Implement templates for pretty-printing
+      \item Merge syntax definition of previously mixed HQL
+    \end{itemize}
+
   \section{Preparation for Statix}
 
     With the intention to use Statix for implementing the WebDSL static analyses, the grammar sorts and constructors have strict requirements. Statix is a strongly typed language and requires all input to adhere to the declared sorts and constructors.
 
-    \begin{itemize}
-      \item Statix signature generator.
-      \item In favor of clean Statix code, remove injections: increase in amount of AST terms.
-      \item No optional sorts allowed, increase in amount of context-free sorts and desugaring rules.
-    \end{itemize}
+    \subsection{Sorts and Constructors in Statix}
+
+      \begin{itemize}
+        \item Syntax
+        \item Usage in rules
+        \item Difference from SDF3
+      \end{itemize}
+
+    \subsection{Statix Signature Generator}
+
+      \begin{itemize}
+        \item Conversion from SDF3 constructors to Statix
+        \item Optional sorts
+        \item Injections
+        \item Disambiguation (ref to separate section)
+      \end{itemize}
+
+    \subsection{Changing the SDF3 WebDSL Specification}
+
+      \begin{itemize}
+        \item Lots of new sorts due to explicit optional sorts
+        \item Desugar new optional sorts
+        \item Add more constructors for the removal of injections
+      \end{itemize}
 
   \section{Disambiguation}
   
