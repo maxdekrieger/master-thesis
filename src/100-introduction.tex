@@ -13,25 +13,16 @@
 
   \subsubsection{Problem Description}
   Because of its academic nature, many research projects added features to the language, all contributing to the success of existing WebDSL applications. The downside of having many different contributors adding new features, is that the development experience that comes from the front-end leaves much to be desired. (\emph{TO-DO: too harsh?}) Currently, the WebDSL implementation is composed of multiple definitions in meta-DSLs supported by the Spoofax language workbench: the syntax is defined in SDF2 and the desugaring, typechecking, optimization and code generation is defined in the term transformation language Stratego. The interleaving of all the latter processes in the same Stratego environment poses a threat to the readability and maintainability of the WebDSL language.
-
-  \subsubsection{Goal}
-  In this thesis, we will be focusing on modernizing the WebDSL front-end, by implementing the syntax definition in SDF3 and the static analyses in Statix. In this process, we aim to answer the following questions:
   
-  \begin{itemize}
-    \item Are SDF3 and Statix capable of modeling a programming language used in practice?
-    \item Is the resulting WebDSL front-end performant?
-    \item Is the resulting WebDSL front-end user friendly?
-  \end{itemize}
-
   % Contributions
   \section{Contributions}
-    This thesis provides the following contributions:
+    In this thesis, we will be focusing on modernizing the WebDSL front-end, by implementing the syntax definition in SDF3 and the static analyses in Statix and documenting the challenges posed by this process. In this work, the following contributions are made:
 
     \begin{itemize}
-      \item We present the biggest case study for SDF3 and Statix thusfar.
-      \item We present a new, modernized WebDSL front-end.
-      \item We present a formalization of the WebDSL static semantics in the form of a Statix specification.
-    \end{itemize}
+      \item We present an implementation of the WebDSL grammar in SDF3.
+      \item We present an implementation of the WebDSL static analyses in Statix.
+      \item We assess the completeness and performance of the WebDSL SDF3 and Statix implementation.
+      \item We provide qualitative feedback about the development process with SDF3 and Statix.
 
   % Outline
   \section{Outline}
