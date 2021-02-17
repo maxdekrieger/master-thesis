@@ -7,32 +7,55 @@
     \begin{itemize}
       \item Syntax
       \item Scope graphs
-      \item Signatures
-      \item Namespaces and queries
+      \item Relations and queries
     \end{itemize}
   
-  \section{WebDSL Type System Specification}
-
-    Formal typing rules here
-
-  \section{Implementation}
+  \section{Simple Type Systems}
 
     \begin{itemize}
-      \item (Basics: variable declaration, reference resolving)
-      \item Declare before use
-      \item Binary operators: compatibility, least upper bound as result
-      \item Entities as classes
-      \item Inheritance
-      \item Entity extension
-      \item Function / template overloading
+      \item Constant expressions
+      \item Variables
+      \begin{itemize}
+        \item Declaration and resolving
+        \item Prevent duplicates
+        \item Declare before use
+        \item Shadowing
+      \end{itemize}
+      \item Entities and properties
+      \begin{itemize}
+        \item Declaration and resolving
+        \item Prevent duplicates
+        \item Parameters
+      \end{itemize}
+      \item Functions
+      \begin{itemize}
+        \item Declaration and resolving
+        \item Prevent duplicates
+        \item Parameters
+      \end{itemize}
+      \item Pages and Templates
+      \begin{itemize}
+        \item Declaration and resolving
+      \end{itemize}
     \end{itemize}
+
+  \section{Inheritance}
+
+  \section{Entity Extension}
+
+  \section{Function and Template Overloading}
+
+  \section{Module system}
+
+  \section{TO-DOs in Statix spec}
   
     Statix spec TO-DOs that most likely are interesting:
     \begin{itemize}
-      \item Module system
       \item HQL
       \item Access control reference checking
       \item Inclusing \texttt{built-in.app} in analysis
     \end{itemize}
 
   \section{Possibly: Compose HQL and WebDSL's Type System using Aron's Thesis}
+
+  \section{Reflection on Statix}
