@@ -58,44 +58,78 @@
     \subsubsection{Linking the Scopes}
       The implementation of inheritance requires the scope of the sub- and super-entity to be connected such that Statix queries can resolve to declarations from the super-entity when necessary. To achieve this, we introduce an edge label \texttt{INHERIT} as shown in listing \emph{TO-DO}.
       \begin{lstlisting}
-        name-resolution
-        labels
-          INHERIT // inherit edge label for subclasses
+      name-resolution
+      labels
+        INHERIT // inherit edge label for subclasses
       \end{lstlisting}
       Declarations of sub-entities will generate constraints as shown in listing \emph{TO-DO}.
       \begin{lstlisting}
-        defOk(s_global, Entity(x, super, bodydecs)) :- {s_entity super' s_super}
-          resolveEntity(s_global, super) == [(_, (super', ENTITY(s_super)))],
-          new s_entity, s_entity -INHERIT-> s_super,
-          noCircularInheritance(s_entity),
-          declEntity(s_global, s_entity, x, bodydecs),
-          @super.ref := super'.
+      defOk(s_global, Entity(x, super, bodydecs)) :- {s_entity super' s_super}
+        resolveEntity(s_global, super) == [(_, (super', ENTITY(s_super)))],
+        new s_entity, s_entity -INHERIT-> s_super,
+        noCircularInheritance(s_entity),
+        declEntity(s_global, s_entity, x, bodydecs),
+        @super.ref := super'.
       \end{lstlisting}
       First of all, the super-entity refered to in the declaration must refer to an existing entity in the scope graph. Secondly, the new scope belonging to the sub-entity \texttt{s\_entity} is linked to the scope of the super class \texttt{s\_super} via an \texttt{INHERIT} edge. Finally, some additional constraints are generated to make sure no circular inheritance exists and constraints for the entity body declarations of the sub-entity are generated.
 
       Previously, the resolving of variables was done using the query as shown in listing \emph{TO-DO}
       \begin{lstlisting}
-        resolveVar(s, x) = ps :-
-          query var filter P* F* IMPORT*
-                    and { x' :- x' == x }
-                    min $ < P, P < F, F < IMPORT
-                    and true
-                    in s |-> ps.
+      resolveVar(s, x) = ps :-
+        query var filter P* F* IMPORT*
+                  and { x' :- x' == (x, _) }
+                  min $ < P, P < F, F < IMPORT
+                  and true
+                  in s |-> ps.
       \end{lstlisting}
       The new query in listing \emph{TO-DO} reflects the addition of the \texttt{EXTEND} label. The addition of \texttt{INHERIT*} in the query filter makes all variables declared in ancestors reachable.
       \begin{lstlisting}
-        resolveVar(s, x) = ps :-
-          query var filter P* F* INHERIT* IMPORT*
-                    and { x' :- x' == x }
-                    min $ < P, P < F, F < INHERIT, INHERIT < IMPORT
-                    and true
-                    in s |-> ps.
+      resolveVar(s, x) = ps :-
+        query var filter P* F* INHERIT* IMPORT*
+                  and { x' :- x' == (x, _) }
+                  min $ < P, P < F, F < INHERIT, INHERIT < IMPORT
+                  and true
+                  in s |-> ps.
       \end{lstlisting}
 
-    \subsubsection{Overwriting Functions and Properties}
+    \subsubsection{Overwriting Functions}
       Generally, overwriting functions is not allowed in WebDSL. Entity functions are an exception to this such that entity function definitions shadow global function definitions. With the introduction of inheritance there comes another exception, namely that sub-entities are allowed to overwrite function definitions of their ancestors.
 
-      \emph{TO-DO}
+      Previously, the resolving of entity functions was done using the query as shown in listing \emph{TO-DO} below.
+
+      \begin{lstlisting}
+      resolveEntityFunction(s, x) = ps :-
+        query function filter e
+                        and { x' :- x' == (x, _) }
+                        min
+                        in s |-> ps.
+      \end{lstlisting}
+
+      With the introduction of entity inheritance, the path well-formedness over edge labels should be tweaked such that functions from ancestors are in scope. Changing \texttt{filter e} to \texttt{filter INHERIT*} accomplishes this. The resulting query is in listing \emph{TO-DO} below.
+
+      \begin{lstlisting}
+      resolveEntityFunction(s, x) = ps :-
+        query function filter INHERIT*
+                        and { x' :- x' == (x, _) }
+                        min /* */
+                        in s |-> ps.
+      \end{lstlisting}
+
+      This query definition works perfectly when sub-entities do not overwrite functions. When a sub-entity does define a function that is already defined in one of its ancestors, resolving the entity function gives two results while we would like only one result, namely the overwritten function defined in the sub-entity. To tackle this challenge, we defined a Statix anonymous shadowing rule combined with a label order. This ensures that when two functions with the same name and argument types exist, only the most specific (i.e. the least inheritance edges) is returned. This is implemented as shown in listing \emph{TO-DO}.
+
+      \begin{lstlisting}
+      resolveEntityFunction(s, x) = ps :-
+        query function filter INHERIT*
+                       and { x' :- x' == (x, _) }
+                       /* prioritize local scope over inheritance */
+                       min $ < INHERIT
+                       /* shadow when function name and argument types match */
+                       and {
+                        (f, FUNCTION(args, _, _)),
+                        (f, FUNCTION(args, _, _))
+                       }
+                       in s |-> ps.
+      \end{lstlisting}
 
     \subsubsection{Entity Type Compatibility}
       A great perk of having inheritance in a language is writing code for that works for super-entities, and then executing this code with sub-entities. To know if the given entity type is compatible with the required entity type, we require a predicate that defines this compatibility. We have created such a predicate while implementing general type compatibility in subsection \emph{TO-DO}, in the form of \lstinline|typeCompatibleB : TYPE * TYPE -> BOOL|.
@@ -103,18 +137,18 @@
       With the addition of entity inheritance, we need to expand this definition. To this end, we added the rules as shown in listing \emph{TO-DO}. Given two entity scopes, the \lstinline|inherits(s_sub, s_super)| predicate returns true when the query has one result. The query in the \texttt{inherits} rule requests all paths from scope \texttt{s\_sub} to scope \texttt{s\_super} consisting of only \texttt{INHERIT} edges. Such a path exists if and only if the entity belonging to scope \texttt{s\_sub} inherits the entity belonging to \texttt{s\_super}.
 
       \begin{lstlisting}
-        typeCompatibleB(ENTITY(s_sub), ENTITY(s_super)) = inherits(s_sub, s_super).
+      typeCompatibleB(ENTITY(s_sub), ENTITY(s_super)) = inherits(s_sub, s_super).
 
-        inherits : scope * scope -> BOOL
-        inherits(s_sub, s_super) = nonEmptyPathScopeList(ps) :-
-          query () filter INHERIT*
-                   and { s :- s == s_super }
-                   min $ < INHERIT
-                   in s_sub |-> ps.
+      inherits : scope * scope -> BOOL
+      inherits(s_sub, s_super) = nonEmptyPathScopeList(ps) :-
+        query () filter INHERIT*
+                  and { s :- s == s_super }
+                  min $ < INHERIT
+                  in s_sub |-> ps.
 
-        nonEmptyPathScopeList : list((path * scope)) -> BOOL
-        nonEmptyPathScopeList(_)       = FALSE().
-        nonEmptyPathScopeList([(_,_)]) = TRUE().
+      nonEmptyPathScopeList : list((path * scope)) -> BOOL
+      nonEmptyPathScopeList(_)       = FALSE().
+      nonEmptyPathScopeList([(_,_)]) = TRUE().
       \end{lstlisting}
 
   \section{Entity Extension}
