@@ -4,28 +4,63 @@
 
   \section{Introduction to SDF3}
 
-    \begin{itemize}
-      \item Syntax
-      \item Disambiguation
-    \end{itemize}
+    Able to declaratively specify the complete syntax of a programming language in SDF3, and a parser, highlighter and pretty-printer gets generated from this specification.
+
+    \subsection{Syntax}
+
+      Lexical sorts, context-free sorts and constructors
+
+    \subsection{Disambiguation}
+
+      Possibilities:
+      - Prefer/avoid annotations on constructors (deprecated)
+      - Declare priorities of nested constructors
+      - Reject keywords
+      - Reject nesting of certain constructors
   
-  \section{WebDSL Grammar}
+  \section{WebDSL Grammar Specification}
+
+    The current implementation of WebDSL is specified in SDF2, the predecessor of SDF3. 
+
+    Reason to switch to SDF3 here:
+    - Modern spoofax does not support SDF2 anymore?
+    - SDF3 more performant?
 
   \section{Migration from SDF2 to SDF3}
 
-    \begin{itemize}
-      \item Preparation for migration:
-        \begin{itemize}
-          \item Remove alternations
-          \item Remove restrictions
-          \item Remove parameterized sorts and parameterized imports
-        \end{itemize}
-      \item Duplicate constructors, normalize constructors with Stratego desugaring
-      \item Priority chains are not transferred
-      \item Comments removed
-      \item Implement templates for pretty-printing
-      \item Merge syntax definition of previously mixed HQL
-    \end{itemize}
+    Introduction
+
+    \subsection{Preparing the WebDSL SDF2 definition for migration}
+
+      There is a tool to migrate SDF2 specifications to SDF3 specifications but it does not work in all cases. Some work needs to be done to prepare the SDF2 specification for the migration, and some work needs to be done on the resulting SDF3 specification to make sure it is as usable as the old SDF2 specification.
+
+      The SDF2 to SDF3 migration tool does not accept "sorts" sections.
+
+      Alternations must be removed from the SDF2 specification. Solution is to introduce a separate sort for the alternation:
+
+      Before:
+      ("B" | "C") -> A {cons("A")}
+
+      After:
+      BorC -> A    {cons("A")}
+      "B"  -> BorC {cons("B")}
+      "C"  -> BorC {cons("C")}
+
+      Restrictions (both context-free and lexical) produce an error during transformation and must be manually copied.
+
+      Mixed languages and parameterized imports are currently not supported in SDF3, so WebDSL code cannot be mixed with Stratego/Java code in the new SDF3 syntax definition.
+
+      Mixed languages were only used in the compiler, but HQL was also defined as a separate language and this is needed in WebDSL code. Fortunately, the HQL syntax is not used elsewhere and could be transformed to be a part of the WebDSL syntax natively.
+
+    \subsection{Manual Tweaking of Generated WebDSL SDF3}
+
+      \begin{itemize}
+        \item Duplicate constructors, normalize constructors with Stratego desugaring
+        \item Priority chains are not transferred
+        \item Comments removed
+        \item Implement templates for pretty-printing
+        \item Merge syntax definition of previously mixed HQL
+      \end{itemize}
 
   \section{Preparation for Statix}
 
