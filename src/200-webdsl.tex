@@ -13,13 +13,42 @@
 
   \section{User Interfaces}
 
-    \begin{itemize}
-      \item Syntax
-      \item Data binding and action code
-      \item Template overriding
-      \item Template overloading
-      \item Dynamically scoped redefines
-    \end{itemize}
+    Introduction
+
+    \subsection{Building blocks and Syntax}
+
+      Domain specific language for web applications -> the UI is how the user interacts with the application.
+
+      page is the entry point, arguments are clean URL parameters. Templates are reusable components that can be inserted on pages or in other templates.
+
+      Short example with three boxes next to each other (WebDSL code left, resulting HTML right, resulting UI bottom):
+
+      Functionalities for in example:
+      - Pages
+      - Templates
+      - Navigate
+      - Text
+      - Divs
+      - HTML elements
+
+    \subsection{Request processing and Action Code}
+
+      With the building blocks of the previous subsection, only static pages can be made.
+
+      Need HTML forms and submits to manipulate data.
+
+      WebDSL abstracts over the usual manual request processing by using forms, inputs and action code.
+
+      Functionalities for in example:
+      - Form
+      - Multiple input sorts (boolean, string, text)
+      - Action with different redirects based on boolean, pass string to new page
+
+    \subsection{Template Overriding and Overloading}
+
+    \subsection{Dynamically scoped redefines}
+
+    \subsection{Ajax}
 
   \section{Data Model}
 
