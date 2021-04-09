@@ -148,3 +148,9 @@
 \usepackage{acronym}
 % Define acronyms in acronyms.tex
 
+\usepackage[outputdir=../out]{minted}
+\newcommand{\statix}{spoofax_lexer.py -O "language=org/metaborg/statix.lang" -x}
+\setminted[\statix]{
+  xleftmargin=1em,
+  autogobble
+}
