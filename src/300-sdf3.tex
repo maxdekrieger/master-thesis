@@ -33,12 +33,11 @@
 
   \section{Migration from SDF2 to SDF3}
 
-    Introduction
+    There is a tool to migrate SDF2 specifications to SDF3 specifications but it does not work in all cases. Some work needs to be done to prepare the SDF2 specification for the migration, and some work needs to be done on the resulting SDF3 specification to make sure it is as usable as the old SDF2 specification.
 
     \subsection{Preparing the WebDSL SDF2 definition for migration}
 
-      There is a tool to migrate SDF2 specifications to SDF3 specifications but it does not work in all cases. Some work needs to be done to prepare the SDF2 specification for the migration, and some work needs to be done on the resulting SDF3 specification to make sure it is as usable as the old SDF2 specification.
-      \\\\The SDF2 to SDF3 migration tool does not accept "sorts" sections.
+      The SDF2 to SDF3 migration tool does not accept "sorts" sections.
       \\\\Alternations must be removed from the SDF2 specification. Solution is to introduce a separate sort for the alternation:
       \\\\Before:
       \\("B" | "C") -> A {cons("A")}
@@ -48,17 +47,37 @@
       \\"C"  -> BorC {cons("C")}
       \\\\Restrictions (both context-free and lexical) produce an error during transformation and must be manually copied.
       \\\\Mixed languages and parameterized imports are currently not supported in SDF3, so WebDSL code cannot be mixed with Stratego/Java code in the new SDF3 syntax definition.
-      \\\\Mixed languages were only used in the compiler, but HQL was also defined as a separate language and this is needed in WebDSL code. Fortunately, the HQL syntax is not used elsewhere and could be transformed to be a part of the WebDSL syntax natively.
+      \\\\Mixed languages were only used in the compiler, except for HQL which is used in WebDSL code. Fortunately, the HQL syntax is not used elsewhere and could be transformed to be a part of the WebDSL syntax natively.
 
     \subsection{Manual Tweaking of Generated WebDSL SDF3}
 
-      \begin{itemize}
-        \item Duplicate constructors, normalize constructors with Stratego desugaring
-        \item Priority chains are not transferred
-        \item Comments removed
-        \item Implement templates for pretty-printing
-        \item Merge syntax definition of previously mixed HQL
-      \end{itemize}
+      \subsubsection{Missing and duplicate constructors}
+
+        In SDF3, the constructors are a much more key part of the productions than in SDF2, where constructors are defined as a \texttt{cons("MyConstructor")} annotation on the production. In the WebDSL SDF2 definition, some constructors were missing and there were many duplicate constructors that denoted alternative syntax for the same construct, essentially providing syntactic sugar.
+        
+        In the newly generated SDF3, duplicate constructors had to be changed, in order for them to be unique. Duplicate constructors 
+        
+        Additionally, missing constructors had to be added, preferably even for injections for a reason we will touch on later in the <> Preparation for Statix section.
+
+      \subsubsection{Priority chains}
+
+        To indicate priority amongst context-free productions, both SDF2 and SDF3 use the concept of priority chains, but the SDF2 variant requires a repitition of the production inside the chain, whereas SDF3 uses a reference to the sort with corresponding constructor. This causes the SDF2 priority chains to not be migrated to the SDF3 priority chains.
+        
+        The only way to tackle this issue is to manually re-enter the priority chains in SDF3.
+
+      \subsubsection{Transferring comments}
+
+        Of a lesser importance, but highly recommended for the readability of a syntax definition is the comments, that are parsed as layout and are therefore not tranfered to the generated SDF3 files. Again, there is no way around this and they have to be manually transferred.
+
+      \subsubsection{Template productions}
+
+        A major change in SDF3 compared to SDF2 are template productions, that allow for nice pretty printing and syntactic code completion. The productions in the generated SDF3 files are all template productions, but do not have the proper surrounding layout and indentation because there is no way to extract this information from the SDF2 source. This had to be manually added to the generated SDF3 productions where applicable.
+
+      \subsubsection{Deeply embedding HQL}
+
+        Previously, the syntax definition of HQL was a standalone definition, and was used in the WebDSL SDF2 through parameterized imports. SDF3 has no support for this feature, so as discussed in the previous subsection <> (ref here), the language has to be transformed to be a part of the WebDSL syntax.
+        
+        Deeply embedding the HQL syntax in the WebDSL syntax causes some errors to arise on duplicate names of sorts and constructors, this had to be fixed manually.
 
   \section{Preparation for Statix}
 
