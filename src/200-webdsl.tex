@@ -9,13 +9,13 @@
     \item \textbf{researchr.org}: A platform for finding, collecting, sharing, and reviewing scientific computer science related publications.
   \end{itemize}
 
-  The rest of this chapter showcases the different aspects of WebDSL and zooms in on its non-trivial features. First, in section () we will describe how WebDSL offers functionality for creating web user interfaces. Next, in section () we illustrate how the langauge manages data models. Thirdly, section () contains information about WebDSL's solution for access control and in section () we highlight interesting aspects of its general-purpose object oriented function code. We concluse this chapter by going in detail about WebDSL's current implementation in section ().
+  The rest of this chapter showcases the different aspects of WebDSL and zooms in on its non-trivial features. First, in \cref{sec:ui} we will describe how WebDSL offers functionality for creating web user interfaces. Next, in \cref{sec:data-model} we illustrate how the langauge manages data models. Thirdly, \cref{sec:access-control} contains information about WebDSL's solution for access control and in \cref{sec:functions} we highlight interesting aspects of its general-purpose object oriented function code. We concluse this chapter by going in detail about WebDSL's current implementation in \cref{sec:current-implementation}.
 
-  \section{User Interfaces}
+  \section{\label{sec:ui}User Interfaces}
 
     Introduction
 
-    \subsection{Building blocks and Syntax}
+    \subsection{\label{subsec:building-blocks}Building blocks and Syntax}
 
       Domain specific language for web applications -> the UI is how the user interacts with the application.
       \\\\Page is the entry point, arguments are clean URL parameters. \\\\Templates are reusable components that can be inserted on pages or in other templates.
@@ -28,7 +28,7 @@
       \\- Divs
       \\- HTML elements
 
-    \subsection{Request processing and Action Code}
+    \subsection{\label{subsec:request-processing}Request processing and Action Code}
 
       With the building blocks of the previous subsection, only static pages can be made.
       \\\\Need HTML forms and submits to manipulate data.
@@ -38,13 +38,13 @@
       \\- Multiple input sorts (boolean, string, text)
       \\- Action with different redirects based on boolean, pass string to new page
 
-    \subsection{Template Overriding and Overloading}
+    \subsection{\label{subsec:template-overriding}Template Overriding and Overloading}
 
-    \subsection{Dynamically scoped redefines}
+    \subsection{\label{subsec:redefines}Dynamically scoped redefines}
 
-    \subsection{Ajax}
+    \subsection{\label{subsec:ajax}Ajax}
 
-  \section{Data Model}
+  \section{\label{sec:data-model}Data Model}
 
     \begin{itemize}
       \item Syntax
@@ -52,7 +52,7 @@
       \item Extending entities
     \end{itemize}
 
-  \section{Access Control}
+  \section{\label{sec:access-control}Access Control}
 
     \begin{itemize}
       \item Syntax
@@ -61,7 +61,7 @@
       \item Pointcuts
     \end{itemize}
 
-  \section{Functions}
+  \section{\label{sec:functions}Functions}
 
     \begin{itemize}
       \item Syntax
@@ -70,9 +70,9 @@
       \item Extending functions
     \end{itemize}
 
-  \section{Current Implementation}
+  \section{\label{sec:current-implementation}Current Implementation}
 
-    \subsection{Spoofax Language Workbench}
+    \subsection{\label{subsec:spoofax}Spoofax Language Workbench}
 
       \begin{itemize}
         \item History
@@ -80,7 +80,7 @@
         \item Achievements
       \end{itemize}
 
-    \subsection{Current Implementation of WebDSL}
+    \subsection{\label{subsec:current-implementation}Current Implementation of WebDSL}
 
       \begin{itemize}
         \item Large Stratego specification where desugaring, static analysis, optimization and code-generation are interleaved (exaggeration?)
@@ -95,7 +95,7 @@
         \item Entity extension
       \end{itemize}
 
-  \section{Modernization goal}
+  \section{\label{sec:modernization}Modernization goal}
 
     \begin{itemize}
       \item A complete and maintainable SDF3 and Statix specification of WebDSL.

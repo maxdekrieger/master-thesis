@@ -2,9 +2,9 @@
 
 \chapter{\label{chap:statix}WebDSL in Statix}
 
-  In this chapter, we go in detail about the implementation of the WebDSL static semantics in Statix, according to the defined semantics in chapter \emph{TO-DO}. First, we introduce the meta-DSL Statix. Next, we describe the implementation of a simple type system in Statix. Lastly, we zoom in on the challenges faced while implementing non-trivial WebDSL features in Statix.
+  In this chapter, we go in detail about the implementation of the WebDSL static semantics in Statix, according to the defined semantics in \cref{chap:webdsl}. First, we introduce the meta-DSL Statix. Next, we describe the implementation of a simple type system in Statix. Lastly, we zoom in on the challenges faced while implementing non-trivial WebDSL features in Statix.
 
-  \section{Introduction to Statix}
+  \section{\label{sec:statix}Introduction to Statix}
 
     \begin{itemize}
       \item Syntax
@@ -13,16 +13,16 @@
       \item Boolean logic
     \end{itemize}
   
-  \section{Simple Type Systems}
+  \section{\label{sec:simple-type-systems}Simple Type Systems}
 
-    \subsection{Constant Expressions}
+    \subsection{\label{subsec:simple-constants}Constant Expressions}
 
       \begin{itemize}
         \item Typing rules
         \item Type compatibility
       \end{itemize}
 
-    \subsection{Variables}
+    \subsection{\label{subsec:simple-variables}Variables}
 
       \begin{itemize}
         \item Declaration and resolving
@@ -31,7 +31,7 @@
         \item Shadowing
       \end{itemize}
 
-    \subsection{Entities and properties}
+    \subsection{\label{subsec:simple-entities}Entities and properties}
 
       \begin{itemize}
         \item Declaration and resolving
@@ -39,7 +39,7 @@
         \item Parameters
       \end{itemize}
 
-    \subsection{Functions}
+    \subsection{\label{subsec:simple-functions}Functions}
 
       \begin{itemize}
         \item Declaration and resolving
@@ -47,13 +47,13 @@
         \item Parameters
       \end{itemize}
 
-    \subsection{Pages and Templates}
+    \subsection{\label{subsec:simple-pages}Pages and Templates}
 
       \begin{itemize}
         \item Declaration and resolving
       \end{itemize}
 
-  \section{Inheritance}
+  \section{\label{sec:inheritance}Inheritance}
 
     \subsubsection{Linking the Scopes}
       The implementation of inheritance requires the scope of the sub- and super-entity to be connected such that Statix queries can resolve to declarations from the super-entity when necessary. To achieve this, we introduce an edge label \texttt{INHERIT} as shown in listing \emph{TO-DO}.
@@ -167,21 +167,22 @@
           nonEmptyPathScopeList([(_,_)]) = TRUE().
       \end{minted}
 
-  \section{Entity Extension}
+  \section{\label{sec:entity-extension}Entity Extension}
 
-  \section{Function and Template Overloading}
+    \subsection{\label{subsec:type-extension}Built-in Type Extension}
 
-  \section{Module system}
+  \section{\label{sec:function-template-overloading}Function and Template Overloading}
 
-  \section{TO-DOs in Statix spec}
-  
-    Statix spec TO-DOs that most likely are interesting:
+  \section{\label{sec:module-system}Module system}
+
+  \section{\label{sec:built-in-library}Pre-analyzed built-in library}
+
+  \section{\label{sec:statix-reflection}Reflection on Statix}
+
     \begin{itemize}
-      \item HQL
-      \item Access control reference checking
-      \item Inclusing \texttt{built-in.app} in analysis
+      \item Repeat reasons for using Statix
+      \item What worked out as intended?
+      \item What did not work as intended?
+      \item What are the workarounds?
+      \item Recommendations for improving Statix
     \end{itemize}
-
-  \section{Possibly: Compose HQL and WebDSL's Type System using Aron's Thesis}
-
-  \section{Reflection on Statix}

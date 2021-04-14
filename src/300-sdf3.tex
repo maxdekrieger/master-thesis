@@ -4,8 +4,9 @@
 
   Goal: New specification of WebDSL grammar. Stay compatible with all existing WebDSL code; as few breaking changes as possible.
   \\\\Goal: Large case study for SDF3.
+  \\\\Outline of chapter
 
-  \section{WebDSL Grammar Specification}
+  \section{\label{sec:webdsl-grammar}WebDSL Grammar Specification}
 
     The current grammar of WebDSL is specified in SDF2, the predecessor of SDF3.
     \\\\The WebDSL grammar specification consists of <> files with <> productions in total.
@@ -15,15 +16,15 @@
     \\- Modern spoofax does not support SDF2 anymore?
     \\- SDF3 more performant?
 
-  \section{Introduction to SDF3}
+  \section{\label{sec:sdf3}Introduction to SDF3}
 
     Able to declaratively specify the complete syntax of a programming language in SDF3, and a parser, highlighter and pretty-printer gets generated from this specification.
 
-    \subsection{Syntax}
+    \subsection{\label{subsec:sdf3-syntax}Syntax}
 
       Lexical sorts, context-free sorts and constructors
 
-    \subsection{Disambiguation}
+    \subsection{\label{subsec:sdf3-disambiguation}Disambiguation}
 
       Possibilities:
       \\- Prefer/avoid annotations on constructors (deprecated)
@@ -31,11 +32,11 @@
       \\- Reject keywords
       \\- Reject nesting of certain constructors
 
-  \section{Migration from SDF2 to SDF3}
+  \section{\label{sec:sdf2-to-sdf3}Migration from SDF2 to SDF3}
 
     There is a tool to migrate SDF2 specifications to SDF3 specifications but it does not work in all cases. Some work needs to be done to prepare the SDF2 specification for the migration, and some work needs to be done on the resulting SDF3 specification to make sure it is as usable as the old SDF2 specification.
 
-    \subsection{Preparing the WebDSL SDF2 definition for migration}
+    \subsection{\label{subsec:preparing-webdsl-sdf2}Preparing the WebDSL SDF2 definition for migration}
 
       The SDF2 to SDF3 migration tool does not accept "sorts" sections.
       \\\\Alternations must be removed from the SDF2 specification. Solution is to introduce a separate sort for the alternation:
@@ -49,15 +50,13 @@
       \\\\Mixed languages and parameterized imports are currently not supported in SDF3, so WebDSL code cannot be mixed with Stratego/Java code in the new SDF3 syntax definition.
       \\\\Mixed languages were only used in the compiler, except for HQL which is used in WebDSL code. Fortunately, the HQL syntax is not used elsewhere and could be transformed to be a part of the WebDSL syntax natively.
 
-    \subsection{Manual Tweaking of Generated WebDSL SDF3}
+    \subsection{\label{subsec:manual-tweaking-sdf3}Manual Tweaking of Generated WebDSL SDF3}
 
       \subsubsection{Missing and duplicate constructors}
 
         In SDF3, the constructors are a much more key part of the productions than in SDF2, where constructors are defined as a \texttt{cons("MyConstructor")} annotation on the production. In the WebDSL SDF2 definition, some constructors were missing and there were many duplicate constructors that denoted alternative syntax for the same construct, essentially providing syntactic sugar.
         
-        In the newly generated SDF3, duplicate constructors had to be changed, in order for them to be unique. Duplicate constructors 
-        
-        Additionally, missing constructors had to be added, preferably even for injections for a reason we will touch on later in the <> Preparation for Statix section.
+        In the newly generated SDF3, duplicate constructors had to be changed, in order for them to be unique. Additionally, missing constructors had to be added, preferably even for injections for a reason we will touch on later in \cref{sec:preparation-for-statix}.
 
       \subsubsection{Priority chains}
 
@@ -75,15 +74,15 @@
 
       \subsubsection{Deeply embedding HQL}
 
-        Previously, the syntax definition of HQL was a standalone definition, and was used in the WebDSL SDF2 through parameterized imports. SDF3 has no support for this feature, so as discussed in the previous subsection <> (ref here), the language has to be transformed to be a part of the WebDSL syntax.
+        Previously, the syntax definition of HQL was a standalone definition, and was used in the WebDSL SDF2 through parameterized imports. SDF3 has no support for this feature, so as discussed in \cref{subsec:preparing-webdsl-sdf2}, the language has to be transformed to be a part of the WebDSL syntax.
         
         Deeply embedding the HQL syntax in the WebDSL syntax causes some errors to arise on duplicate names of sorts and constructors, this had to be fixed manually.
 
-  \section{Preparation for Statix}
+  \section{\label{sec:preparation-for-statix}Preparation for Statix}
 
     With the intention to use Statix for implementing the WebDSL static analyses, the grammar sorts and constructors have strict requirements. Statix is a strongly typed language and requires all input to adhere to the declared sorts and constructors.
 
-    \subsection{Sorts and Constructors in Statix}
+    \subsection{\label{subsec:sorts-in-statix}Sorts and Constructors in Statix}
 
       Statix takes an abstract syntax tree as input.
       \\\\In the signature definition of Statix rules, it must be stated what the input and output sorts are. The implementation of the rules are defined over the constructors that belong to the sorts in the rule's signature.
@@ -91,7 +90,7 @@
       \\\\All sorts and constructors that rules are defined over, have to be defined in the Statix code. In our case, a complete redefinition of all sorts and constructors in the Statix code is necessary to statically analyze the all WebDSL language features.
       \\\\Unlike SDF3 and Stratego, Statix is statically typed and does not support injections or polymorphism in its constructors, which leaves some abstract syntax trees generated by the parser unable to serve as input for static analysis.
 
-    \subsection{Statix Signature Generator}
+    \subsection{\label{subsec:statix-signature-generator}Statix Signature Generator}
 
       \begin{itemize}
         \item Conversion from SDF3 constructors to Statix
@@ -100,7 +99,7 @@
         \item Disambiguation (ref to separate section)
       \end{itemize}
 
-    \subsection{Changing the SDF3 WebDSL Specification}
+    \subsection{\label{subsec:changing-webdsl-sdf3-statix}Changing the SDF3 WebDSL Specification}
 
       \begin{itemize}
         \item Lots of new sorts due to explicit optional sorts
@@ -108,7 +107,7 @@
         \item Add more constructors for the removal of injections
       \end{itemize}
 
-  \section{Disambiguation}
+  \section{\label{sec:webdsl-sdf3-disambiguation}Disambiguation}
   
     Since the \texttt{amb(\_,\_)} constructor is not declarable in Statix, having an ambiguity in the AST leads to the analysis not executing. This increases the need for disambiguation.
     \\\\Challenges and solutions:
@@ -119,4 +118,4 @@
       \item Optional alias vs. cast expression: use non-transitive priority rule.
     \end{itemize}
 
-  \section{Reflection on SDF3}
+  \section{\label{sec:sdf3-reflection}Reflection on SDF3}
