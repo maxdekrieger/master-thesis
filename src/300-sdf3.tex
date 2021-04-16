@@ -12,7 +12,7 @@
     \\\\The WebDSL grammar specification consists of <> files with <> productions in total.
     \\\\Parts of the syntax are deprecated but still mainainted for backwards compatibility reasons.
     \\\\Some productions added for the sake of autocompletion.
-    \\\\Reason to switch to SDF3 here:
+    \\\\Reason to switch to SDF3:
     \\- Modern spoofax does not support SDF2 anymore?
     \\- SDF3 more performant?
 
@@ -22,7 +22,14 @@
 
     \subsection{\label{subsec:sdf3-syntax}Syntax}
 
-      Lexical sorts, context-free sorts and constructors
+      \begin{itemize}
+        \item Lexical sorts
+        \item Context-free sorts
+        \item Constructors
+        \item Injections
+        \item Optional sorts
+        \item Repitition
+      \end{itemize}
 
     \subsection{\label{subsec:sdf3-disambiguation}Disambiguation}
 
@@ -92,20 +99,35 @@
 
     \subsection{\label{subsec:statix-signature-generator}Statix Signature Generator}
 
-      \begin{itemize}
-        \item Conversion from SDF3 constructors to Statix
-        \item Optional sorts
-        \item Injections
-        \item Disambiguation (ref to separate section)
-      \end{itemize}
+      As mentioned and demonstrated in \cref{subsec:sorts-in-statix}, Statix requires a definition of the constructors and sorts of the language to be analyzed. This definition exists in SDF3, but is not compatible with the Statix semantics since no injections are allowed. To prevent manual redefinition of the sorts in Statix code, the Statix Signature Generator is developped. This tool takes the SDF3 definition as input, and generates importable Statix files that contain the sorts and constructors from the syntax definition. For the Statix Signature Generator to work properly, Additional well-formedness requirements exist for the SDF3 definition.
 
-    \subsection{\label{subsec:changing-webdsl-sdf3-statix}Changing the SDF3 WebDSL Specification}
+      \subsubsection{Explicitly Declare Sorts}
 
-      \begin{itemize}
-        \item Lots of new sorts due to explicit optional sorts
-        \item Desugar new optional sorts
-        \item Add more constructors for the removal of injections
-      \end{itemize}
+        The parser generator that takes an SDF3 definition as input, is able to extract the sorts names from productions. Unfortunately, this is not the case for the Statix Signature generator so all sorts used in productions must be declared explicitly in \texttt{context-free sorts} and \texttt{lexical sorts} blocks.
+        \\\\TO-DO: Find reason and describe here
+        \\\\TO-DO: Example here with before and after with context-free and lexical sort blocks
+
+      \subsubsection{Injections}
+
+        With the semantics of Statix' constructors and sorts, it is not possible to model injections.
+        \\\\TO-DO: Example of injection here and impossibility of modelling in Statix
+        \\\\The Statix Signature Generator deals with simple injections (from one sort to one sort) by explicating the injections, making a more verbose version of the constructors and sorts.
+        \\\\TO-DO: Example here of simple injection explicated
+        \\\\Even though this functions properly, it is hard to read in the Statix rules. For this reason, we changed the WebDSL SDF3 to contain less injections by inserting constructors with descriptive names where injections were.
+        \\\\TO-DO: Show result
+
+      \subsubsection{Optional Sorts}
+
+        As mentioned in \cref{subsec:sdf3-syntax}, SDF3 has built-in support for optional sorts, resulting in \texttt{Some(\_)} and \texttt{None()} terms.
+        \\\\The resulting terms cannot be translated to Statix signatures, since this would mean a lot of duplicate Some and None constructors belonging to different sorts.
+        \\\\To resolve this challenge, the SDF3 definition must be altered make the Some and None constructors unique per sort. This leads to a much more verbose syntax definition:
+        \\\\TO-DO: Example here with two syntax definitions and resulting ASTs: one with built-in optional sorts, other with verbose optional sorts.
+
+      \subsubsection{Disambiguation}
+
+        As mentioned in \cref{subsec:sdf3-syntax}, ambiguous code fragments lead to abstract syntax trees with the \texttt{amb(\_, \_)} term. Similar to optional sorts, this cannot be translated to Statix and therefore it is crucial that the syntax is disambiguated properly.
+        \\\\Next to this, the \texttt{prefer} and \texttt{avoid} annotations for disambiguation were heavily used in the WebDSL SDF2 definition. The annotations are supported in SDF3, but the support is likely to be dropped in a future release.
+        \\\\For the two reasons listed above, we reimplemented disambiguation through a combination of multiple SDF3 features. This process is explained in \cref{sec:webdsl-sdf3-disambiguation}.
 
   \section{\label{sec:webdsl-sdf3-disambiguation}Disambiguation}
   

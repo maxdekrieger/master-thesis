@@ -6,13 +6,15 @@
   Many different programming languages exist, with many different properties and advantages. (\emph{TO-DO: this is crap, need something better})
 
   \subsubsection{Programming Langauge Front-end Introduction}
-  The implementation of a programmig languages can be seperated into two parts: the front-end and the back-end. The front-end is the part of the programming language with which the user interacts (the syntax, early feedback using analysis results) and the back-end is the part that makes the programming language operational (optimization, code generation). While the back-end of a programming langauge makes it work, the front-end defines how a user experiences the progrmaming language (\emph{TO-DO: read papers about this}). 
+  The implementation of a programming languages can be seperated into two parts: the front-end and the back-end. The front-end is the part of the programming language with which the user interacts (the syntax, early feedback using analysis results) and the back-end is the part that makes the programming language operational (optimization, code generation). While the back-end of a programming langauge makes it work, the front-end defines how a user experiences the programming language (\emph{TO-DO: read papers about this}).
 
   \subsubsection{WebDSL}
   Programming languages are constantly evolving, requiring updates to its specification and implementation. One such language is WebDSL. WebDSL is a domain-specific language for developing web applications, developed at the Delft University of Technology.
 
   \subsubsection{Problem Description}
   Because of its academic nature, many research projects added features to the language, all contributing to the success of existing WebDSL applications. The downside of having many different contributors adding new features, is that the development experience that comes from the front-end leaves much to be desired. (\emph{TO-DO: too harsh?}) Currently, the WebDSL implementation is composed of multiple definitions in meta-DSLs supported by the Spoofax language workbench: the syntax is defined in SDF2 and the desugaring, typechecking, optimization and code generation is defined in the term transformation language Stratego. The interleaving of all the latter processes in the same Stratego environment poses a threat to the readability and maintainability of the WebDSL language.
+
+  TO-DO: Add something about assessing the usability of SDF3 and Statix for large projects used in practice.
   
   % Contributions
   \section{\label{sec:contributions}Contributions}
