@@ -10,3 +10,5 @@ missfont.log
 *.fdb_latexmk
 *.aux
 .~lock.document.pdf#
+
+related-work/
