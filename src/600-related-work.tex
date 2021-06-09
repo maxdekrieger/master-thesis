@@ -4,37 +4,58 @@
 
   \section{Papers}
 
-  \begin{itemize}
-    \item Static consistency checking of web applications with WebDSL (Hemel, Groenewegen, Kats, Visser). JSC 2011.
     \begin{itemize}
-      \item Importance of early feedback to developer.
-      \item Different inconsistencies that can be checked and how they are often checked.
-      \item Importance of linguistic integration to enable consistency checking at compile time.
-      \item How WebDSL is designed to enable early reporting of inconsistencies.
+      \item Static consistency checking of web applications with WebDSL (Hemel, Groenewegen, Kats, Visser). JSC 2011.
+      \begin{itemize}
+        \item Importance of early feedback to developer.
+        \item Different inconsistencies that can be checked and how they are often checked.
+        \item Importance of linguistic integration to enable consistency checking at compile time.
+        \item How WebDSL is designed to enable early reporting of inconsistencies.
+      \end{itemize}
+
+      \item Links: Web Programming Without Tiers (Cooper, Lindley, Wadler, Yallop). FCMO 2006.
+      \begin{itemize}
+        \item Introduces the Links programming language.
+        \item Links generates all tiers of web application: client-side HTML and JavaScript, server-side OCaml and SQL for the database.
+        \item Links tackles the impedance mismatch problem of different input/output provided and expected by the different tiers.
+        \item Links is a strict, typed, functional language with all state saved in the client-side.
+      \end{itemize}
+
+      \item Ur/Web: A Simple Model for Programming the Web (Chlipala). POPL 2015.
+      \begin{itemize}
+        \item Introduces the Ur/Web programming language.
+        \item Similar to Links, Ur/Web is a functional programming language that generates code for all tiers of a web application.
+        \item Ur/Web introduces encapsulation and simple concurrency.
+        \item Encapsulation: treating key pieces of web applications as private state (?).
+      \end{itemize}
     \end{itemize}
 
-    \item Links: Web Programming Without Tiers (Cooper, Lindley, Wadler, Yallop). FCMO 2006.
+  \section{Papers to investigate}
+
     \begin{itemize}
-      \item Introduces the Links programming language.
-      \item Links generates all tiers of web application: client-side HTML and JavaScript, server-side OCaml and SQL for the database.
-      \item Links tackles the impedance mismatch problem of different input/output provided and expected by the different tiers.
-      \item Links is a strict, typed, functional language with all state saved in the client-side.
+      \item Evolution of the WebDSL runtime
+      \begin{itemize}
+        \item About the evolution of a programming language
+        \item Contains WebDSL details
+        \item Key difference: This thesis focusses on front-end of the WebDSL language, not the back-end
+      \end{itemize}
+
+      \item Scopes as Types
+      \begin{itemize}
+        \item About declaratively specifying static semantics
+        \item Contains Statix details and case studies
+        \item Key difference: This thesis contains a larger case study with more language constructs and different (practically motivated) requirements
+      \end{itemize}
+
     \end{itemize}
 
-    \item Ur/Web: A Simple Model for Programming the Web (Chlipala). POPL 2015.
+    Maybe?:
     \begin{itemize}
-      \item Introduces the Ur/Web programming language.
-      \item Similar to Links, Ur/Web is a functional programming language that generates code for all tiers of a web application.
-      \item Ur/Web introduces encapsulation and simple concurrency.
-      \item Encapsulation: treating key pieces of web applications as private state (?).
+      \item Type errors for the IDE with Xtext and Xsemantics
+      \begin{itemize}
+        \item https://www.degruyter.com/document/doi/10.1515/comp-2019-0003/html
+        \item Implements typechers for two small languages with the Xtext language workbench
+        \item Describes what to pay attention to when implementing a typechecker (error recovery, useful error messages, etc.)
+        \item Key difference: This thesis contains a larger case study and is written in Spoofax meta-languages
+      \end{itemize}
     \end{itemize}
-  \end{itemize}
-
-  \section{Types of papers to investigate}
-
-  \begin{itemize}
-    \item Papers about WebDSL
-    \item Papers about modern Spoofax
-    \item Papers about the definition of web programming languages
-    \item Papers about modernizing (web) programming languages
-  \end{itemize}
