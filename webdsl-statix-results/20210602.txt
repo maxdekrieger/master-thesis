@@ -1,0 +1,7 @@
+Analysis:
+- passed: 345
+- failed: 282
+
+Syntax:
+- passed: 1110
+- failed: 5
