@@ -1,0 +1,25 @@
+#33
+
+SPT Tests:
+
+    Analysis:
+    - passed: 366
+    - failed: 261
+
+    Syntax:
+    - passed: 1110
+    - failed: 5
+
+End-to-end Tests:
+
+    Reposearch: (91 seconds to analyze)
+    - exceptions: 0
+    - errors: 1547
+    - warnings: 520
+    - notes: 0
+
+    YellowGrass: (84 seconds to analyze)
+    - exceptions: 0
+    - errors: 10603
+    - warnings: 643
+    - notes: 0

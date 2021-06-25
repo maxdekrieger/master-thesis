@@ -12,3 +12,6 @@ missfont.log
 .~lock.document.pdf#
 
 related-work/
+
+.DS_Store
+

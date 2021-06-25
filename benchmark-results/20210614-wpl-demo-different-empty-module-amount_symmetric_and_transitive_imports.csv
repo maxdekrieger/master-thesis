@@ -1,0 +1,8 @@
+"Benchmark","Mode","Threads","Samples","Score","Score Error (99.9%)","Unit","Param: parallelism","Param: project","Param: specVersion","solved","critical","messages"
+"mb.statix.benchmark.WebDSLBenchmark.run","ss",1,20,1.253552,0.016409,"s/op",0,one-module,18889a843baec087ebafee81367a92f4631fd3ad,"61.657","6.203","167"
+"mb.statix.benchmark.WebDSLBenchmark.run","ss",1,20,1.388359,0.010067,"s/op",0,two-modules,18889a843baec087ebafee81367a92f4631fd3ad,"66.625","6.327","167"
+"mb.statix.benchmark.WebDSLBenchmark.run","ss",1,20,1.719534,0.014393,"s/op",0,five-modules,18889a843baec087ebafee81367a92f4631fd3ad,"80.825","6.399","167"
+"mb.statix.benchmark.WebDSLBenchmark.run","ss",1,20,3.166801,0.028175,"s/op",0,ten-modules,18889a843baec087ebafee81367a92f4631fd3ad,"105.121","6.719","167"
+"mb.statix.benchmark.WebDSLBenchmark.run","ss",1,20,4.126608,0.022854,"s/op",0,twenty-modules,18889a843baec087ebafee81367a92f4631fd3ad,"153.241","7.209","167"
+"mb.statix.benchmark.WebDSLBenchmark.run","ss",1,20,7.797830,0.112837,"s/op",0,fifty-modules,18889a843baec087ebafee81367a92f4631fd3ad,"297.601","8.679","167"
+"mb.statix.benchmark.WebDSLBenchmark.run","ss",1,20,28.923133,1.327326,"s/op",0,hundred-modules,18889a843baec087ebafee81367a92f4631fd3ad,"538.201","11.129","167"

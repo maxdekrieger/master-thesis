@@ -1,0 +1,11 @@
+		Module system: 		Current		Global scope	Strict imports
+Modules
+1							1.25s		1.81s			0.86s
+2							1.39s		1.81s			0.90s
+5							1.72s		1.81s			0.96s	
+10							3.17s		1.81s			0.96s
+20							4.13s		1.82s			0.96s
+50							7.80s		1.82s			1.10s
+100							28.92s		1.82s			1.35s
+Reposearch					1667s		91s				90s
+Yellowgrass					>8hours		84s				140s
