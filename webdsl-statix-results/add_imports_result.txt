@@ -1,0 +1,17 @@
+**Reposearch**
+
+lines of cude excluding libraries: 2398 (17 files)
+lines of code including libraries: 8413
+amount of new imports: 92
+average amount of import per file = 92 / 17 = 5.4
+amount of imports with wildcards = 75
+average amount of import per file with wildcards = 75 / 17 = 4.4
+
+**YellowGrass**
+
+lines of cude excluding libraries: 6628 (54 files)
+lines of code including libraries: 12726
+amount of new imports: 328
+average amount of import per file = 328 / 54 = 6.07
+amount of imports with wildcards = 193
+average amount of import per file with wildcards = 193 / 54 = 3.57

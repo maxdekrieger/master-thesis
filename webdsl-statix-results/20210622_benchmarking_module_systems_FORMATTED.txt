@@ -1,11 +1,11 @@
-		Module system: 		Current		Global scope	Strict imports
+		Module system: 		Current		Global scope	Strict		Wildcard
 Modules
-1							1.25s		1.81s			0.86s
-2							1.39s		1.81s			0.90s
-5							1.72s		1.81s			0.96s	
-10							3.17s		1.81s			0.96s
-20							4.13s		1.82s			0.96s
-50							7.80s		1.82s			1.10s
-100							28.92s		1.82s			1.35s
-Reposearch					1667s		91s				90s
-Yellowgrass					>8hours		84s				140s
+1							1.25s		1.81s			0.86s		0.88s
+2							1.39s		1.81s			0.90s		0.86s
+5							1.72s		1.81s			0.96s		0.84s
+10							3.17s		1.81s			0.96s		0.86s
+20							4.13s		1.82s			0.96s		0.89s
+50							7.80s		1.82s			1.10s		1.05s
+100							28.92s		1.82s			1.35s		1.30s
+Reposearch					1667s		91s				92s			84s
+Yellowgrass					>8hours		84s				187s		164s
