@@ -24,7 +24,7 @@ End-to-end Tests:
         * elib: 8
     - notes: 0
 
-    YellowGrass: (311 seconds)
+    YellowGrass: (64 seconds)
     - exceptions: 0
     - errors: 395
         * project: 179
