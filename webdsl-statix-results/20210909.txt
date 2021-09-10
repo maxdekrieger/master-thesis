@@ -1,0 +1,37 @@
+#61
+
+SPT Tests:
+
+    Analysis:
+    - passed: 362
+    - failed: 159
+
+    Syntax:
+    - passed: 1110
+    - failed: 5
+
+End-to-end Tests:
+
+    Reposearch: (61 seconds)
+    - exceptions: 0
+    - errors: 109
+        * project: 56
+        * built-in: 15
+        * elib: 38
+    - warnings: 81
+        * project: 40
+        * built-in: 33
+        * elib: 8
+    - notes: 0
+
+    YellowGrass: (68 seconds)
+    - exceptions: 0
+    - errors: 134
+        * project: 72
+        * built-in: 15
+        * elib: 47
+    - warnings: 168
+        * project: 128
+        * built-in: 33
+        * elib: 7
+    - notes: 0
