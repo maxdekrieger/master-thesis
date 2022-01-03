@@ -2,13 +2,19 @@
 
 \chapter{\label{chap:statix}WebDSL in Statix}
 
-  In this chapter, we go in detail about the implementation of the WebDSL static semantics in Statix, according to the defined semantics in \cref{chap:webdsl}. First, we introduce the meta-DSL Statix. Next, we describe the implementation of a simple type system in Statix. Lastly, we zoom in on the challenges faced while implementing non-trivial WebDSL features in Statix.
+  In this chapter, we elaborate on the implementation of the WebDSL static semantics in Statix, using the examples from \cref{chap:webdsl} as a basis. First, we introduce the meta-DSL Statix. Secondly, we describe the implementation of the simple type system that is the core of WebDSL. Next, we address and discuss the challenges faced while implementing non-trivial WebDSL features in Statix and lastly we reflect on the developer experience of using Statix to implement static analyses.
 
   \section{\label{sec:statix}Introduction to Statix}
 
+    Statix is a constraint-based declarative language for the specification of type systems, introduced in 2018 \autocite{VanAntwerpen2018}. Since then, the meta-DSL Statix has become a part of the Spoofax Language Workbench and allows language developers to implement static analyses to provide language users with useful hints, warnings and errors.
+
+    A Statix specification consists of rules over terms that define constraints.
+
+    Additionally, Statix rules build and query a \textit{scope graph} \autocite{Neron2015} that provides a language-agnostic representation of a program.
+
     \begin{itemize}
-      \item Syntax
       \item Scope graphs
+      \item Syntax
       \item Relations and queries
       \item Boolean logic
     \end{itemize}

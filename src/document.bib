@@ -18,7 +18,7 @@ location = {Porto, Portugal},
 series = { '20}
 }
 
-@inproceedings{Visser07,
+@inproceedings{Visser2007,
   title = {{WebDSL}: {A} Case Study in Domain-Specific Language Engineering},
   author = {Eelco Visser},
   year = {2007},
@@ -38,7 +38,7 @@ series = { '20}
   isbn = {978-3-540-88642-6},
 }
 
-@article{HEMEL2011150,
+@article{Hemel2011,
   title = "Static consistency checking of web applications with WebDSL",
   journal = "Journal of Symbolic Computation",
   volume = "46",
@@ -50,4 +50,39 @@ series = { '20}
   doi = "https://doi.org/10.1016/j.jsc.2010.08.006",
   url = "http://www.sciencedirect.com/science/article/pii/S0747717110001367",
   author = "Zef Hemel and Danny M. Groenewegen and Lennart C.L. Kats and Eelco Visser"
+}
+
+@article{VanAntwerpen2018,
+  author = {van Antwerpen, Hendrik and Bach Poulsen, Casper and Rouvoet, Arjen and Visser, Eelco},
+  title = {Scopes as Types},
+  year = {2018},
+  issue_date = {November 2018},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {2},
+  number = {OOPSLA},
+  url = {https://doi.org/10.1145/3276484},
+  doi = {10.1145/3276484},
+  abstract = {Scope graphs are a promising generic framework to model the binding structures of programming languages, bridging formalization and implementation, supporting the definition of type checkers and the automation of type safety proofs. However, previous work on scope graphs has been limited to simple, nominal type systems. In this paper, we show that viewing scopes as types enables us to model the internal structure of types in a range of non-simple type systems (including structural records and generic classes) using the generic representation of scopes. Further, we show that relations between such types can be expressed in terms of generalized scope graph queries. We extend scope graphs with scoped relations and queries. We introduce Statix, a new domain-specific meta-language for the specification of static semantics, based on scope graphs and constraints. We evaluate the scopes as types approach and the Statix design in case studies of the simply-typed lambda calculus with records, System F, and Featherweight Generic Java.},
+  journal = {Proc. ACM Program. Lang.},
+  month = {oct},
+  articleno = {114},
+  numpages = {30},
+  keywords = {type system, domain-specific language, scope graphs, static semantics, name resolution, type checker}
+}
+
+@InProceedings{Neron2015,
+  author="Neron, Pierre
+  and Tolmach, Andrew
+  and Visser, Eelco
+  and Wachsmuth, Guido",
+  editor="Vitek, Jan",
+  title="A Theory of Name Resolution",
+  booktitle="Programming Languages and Systems",
+  year="2015",
+  publisher="Springer Berlin Heidelberg",
+  address="Berlin, Heidelberg",
+  pages="205--231",
+  abstract="We describe a language-independent theory for name binding and resolution, suitable for programming languages with complex scoping rules including both lexical scoping and modules. We formulate name resolution as a two-stage problem. First a language-independent scope graph is constructed using language-specific rules from an abstract syntax tree. Then references in the scope graph are resolved to corresponding declarations using a language-independent resolution process. We introduce a resolution calculus as a concise, declarative, and languageindependent specification of name resolution. We develop a resolution algorithm that is sound and complete with respect to the calculus. Based on the resolution calculus we develop language-independent definitions of $\alpha$-equivalence and rename refactoring. We illustrate the approach using a small example language with modules. In addition, we show how our approach provides a model for a range of name binding patterns in existing languages.",
+  isbn="978-3-662-46669-8"
 }
