@@ -26,7 +26,7 @@
 % tab:    Table
 % enum:   Enumeration
 % fn:     Footnote
-
+\usepackage[all]{hypcap}
 
 % Graphics
 \usepackage{xargs}
@@ -151,6 +151,18 @@
 \usepackage[outputdir=../out]{minted}
 \newcommand{\statix}{spoofax_lexer.py -O "language=org/metaborg/statix.lang" -x}
 \setminted[\statix]{
+  frame=single,
   xleftmargin=1em,
   autogobble
 }
+
+\newcommand{\webdsl}{spoofax_lexer.py -O "language=org/example/webdslstatix" -x}
+\setminted[\webdsl]{
+  xleftmargin=1em,
+  autogobble
+}
+
+% Scope Graphs
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
+\usetikzlibrary{arrows.meta,arrows}

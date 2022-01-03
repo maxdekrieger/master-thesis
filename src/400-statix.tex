@@ -8,18 +8,123 @@
 
     Statix is a constraint-based declarative language for the specification of type systems, introduced in 2018 \autocite{VanAntwerpen2018}. Since then, the meta-DSL Statix has become a part of the Spoofax Language Workbench and allows language developers to implement static analyses to provide language users with useful hints, warnings and errors.
 
-    A Statix specification consists of rules over terms that define constraints.
+    A Statix specification consists of rules over terms that define constraints. Additionally, Statix rules build and query a \textit{scope graph} \autocite{Neron2015} that provides a language-agnostic representation of a program.
 
-    Additionally, Statix rules build and query a \textit{scope graph} \autocite{Neron2015} that provides a language-agnostic representation of a program.
+    \subsection{Language Signature}
 
-    \begin{itemize}
-      \item Scope graphs
-      \item Syntax
-      \item Relations and queries
-      \item Boolean logic
-    \end{itemize}
+      \begin{wrapfigure}{r}{0.5\linewidth}
+        \capstart
+        \begin{minted}[firstline=2]{\statix}
+          module x
+          signature
+            sorts
+              Program
+              Exp
+            
+            constructors
+              Program : Exp       -> Program
+              True    :              Exp
+              False   :              Exp
+              Int     : string    -> Exp
+              Add     : Exp * Exp -> Exp
+        \end{minted}
+        \caption{\label{fig:statix-signatures}Language signature in Statix}
+      \end{wrapfigure}
+
+      \noindent
+      Consider a language consisting of Booleans, integers and addition, for which we want to create a type-checker with Statix. First, Statix requires us to declare all types and sorts that we will be using in the rules. The corresponding Statix code is shown in \cref{fig:statix-signatures}.
+
+      So far, our specification consists of two sorts. The \texttt{Program} sort defines the entry point of our language, it has one constructor with an identical name. Next, the sort \texttt{Exp} describes what expressions are allowed. It has four constructors: the Boolean values \texttt{True} and \texttt{False}, \texttt{Int} which requires an integer literal as subterm, and lastly \texttt{Add} which takes two nested expressions as subterms. Examples of valid input according to our defined signature are shown in \cref{fig:statix-valid-input}.
+
+      \begin{figure}[H]
+        \begin{lstlisting}[frame=single]
+          Program(True())
+          Program(Int("42"))
+          Program(Add(Int("40"), Int("2")))
+          Program(Add(Int("40"), False()))
+        \end{lstlisting}
+        \caption{\label{fig:statix-valid-input}Valid input terms for the described language}
+      \end{figure}
+
+    \subsection{Semantic Types}
+
+      Not all of the valid input terms according to our signature are well-typed. For example, the last term shown in \cref{fig:statix-valid-input} features an addition of the integer literal \texttt{40} and the Boolean value \texttt{False}. Using Statix' constraint solving capabilities, we would like to give feedback to the programmer that the input is ill-typed.
+
+      Given the code in \cref{fig:statix-signatures}, our Statix specification does not yet generate any constraints. Constraints we would like to generate using Statix rules, are that a program must be well-typed and in order for an addition expression to be well-typed, its two subterms must be of integer type.
+
+      \begin{wrapfigure}{r}{0.5\linewidth}
+        \vspace{-20pt}
+        \capstart
+        \begin{minted}[firstline=2]{\statix}
+          module x
+          signature
+            sorts
+              TYPE
+            
+            constructors
+              BOOL : TYPE
+              INT  : TYPE
+        \end{minted}
+        \caption{\label{fig:statix-type-signatures}Statix signature for Boolean and integer types}
+        \vspace{-40pt}
+      \end{wrapfigure}
+
+      To reason about the types of expressions and use them in constraints, we must first define them in our specification, as shown in \cref{fig:statix-type-signatures}. To distinguish input sorts and constructors from semantic types that we will use in our constraints, those sorts and constructors are defined in upper-case. With the new \texttt{TYPE} sort that has two constructors: \texttt{BOOL} and \texttt{INT}, we can start generating constraints on input terms.
+
+    \subsection{Predicates and Rules}
+
+      \Cref{fig:statix-basic-rules} lists the Statix predicates and rules required to generate the constraints we want to be satisfied in order for a program to be well-typed. The type of every Statix predicate must be explicitly declared, for example: \texttt{programOk : Program} declares that the predicate named \texttt{programOk} matches exactly one instantiation sort Program. An instantiation of the \texttt{programOk} predicate is on the line below the signature. In prose English it would read ``A program is well-typed, given that for some type \texttt{T}, the expression \texttt{e} has type \texttt{T}''. The other Statix rule of our small example specification is a \textit{functional predicate}, meaning that it returns a value. All but the last rules of the \texttt{typeOfExp} predicate compute a \texttt{TYPE} for a given expression, without conditions. The last rule of the example does have two conditions, in prose English it would read ``\texttt{e1} plus \texttt{e2} is of type \texttt{INT}, given that \texttt{e1} is of type \texttt{INT} and \texttt{e2} is of type \texttt{INT}''.
+
+      \begin{figure}[H]
+        \begin{minted}[firstline=2]{\statix}
+          module x
+          rules
+
+            programOk : Program
+            programOk(Program(e)) :- { T }
+              typeOfExp(e) == T.
+
+            typeOfExp : Exp -> TYPE
+            typeOfExp(True()) = BOOL().
+            typeOfExp(False()) = BOOL().
+            typeOfExp(Int(_)) = INT().
+            typeOfExp(Add(e1, e2)) = INT() :-
+              typeOfExp(e1) == INT(),
+              typeOfExp(e2) == INT().
+        \end{minted}
+        \caption{\label{fig:statix-basic-rules}Statix predicates and rules for typing Booleans, integers and addition}
+      \end{figure}
+
+    \subsection{Building a Scope Graph}
+    \subsection{Querying the Scope Graph}
+
+    % \begin{figure}[htb]
+    %   \tikzstyle{refdec}   = [rectangle, minimum width=.6cm, minimum height=.6cm, text centered, draw=black, fill=black!5, font=\ttfamily]
+    %   \tikzstyle{scope}    = [ellipse,   minimum width=.9cm, minimum height=.9cm, text centered, draw=black, font=\ttfamily]
+
+    %   \tikzstyle{P}          = [thick,-{Triangle}, font=\ttfamily]
+    %   \tikzstyle{refdecedge} = [-{Triangle}, font=\ttfamily]
+    %   \tikzstyle{I}          = [-{Triangle[open]}, font=\ttfamily]
+
+    %   \begin{tikzpicture}
+    %     \node (s_0) 	[scope] 	at(-8.000000, 0.000000) {s1};
+    %     \node (x_1) 	[refdec] 	at(-6.000000, 0.000000) {x};
+    %     \node (s_2) 	[scope] 	at(-8.000000, -2.000000) {s2};
+    %     \node (x_3) 	[refdec] 	at(-6.000000, -2.000000) {x};
+    %     \node (y_4) 	[refdec] 	at(-6.000000, -4.000000) {y};
+    %     \node (z_5) 	[refdec] 	at(-6.000000, -5.000000) {z};
+
+
+    %     \draw[refdecedge] 	(s_0.east) 	-- (x_1.west);
+    %     \draw[refdecedge] 	(s_2.south) 	-- (z_5.west);
+    %     \draw[P] 	(s_2.north) 	-- (s_0.south) 	node[pos=0.5, xshift=-1ex] {P};
+    %     \draw[refdecedge] 	(s_2.south east) 	-- (y_4.west);
+    %     \draw[refdecedge] 	(x_3.west) 	-- (s_2.east);
+    %   \end{tikzpicture}
+    %   \caption{ This is a caption}
+    % \end{figure}
   
-  \section{\label{sec:simple-type-systems}Simple Type Systems}
+  \section{\label{sec:simple-type-systems}Encoding the WebDSL Basics}
 
     \subsection{\label{subsec:simple-constants}Constant Expressions}
 
