@@ -101,6 +101,7 @@
 
 % Figures
 \usepackage{wrapfig}
+\usepackage{subcaption}
 
 
 % Todo's and Notes
@@ -149,11 +150,21 @@
 % Define acronyms in acronyms.tex
 
 \usepackage[outputdir=../out]{minted}
+
+\renewcommand{\theFancyVerbLine}{\sffamily
+  \textcolor{gray}{\scriptsize
+  \oldstylenums{\arabic{FancyVerbLine}}}}
+
 \newcommand{\statix}{spoofax_lexer.py -O "language=org/metaborg/statix.lang" -x}
 \setminted[\statix]{
   frame=single,
-  xleftmargin=1em,
-  autogobble
+  xleftmargin=1em,  
+  linenos,
+  autogobble=false,
+  numbersep=-11pt,
+  escapeinside=&&,
+  firstline=2,
+  firstnumber=1
 }
 
 \newcommand{\webdsl}{spoofax_lexer.py -O "language=org/example/webdslstatix" -x}
@@ -166,3 +177,9 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric}
 \usetikzlibrary{arrows.meta,arrows}
+
+\tikzset{decl/.style={rectangle, minimum width=.6cm, minimum height=.6cm, text centered, draw=black, fill=black!5, font=\ttfamily}}
+\tikzset{scope/.style={ellipse,   minimum width=.9cm, minimum height=.9cm, text centered, draw=black, font=\ttfamily}}
+
+\tikzset{scope edge/.style={thick,-{Triangle}, font=\ttfamily}}
+\tikzset{decl edge/.style={dashed,-{Square}, font=\ttfamily}}
