@@ -2,7 +2,7 @@
 
 \chapter{\label{chap:statix}WebDSL in Statix}
 
-  In this chapter, we elaborate on the implementation of the WebDSL static semantics in Statix, using the examples from \cref{chap:webdsl} as a basis. First, we introduce the meta-DSL Statix. Secondly, we describe the implementation of the simple type system that is the core of WebDSL. Next, we address and discuss the challenges faced while implementing non-trivial WebDSL features in Statix and lastly we reflect on the developer experience of using Statix to implement static analyses.
+  In this chapter, we elaborate on the implementation of the WebDSL static semantics in Statix, using the examples from \cref{chap:webdsl} as a basis. First, we introduce the meta-DSL Statix. Secondly, we describe the implementation of the type system that is the core of WebDSL. Next, we address and discuss the challenges faced while implementing non-trivial WebDSL features in Statix and lastly we reflect on the developer experience of using Statix to implement static analyses.
 
   \section{\label{sec:statix}Introduction to Statix}
 
@@ -286,14 +286,124 @@
 
   \section{\label{sec:simple-type-systems}Encoding the WebDSL Basics}
 
-    \subsection{\label{subsec:simple-constants}Constant Expressions}
+  \begin{wrapfigure}{r}{0.5\linewidth}
+    \vspace{-20pt}
+    \capstart
+    \begin{minted}[]{\statix}
+  module x
+  rules
+    projectOk : scope
+    unitOk    : scope * Unit
+    sectionOk : scope * Section
+    defOk     : scope * Definition
+    typeOfExp : scope * Exp -> TYPE
+    \end{minted}
+    \caption{\label{fig:webdsl-basic-predicates}Predicates that form the basis of the WebDSL Statix specification}
+    \vspace{-10pt}
+  \end{wrapfigure}
 
-      \begin{itemize}
-        \item Typing rules
-        \item Type compatibility
-      \end{itemize}
+      The WebDSL language adheres to a structure similar to many popular programming languages. A WebDSL application consists of multiple files. At the topmost level in a file, there is a module or \textit{unit} declaration. Within a module, multiple \textit{sections} of \textit{definitions} exist, such as pages, templates, entities and functions. A function consists of consecutive \textit{statements} such as variable assignment (\texttt{var n := 2}). At the innermost level, these statements contain \textit{expressions} that form the basis the WebDSL type system.
+
+      To define well-typedness of the mentioned constructs, the Statix predicates as shown in \cref{fig:webdsl-basic-predicates} form the backbone of the WebDSL Statix specification.
+
+    \subsection{\label{subsec:built-in-types-and-constants}Built-in Types and Constant Expressions}
+
+      Constant expressions such as strings, integers and booleans form the building blocks of more complication constructs. For reasons explained later (see section \cref{subsec:built-in-extension}), a built-in type such as string is not declared as \texttt{STRING : TYPE} but instead as \texttt{BUILTINTYPE : scope * string -> TYPE}, where the instantiation of the string type is as follows: \texttt{BUILTINTYPE(s, "String")}.
+
+      These built-in types are declared in a scope that is reachable from almost every location, the project scope, once per analysis. All WebDSL type declarations are made under the \texttt{type} relation, which associates the human readable type name with a \texttt{TYPE} term: \texttt{type : string * TYPE}. The part of the Statix specification to achieve this, and the resulting scope graph are shown in \cref{fig:webdsl-basics-built-in-types-decl}.
+
+      \begin{figure}[h]
+        \begin{subfigure}[b]{0.5\textwidth}
+          \begin{minted}[firstline=3]{\statix}
+module x
+rules
+  projectOk(s_project) :- 
+    declareTypeBuiltIns(s_project).
+    // ...
+
+  declareTypeBuiltIns : scope
+  declareTypeBuiltIns(s) :-
+    declareType(s, "Int", 
+      BUILTINTYPE(new, "Int")).
+    // ...
+
+  declareType : scope * string * TYPE
+  declareType(s, name, t) :-
+    !type[name, t] in s.
+          \end{minted}
+          \vspace{-10pt}
+          \caption{\label{fig:webdsl-basics-built-in-types-decl-stx}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.5\textwidth}
+          \centering
+          \begin{tikzpicture}
+            \node (s_1) [scope] at(0, 0) {s\_project};
+            \node (t_1) [decl] at(0, -3) {Int : BUILTINTYPE(s\_int, "Int")};
+
+            \draw[decl edge] (s_1.south) -- (t_1.north) node[midway, sloped, fill=white] {type};
+          \end{tikzpicture}
+          \caption{\label{fig:webdsl-basics-built-in-types-decl-sg}}
+        \end{subfigure}
+        \caption{\label{fig:webdsl-basics-built-in-types-decl}Declaring built-in types in the project scope}
+      \end{figure}
+
+      \begin{wrapfigure}{r}{0.57\textwidth}
+        \capstart
+        \begin{minted}[firstline=3]{\statix}
+module x
+rules
+  typeOfExp(s, Const(Int(_))) = t :-
+    resolveType(s, "Int") == [(_, (_, t))].
+
+  resolveType : scope * string
+    -> list((path * (string * TYPE)))
+  resolveType(s, name) = ts :-
+    query type filter P*
+               and { t' :- t' == (name, _) }
+               in s |-> ts.
+        \end{minted}
+        \caption{\label{fig:webdsl-basics-built-in-types-query}WebDSL integer constant expression typing rules}
+      \end{wrapfigure}
+
+      To retrieve a built-in type when evaluating a constant expression, we need to query the scope graph and resolve the type associated with the string representation. For example, the typing rules of an integer constant are listed in \cref{fig:webdsl-basics-built-in-types-query}. The integer typing rule introduces a constraint that the scope graph must contain a single type declaration associated with \texttt{"Int"} under the \texttt{type} relation. The result of the \texttt{resolveType} functional predicate on line 2 should be a list containing one entry, namely the pair that we declared in \cref{fig:webdsl-basics-built-in-types-decl}. Other WebDSL constant expressions such as Booleans, longs and floats have similar typing rules.
+
+      \begin{wrapfigure}{r}{0.4\textwidth}
+        \capstart
+        \begin{minted}[frame=single, linenos, numbersep=-11pt]{javascript}
+  "Hello world" // value
+  "Hello ~( ent.f() )" // exp
+  "Hello ~x" // simple exp
+        \end{minted}
+        \caption{\label{fig:statix-webdsl-string-interpolation-example}WebDSL string interpolation examples}
+      \end{wrapfigure}
+
+      The typing of perhaps the most common constant expression, a string, has an additional condition to be well-typed. Because string interpolation is possible, the constructor of a WebDSL string contains multiple parts that may impose additional constraints. A demonstration of the different interpolated parts is shown in \cref{fig:statix-webdsl-string-interpolation-example} and the complete typing rules are shown in \cref{fig:webdsl-basics-built-in-types-string}. The parts can be a simple string value which imposes no additional constraints, they can be a complete interpolated expression which requires the expression to be typed, or lastly they can be a ``simple'' expression which is directly inlineable.
+
+      \begin{figure}[h]
+        \begin{minted}[firstline=3]{\statix}
+module x
+rules
+  typeOfExp(s, Const(StringConst(String(str)))) = t :-
+    resolveType(s, "String") == [(_, (_, t))],
+    stringPartsOk(s, str).
+
+  stringPartsOk maps stringPartOk(*, list(*))
+  stringPartOk : scope * StringPart
+  stringPartOk(s, StringValue(_)).
+  stringPartOk(s, InterpExp(exp)) :- typed(s, exp).
+  stringPartOk(s, InterpValue(InterpSimpleExp(simple_exp))) :- { T }
+    typeOfSimpleExp(s, simple_exp) == T.
+        \end{minted}
+        \caption{\label{fig:webdsl-basics-built-in-types-string}WebDSL string typing rules}
+      \end{figure}
+
+      Now that all the typing rules for constants are implemented, typing rules for unary and binary operators are a step towards more complicated expressions. While it might seem trivial, we might require additional construct functional predicates for determining type compatibility or determining the resulting type of an expression.
+
+      
 
     \subsection{\label{subsec:simple-variables}Variables}
+
+      Similar to other imperative languages, WebDSL allows the use of variables to store values. These variables can be defined on multiple levels, such as in the module, within a function or at the top of a page/template definition. Additionally, functions may be embedded in entities, allowing direct access to entity properties as variables without the intervention of ``\texttt{this}''.
 
       \begin{itemize}
         \item Declaration and resolving
@@ -302,12 +412,12 @@
         \item Shadowing
       \end{itemize}
 
-    \subsection{\label{subsec:simple-entities}Entities and properties}
+    \subsection{\label{subsec:simple-entities}Entities and Properties}
 
       \begin{itemize}
         \item Declaration and resolving
         \item Prevent duplicates
-        \item Parameters
+        \item Object creation
       \end{itemize}
 
     \subsection{\label{subsec:simple-functions}Functions}
@@ -438,9 +548,11 @@
     nonEmptyPathScopeList([(_,_)]) = TRUE().
       \end{minted}
 
-  \section{\label{sec:entity-extension}Entity Extension}
+  \section{\label{sec:type-extension}Type Extension}
 
-    \subsection{\label{subsec:type-extension}Built-in Type Extension}
+    \subsection{\label{subsec:entity-extension}Entity Extension}
+
+    \subsection{\label{subsec:built-in-extension}Built-in Type Extension}
 
   \section{\label{sec:function-template-overloading}Function and Template Overloading}
 
