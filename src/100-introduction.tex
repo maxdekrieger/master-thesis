@@ -3,22 +3,20 @@
 \chapter{\label{chap:introduction}Introduction}
 
   \subsubsection{Broad Picture}
-  Many different programming languages exist, with many different properties and advantages. (\emph{TO-DO: this is crap, need something better})
+  Many different programming languages exist, each with different properties and advantages. Over time, the populatity of programming languages change and developers tend to have preferences for one language over the other. In addition to language design choices, the implementation of a language and the tools that come with it can greatly boost the productivity of developers, if done well.
 
   \subsubsection{Programming Langauge Front-end Introduction}
-  The implementation of a programming languages can be seperated into two parts: the front-end and the back-end. The front-end is the part of the programming language with which the user interacts (the syntax, early feedback using analysis results) and the back-end is the part that makes the programming language operational (optimization, code generation). While the back-end of a programming langauge makes it work, the front-end defines how a user experiences the programming language (\emph{TO-DO: read papers about this}).
+  When inspecting the design and implementation of a programming language, the different components can be classified in two boxes: the front-end and the back-end. The front-end is the part of the programming language that the developer faces directly, it consists of components such as the syntax and early feedback on written code. The back-end makes the programming language operational with, for example, code generation and opmtimization. While the back-end of a programming langauge makes it work, the front-end plays a large role in how a developer experiences the programming language (\emph{TO-DO: read papers about this}).
 
   \subsubsection{WebDSL}
-  Programming languages are constantly evolving, requiring updates to its specification and implementation. One such language is WebDSL. WebDSL is a domain-specific language for developing web applications, developed at the Delft University of Technology.
+  Programming languages are constantly evolving, requiring updates to its specification and implementation. One such language is WebDSL. WebDSL is a domain-specific language for developing web applications, developed at and maintained by the Programming Languages research group of the Delft University of Technology.
 
   \subsubsection{Problem Description}
-  Because of its academic nature, many research projects added features to the language, all contributing to the success of existing WebDSL applications. The downside of having many different contributors adding new features, is that the development experience that comes from the front-end leaves much to be desired. (\emph{TO-DO: too harsh?}) Currently, the WebDSL implementation is composed of multiple definitions in meta-DSLs supported by the Spoofax Language Workbench: the syntax is defined in SDF2 and the desugaring, typechecking, optimization and code generation is defined in the term transformation language Stratego. The interleaving of all the latter processes in the same Stratego environment poses a threat to the readability and maintainability of the WebDSL language.
+  Because of its academic nature, many research projects added features to the language, all contributing to the success of existing WebDSL applications. With these features, WebDSL is the programming language in which applications are developed with thousands of daily users. The downside of having many different contributors adding new features and a small group of maintainers, is that the development experience, that is a result of the front-end, leaves much to be desired. Currently, the WebDSL implementation is composed of multiple definitions in meta-DSLs supported by the Spoofax Language Workbench: the syntax is defined in SDF2 and the desugaring, typechecking, optimization and code generation is defined in the term transformation language Stratego. The interleaving of all the latter processes in the same Stratego environment poses a threat to the readability and maintainability of the WebDSL language.
 
-  TO-DO: Add something about assessing the usability of SDF3 and Statix for large projects used in practice.
-  
   % Contributions
   \section{\label{sec:contributions}Contributions}
-    In this thesis, we will be focusing on modernizing the WebDSL front-end, by implementing the syntax definition in SDF3 and the static analyses in Statix and documenting the challenges posed by this process. In this work, the following contributions are made:
+    In this thesis, we will be focusing on modernizing the WebDSL front-end, by implementing the syntax definition in SDF3 and the static analyses in Statix and documenting the challenges faced in this process. In this work, the following contributions are made:
 
     \begin{itemize}
       \item We present a modernized WebDSL front-end through an implementation of its grammar in SDF3 and its analyses in Statix.
