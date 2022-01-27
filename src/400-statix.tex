@@ -2,13 +2,13 @@
 
 \chapter{\label{chap:statix}WebDSL in Statix}
 
-  In this chapter, we elaborate on the implementation of the WebDSL static semantics in Statix, using the examples from \cref{chap:webdsl} as a basis. First, we introduce the meta-DSL Statix. Secondly, we describe the implementation of the type system that is the core of WebDSL. Next, we address and discuss the challenges faced while implementing non-trivial WebDSL features in Statix and lastly we reflect on the developer experience of using Statix to implement static analyses.
+  In this chapter, we elaborate on the implementation of the WebDSL static semantics in Statix, using the examples from \cref{chap:webdsl} as a basis. We start this chapter by introducing the meta-DSL Statix. Once the goal and basics of Statix are stated, we describe the implementation of the type system that is the core of WebDSL. Next, we address and discuss the challenges faced while implementing non-trivial WebDSL features in Statix and lastly we reflect on the developer experience of using Statix to implement static analyses.
 
   \section{\label{sec:statix}Introduction to Statix}
 
-    Statix is a constraint-based declarative language for the specification of type systems, introduced in 2018 \autocite{VanAntwerpen2018}. Since then, the meta-DSL Statix has become a part of the Spoofax Language Workbench and allows language developers to implement static analyses to provide language users with useful hints, warnings and errors.
+    Statix is a constraint-based declarative language for the specification of type systems, introduced in 2018 \autocite{VanAntwerpen2018}. Since then, the meta-DSL Statix has become a part of the Spoofax Language Workbench and allows language developers to implement static analyses to provide language-specific feedback to developers on written code.
 
-    A Statix specification consists of rules over terms that define constraints. Additionally, Statix rules build and query a \textit{scope graph} \autocite{Neron2015} that provides a language-agnostic representation of a program.
+    A Statix specification consists of rules over terms that define constraints. Additionally, Statix rules build and query a \textit{scope graph} \autocite{Neron2015} that provides a language-agnostic representation of a program. A scope graph consists of nodes and edges that can be used to for example model the lexical scope of variables.
 
     \subsection{Language Signature}
 
@@ -33,9 +33,9 @@
         \vspace{-10pt}
       \end{wrapfigure}
 
-      Consider a language consisting of Booleans, integers and addition, for which we want to create a type-checker with Statix. First, Statix requires us to declare all types and sorts that we will be using in the rules. The corresponding Statix code is shown in \cref{fig:statix-signatures}.
+      Consider a language consisting of booleans, integers and addition, for which we want to create a type-checker with Statix. First, Statix requires us to declare all types and sorts that we will be using in the rules. These Statix constructor names have to match the constructors of the input term (the AST). The Statix code that declares the sorts and constructors of our example language is shown in \cref{fig:statix-signatures}. When writing a Statix specification for a language implemented in the Spoofax language workbench, it is a common practice to have the Statix signature generated from your SDF3 specification by the Statix signature generator (see \cref{subsec:statix-signature-generator}), to prevent code duplication.
 
-      So far, our specification consists of two sorts. The \texttt{Application} sort defines the entry point of our language, it has one constructor with an identical name. Next, the sort \texttt{Exp} describes what expressions are allowed. It has four constructors: the Boolean values \texttt{True} and \texttt{False}, \texttt{Int} which requires an integer literal as subterm, and lastly \texttt{Add} which takes two nested expressions as subterms. Examples of valid input according to our defined signature are shown in \cref{fig:statix-valid-input}.
+      So far, our specification consists of two sorts. The \texttt{Application} sort defines the entry point of our language, it has one constructor with an identical name. Next, the sort \texttt{Exp} describes what expressions are allowed. It has four constructors: the Boolean values \texttt{True} and \texttt{False}, \texttt{Int} which requires an integer literal as subterm, and \texttt{Add} which takes two nested expressions as subterms. Examples of valid input according to our defined signature are shown in \cref{fig:statix-valid-input}.
 
       \begin{figure}[H]
         \begin{minted}[frame=single]{javascript}
@@ -51,7 +51,7 @@
 
       Not all of the valid input terms according to our signature are well-typed. For example, the last term shown in \cref{fig:statix-valid-input} features an addition of the integer literal \texttt{40} and the Boolean value \texttt{False}. Using Statix' constraint solving capabilities, we would like to give feedback to the programmer that the input is ill-typed.
 
-      Given the code in \cref{fig:statix-signatures}, our Statix specification does not yet generate any constraints. Constraints we would like to generate using Statix rules, are that a program must be well-typed and in order for an addition expression to be well-typed, its two subterms must be of integer type.
+      Given the code in \cref{fig:statix-signatures}, our Statix specification does not yet generate any constraints. Constraints that we would like to generate using Statix rules are firstly that a program must be well-typed and secondly, in order for an addition expression to be well-typed, its two subterms must be of integer type.
 
       \begin{wrapfigure}{r}{0.5\linewidth}
         \vspace{-20pt}
@@ -93,16 +93,16 @@
       typeOfExp(e1) == INT(),
       typeOfExp(e2) == INT().
         \end{minted}
-        \caption{\label{fig:statix-basic-rules}Statix predicates and rules for typing Booleans, integers and addition}
+        \caption{\label{fig:statix-basic-rules}Statix predicates and rules for typing booleans, integers and addition}
       \end{figure}
 
-      The type of all Statix predicates must be explicitly declared, for example the \texttt{applicationOk} predicate on line 3 specifies that all rules of \texttt{applicationOk} match exactly one constructor \texttt{Application}. An instantiation of the \texttt{applicationOk} predicate is on line 4. In prose English it would read ``An application is well-typed, given that for some type \texttt{T}, the expression \texttt{e} has type \texttt{T}''.
+      The type of all Statix predicates must be explicitly declared, for example the \texttt{applicationOk} predicate on \textbf{line 3} specifies that all rules of \texttt{applicationOk} match exactly one constructor \texttt{Application}. An instantiation of the \texttt{applicationOk} predicate is on \textbf{line 4}. In prose English it would read ``An application is well-typed, given that for some type \texttt{T}, the expression \texttt{e} has type \texttt{T}''.
       
       The other Statix rule in our small example specification is a \textit{functional predicate}, meaning that it returns a value. All but the last rules of the \texttt{typeOfExp} predicate compute a \texttt{TYPE} for a given expression, without conditions. The last rule of the example does have two conditions, in prose English it would read ``\texttt{e1} plus \texttt{e2} is of type \texttt{INT}, given that \texttt{e1} is of type \texttt{INT} and \texttt{e2} is of type \texttt{INT}''.
 
     \subsection{Building and Querying Scope Graphs}
 
-      When we expand our small example language with let-bindings and we want to add typing rules for this new construct, we encounter a new feature in Statix. To facilitate typing rules for name binding, Statix uses \textit{scope graphs} \autocite{Neron2015}. Scope graphs are built out of three components: scopes, edges and declarations.
+      When we expand our small example language with let-bindings and we want to add typing rules for this new construct, we come across a new feature in Statix. To facilitate typing rules for name binding, Statix uses \textit{scope graphs} \autocite{Neron2015}. Scope graphs are built out of three components: scopes, edges and declarations.
 
       \begin{figure}[h]
         \begin{subfigure}[b]{0.33\textwidth}
@@ -146,7 +146,7 @@
         \caption{\label{fig:scope-graph-examples}Scope graph examples}
       \end{figure}
 
-      \Cref{fig:scope-graph-examples} showcases three examples of scope graphs. \Cref{fig:scope-graph-example1} consists of a single scope \texttt{s1} with declaration \texttt{x}. The second example, \cref{fig:scope-graph-example2}, consists of two scopes: a root scope \texttt{s1} with again a declaration of \texttt{x}, and a scope \texttt{s2} with an outgoing edge to \texttt{s1} labeled \texttt{P}. The last example again has two scopes, with one declaration in \texttt{s1} and two declarations in \texttt{s2}.
+      \Cref{fig:scope-graph-examples} showcases three examples of scope graphs. \Cref{fig:scope-graph-example1} consists of a single scope \texttt{s1} with declaration \texttt{x} that could be a model of a module with a single global variable \texttt{x} declared inside. The second example, \cref{fig:scope-graph-example2}, consists of two scopes: a root scope \texttt{s1} with again a declaration of \texttt{x}, and a scope \texttt{s2} with an outgoing edge to \texttt{s1} labeled \texttt{P}. The \texttt{P} label is often used to denote the relation of a lexical parent scope. In this example, \texttt{s2} could for example model an empty function declared in module \texttt{s1}. The last example again has two scopes, with one declaration in \texttt{s1} and two declarations in \texttt{s2}. This could model the same program as described previously, but now with two local variable declarations inside the function body of \texttt{s2}.
 
       \begin{wrapfigure}{r}{0.5\linewidth}
         \vspace{-20pt}
@@ -160,7 +160,7 @@
 
     name-resolution
       labels
-        P
+        P // to denote parent scope
 
     relations
       var : string * TYPE
@@ -169,7 +169,7 @@
         % \vspace{-40pt}
       \end{wrapfigure}
 
-      The first step in implementing let-bindings in Statix is adding the signature. In addition to the new constructors on line 3 and 4, we now introduce an edge label \texttt{P} and the relation \texttt{var}. The edge labels defined in the constructor provide the set of allowed labels to use in rules later on. The relation \texttt{var} on line 11 specifies that any declaration made under the \texttt{var} relation in a scope, maps an identifier to its type.
+      The first step in implementing let-bindings in Statix is adding the signature. In addition to the new constructors on \textbf{line 3 and 4}, we now introduce an edge label \texttt{P} and the relation \texttt{var}. The edge labels defined in the constructor provide the set of allowed labels to use in rules later on. The relation \texttt{var} on \textbf{line 11} specifies that any declaration made under the \texttt{var} relation in a scope, maps an identifier to its type.
       
       For illustration purposes, when we want to encode a single scope with two variable declarations, \texttt{x} of type \texttt{INT} and \texttt{b} of type \texttt{BOOL}, its scope graph would be as shown in \cref{fig:scope-graph-relations-example}.
 
@@ -186,7 +186,7 @@
         \caption{\label{fig:scope-graph-relations-example}A scope graph containing a single scope with two declared variables}
       \end{figure}
 
-      In Statix, scopes can be passed around as data. When we are evaluating an expression in our extended language, we now also want to pass the current scope. Whenever we encounter a let-binding, we want to create a new scope, link it to the previous one, declare the variable in the new scope and evaluate the expression. When we want to evaluate a variable expression, we want to query the scope graph and get its type. The Statix rules to reflect this are shown in \cref{fig:statix-let-binding-rules}.
+      In Statix, scopes can be passed around as data. When we are evaluating an expression in our extended language, we now also want to pass the current scope. If the current input term that we are generating constraints for is a let-binding, we want to create a new scope, link it to the previous one, declare the variable in the new scope and evaluate the expression. To generate constraints for a variable expression, we want to query the scope graph and get its type. The Statix rules to reflect this are shown in \cref{fig:statix-let-binding-rules}.
 
       \begin{figure}[h]
         \begin{minted}[]{\statix}
@@ -365,14 +365,14 @@ rules
         \caption{\label{fig:webdsl-basics-built-in-types-query}WebDSL integer constant expression typing rules}
       \end{wrapfigure}
 
-      To retrieve a built-in type when evaluating a constant expression, we need to query the scope graph and resolve the type associated with the string representation. For example, the typing rules of an integer constant are listed in \cref{fig:webdsl-basics-built-in-types-query}. The integer typing rule introduces a constraint that the scope graph must contain a single type declaration associated with \texttt{"Int"} under the \texttt{type} relation. The result of the \texttt{resolveType} functional predicate on line 2 should be a list containing one entry, namely the pair that we declared in \cref{fig:webdsl-basics-built-in-types-decl}. Other WebDSL constant expressions such as Booleans, longs and floats have similar typing rules.
+      To retrieve a built-in type when evaluating a constant expression, we need to query the scope graph and resolve the type associated with the string representation. For example, the typing rules of an integer constant are listed in \cref{fig:webdsl-basics-built-in-types-query}. The integer typing rule introduces a constraint that the scope graph must contain a single type declaration associated with \texttt{"Int"} under the \texttt{type} relation. The result of the \texttt{resolveType} functional predicate on \textbf{line 2} should be a list containing one entry, namely the pair that we declared in \cref{fig:webdsl-basics-built-in-types-decl}. Other WebDSL constant expressions such as booleans, longs and floats have similar typing rules.
 
       \begin{wrapfigure}{r}{0.4\textwidth}
         \capstart
         \begin{minted}[frame=single, linenos, numbersep=-11pt]{javascript}
   "Hello world" // value
-  "Hello ~( ent.f() )" // exp
-  "Hello ~x" // simple exp
+  "Hello ~( 1 + 2 )" // exp
+  "Hello ~x.y" // simple exp
         \end{minted}
         \caption{\label{fig:statix-webdsl-string-interpolation-example}WebDSL string interpolation examples}
       \end{wrapfigure}
