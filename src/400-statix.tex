@@ -379,7 +379,7 @@ rules
 
       The typing of perhaps the most common constant expression, a string, has an additional condition to be well-typed. Because string interpolation is possible, the constructor of a WebDSL string contains multiple parts that may impose additional constraints. A demonstration of the different interpolated parts is shown in \cref{fig:statix-webdsl-string-interpolation-example} and the complete typing rules are shown in \cref{fig:webdsl-basics-built-in-types-string}. The parts can be a simple string value which imposes no additional constraints, they can be a complete interpolated expression which requires the expression to be typed, or lastly they can be a ``simple'' expression which is directly inlineable.
 
-      \begin{figure}[h]
+      \begin{figure}
         \begin{minted}[firstline=3]{\statix}
 module x
 rules
@@ -426,23 +426,19 @@ rules
         \caption{\label{fig:webdsl-simple-variable-declaration-and-resolving}WebDSL variable declaration and resolving}
       \end{figure}
 
+      \begin{wrapfigure}{r}{0.5\textwidth}
+        \capstart
+        \includegraphics{../img/webdsl-simple-variable-declare-before-use}
+        \caption{\label{fig:webdsl-simple-variable-declare-before-use}WebDSL requires declare-before-use of variables}
+      \end{wrapfigure}
+
       The implementation of variable typing is similar to the example of let-bindings in \cref{subsec:building-and-querying-scope-graphs}. One difference between the let-bindings and WebDSL variables is that the introduction of consecutive statements in WebDSL requires a structure that defines declare-before-use semantics, to prevent backwards- or self-references such as shown in \cref{fig:webdsl-simple-variable-declare-before-use}.
 
-      \begin{figure}[H]
-          \includegraphics{../img/webdsl-simple-variable-declare-before-use}
-        \caption{\label{fig:webdsl-simple-variable-declare-before-use}WebDSL requires declare-before-use of variables}
-      \end{figure}
-
-      \Cref{fig:webdsl-simple-variable-declaration-scope} shows how the scope graph is constructed when there are consecutive statements. To catch declare-before-use related errors, a new scope is created for each statement (\textbf{line 6 and 7}). When constraints are generated for a constraint (such as on \textbf{line 11}), it has access to two scopes: 
-      
-      \begin{itemize}
-        \item \texttt{s} which denotes the scope of the current statement. Any scope graph queries will be executed in this scope. Example: the type of this statement is queried starting in scope \texttt{s} on \textbf{line 12}).
-        \item \texttt{s\_decl} which denotes the scope of the next statement. Any scope graph declarations will be made this scope. Example: a variable declaration is being made in scope \texttt{s\_decl} on \textbf{line 14}).
-      \end{itemize}
+      \Cref{fig:webdsl-simple-variable-declaration-scope} shows how the scope graph is constructed when there are consecutive statements. To catch declare-before-use related errors, a new scope is created for each statement (\textbf{line 6 and 7}). When constraints are generated for a constraint (such as on \textbf{line 11}), it has access to two scopes. Scope \texttt{s} denotes the scope of the current statement. Any scope graph queries will be executed in this scope. Example: the type of this statement is queried starting in scope \texttt{s} on \textbf{line 12}). Scope \texttt{s\_decl} denotes the scope of the next statement. Any scope graph declarations will be made this scope. Example: a variable declaration is being made in scope \texttt{s\_decl} on \textbf{line 14}).
 
       Using this tactic, a statement can never access declarations made by itself or by the next statements, it can only access declarations from previous statements.
 
-      \begin{figure}[H]
+      \begin{figure}
         \begin{minted}[firstline=3]{\statix}
 module x
 rules
@@ -465,25 +461,58 @@ rules
         \caption{\label{fig:webdsl-simple-variable-declaration-scope}WebDSL statements use different scopes for querying and declaring data from the scope graph}
       \end{figure}
 
+      An example of how this structure influences the building of scope graphs, a visualization of a function, accompanied by the scope graph of its body is shown in \cref{fig:webdsl-basics-declaration-scope-example}.
+
+      \begin{figure}
+        \begin{subfigure}[b]{0.3\textwidth}
+          \begin{minted}[firstline=2]{\webdsl}
+application test
+  function f() : Int {
+    var x := 1;
+    var y := 2;
+    return y;
+  }
+          \end{minted}
+          \caption{\label{fig:webdsl-basics-declaration-scope-example-code}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.7\textwidth}
+          \centering
+          \begin{tikzpicture}
+            \node (s_1) [scope]   at(-1, 0) {s1};
+            \node (s_2) [scope]   at(-1, -2) {s2};
+            \node (s_3) [scope]   at(-1, -4) {s2};
+            \node (x_1) [decl]  at(4, -2) {x : BUILTINTYPE(s\_int, "Int")};
+            \node (y_1) [decl]  at(4, -4) {y : BUILTINTYPE(s\_int, "Int")};
+  
+            \draw[scope edge] (s_2.north) -- (s_1.south) node[pos=0.5, xshift=-1ex] {P};
+            \draw[scope edge] (s_3.north) -- (s_2.south) node[pos=0.5, xshift=-1ex] {P};
+            \draw[decl edge] (s_2.east) -- (x_1.west) node[midway, sloped, fill=white] {var};
+            \draw[decl edge] (s_3.east) -- (y_1.west) node[midway, sloped, fill=white] {var};
+          \end{tikzpicture}
+          \caption{\label{fig:webdsl-basics-declaration-scope-example-sg}}
+        \end{subfigure}
+        \caption{\label{fig:webdsl-basics-declaration-scope-example}Variable declarations example using a separate declaration scopes}
+      \end{figure}
+
       Another difference between the let-binding rules from an earlier example and WebDSL variables is the complexity of the shadowing rules. The WebDSL variable shadowing rules which we reverse-engineered from the current compiler and static analysis implementation, state that the same variable identifier may be used multiple times, but never twice in the ``environment''. Such environments are: module scope, entity properties, functions, templates, etc. If a variable reference has multiple declarations in reach, the closest one according to the shadowing rules will be picked. The regular expression that defines the reachability of variables (left out in \textbf{line 9} of \cref{fig:webdsl-simple-variable-declaration-and-resolving}) is shown in \cref{fig:webdsl-simple-variable-well-formedness}.
 
       \begin{wrapfigure}{r}{0.5\textwidth}
         \begin{minted}[frame=single]{text}
-          P*
-          F*
-          (
-              (EXTEND? (INHERIT EXTEND?)*)
-            | (DEF? (IMPORT | IMPORTLIB)?)
-          )
+    P*
+    F*
+    (
+        (EXTEND? (INHERIT EXTEND?)*)
+      | (DEF? (IMPORT | IMPORTLIB)?)
+    )
         \end{minted}
         \caption{\label{fig:webdsl-simple-variable-well-formedness}Well-formedness predicate for variable paths}
       \end{wrapfigure}
 
       The edge label \texttt{P} as introduced in \cref{fig:webdsl-simple-variable-declaration-scope} is the edge label used for linking consecutive statements together. The other edge labels such as complicate this regular expression, and will be will be explained in more details in later sections when their use is discussed.
 
-      \Cref{fig:webdsl-simple-variable-well-formedness} above defines what data is reachable from any point in the scope graph, but we also want some restrictions of declarations. The same environment such as function body or an entity definition may never declare the same variable twice. To achieve this, \textbf{line 4} of \cref{fig:webdsl-simple-variable-declaration-and-resolving} uses the helper predicate \texttt{fig:webdsl-simple-variable-declaration-and-resolving}. The implementation of this predicate is straight-forward and shown in \cref{fig:webdsl-simple-variable-no-duplicates}. The predicate queries the current scope and checks whether all scopes reachable using only \texttt{P} edge labels, results in a list containing only one entry.
+      \Cref{fig:webdsl-simple-variable-well-formedness} above defines what data is reachable from any point in the scope graph, but we also want some restrictions of declarations. The same environment such as function body or an entity definition may never declare the same variable twice. To achieve this, \textbf{line 4} of \cref{fig:webdsl-simple-variable-declaration-and-resolving} uses the helper predicate \texttt{noDuplicateVarDefs}. The implementation of this predicate is straight-forward and shown in \cref{fig:webdsl-simple-variable-no-duplicates}. The predicate queries the current scope and checks whether all scopes reachable using only \texttt{P} edge labels, results in a list containing only one entry.
 
-      \begin{figure}[H]
+      \begin{figure}
         \begin{minted}[firstline=3]{\statix}
 module x
 rules
