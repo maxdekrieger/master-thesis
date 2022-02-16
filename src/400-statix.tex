@@ -100,7 +100,7 @@
       
       The other Statix rule in our small example specification is a \textit{functional predicate}, meaning that it returns a value. All but the last rules of the \texttt{typeOfExp} predicate compute a \texttt{TYPE} for a given expression, without conditions. The last rule of the example does have two conditions, in prose English it would read ``\texttt{e1} plus \texttt{e2} is of type \texttt{INT}, given that \texttt{e1} is of type \texttt{INT} and \texttt{e2} is of type \texttt{INT}''.
 
-    \subsection{Building and Querying Scope Graphs}
+    \subsection{\label{subsec:building-and-querying-scope-graphs}Building and Querying Scope Graphs}
 
       When we expand our small example language with let-bindings and we want to add typing rules for this new construct, we come across a new feature in Statix. To facilitate typing rules for name binding, Statix uses \textit{scope graphs} \autocite{Neron2015}. Scope graphs are built out of three components: scopes, edges and declarations.
 
@@ -399,18 +399,102 @@ rules
 
       Now that all the typing rules for constants are implemented, typing rules for unary and binary operators are a step towards more complicated expressions. While it might seem trivial, we might require additional construct functional predicates for determining type compatibility or determining the resulting type of an expression.
 
-      
-
     \subsection{\label{subsec:simple-variables}Variables}
 
-      Similar to other imperative languages, WebDSL allows the use of variables to store values. These variables can be defined on multiple levels, such as in the module, within a function or at the top of a page/template definition. Additionally, functions may be embedded in entities, allowing direct access to entity properties as variables without the intervention of ``\texttt{this}''.
+      Similar to other imperative languages, WebDSL allows the use of variables to store values. These variables can be defined on multiple levels, such as in the module, within a function or at the top of a page/template definition. Additionally, functions may be embedded in entities, allowing direct access to entity properties as variables without having to prefix it with the \texttt{this} keyword.
 
+      The basic variable declaration and resolving rules are shown in \cref{fig:webdsl-simple-variable-declaration-and-resolving}. Given a scope \texttt{s}, the declaration rule will make a declaration in \texttt{s} of variable \texttt{x} with associated type \texttt{t}.
+
+      \begin{figure}[H]
+        \begin{minted}[firstline=3]{\statix}
+module x
+rules
+  declareVar : scope * string * TYPE
+  declareVar(s, x, t) :-
+    !var[x, t] in s,
+    noDuplicateVarDefs(s, x)
+      | error $[A variable named [x] already exists in this scope].
+
+  resolveVar : scope * string -> list((path * (string * TYPE)))
+  resolveVar(s, x) = ps :-
+    query var filter P* /* We will explain the filter later in this section */
+              and { x' :- x' == (x, _) }
+              min $ < P /* We will explain the shadowing later in this section */
+              and true
+              in s |-> ps.
+        \end{minted}
+        \caption{\label{fig:webdsl-simple-variable-declaration-and-resolving}WebDSL variable declaration and resolving}
+      \end{figure}
+
+      The implementation of variable typing is similar to the example of let-bindings in \cref{subsec:building-and-querying-scope-graphs}. One difference between the let-bindings and WebDSL variables is that the introduction of consecutive statements in WebDSL requires a structure that defines declare-before-use semantics, to prevent backwards- or self-references such as shown in \cref{fig:webdsl-simple-variable-declare-before-use}.
+
+      \begin{figure}[H]
+          \includegraphics{../img/webdsl-simple-variable-declare-before-use}
+        \caption{\label{fig:webdsl-simple-variable-declare-before-use}WebDSL requires declare-before-use of variables}
+      \end{figure}
+
+      \Cref{fig:webdsl-simple-variable-declaration-scope} shows how the scope graph is constructed when there are consecutive statements. To catch declare-before-use related errors, a new scope is created for each statement (\textbf{line 6 and 7}). When constraints are generated for a constraint (such as on \textbf{line 11}), it has access to two scopes: 
+      
       \begin{itemize}
-        \item Declaration and resolving
-        \item Prevent duplicates
-        \item Declare before use
-        \item Shadowing
+        \item \texttt{s} which denotes the scope of the current statement. Any scope graph queries will be executed in this scope. Example: the type of this statement is queried starting in scope \texttt{s} on \textbf{line 12}).
+        \item \texttt{s\_decl} which denotes the scope of the next statement. Any scope graph declarations will be made this scope. Example: a variable declaration is being made in scope \texttt{s\_decl} on \textbf{line 14}).
       \end{itemize}
+
+      Using this tactic, a statement can never access declarations made by itself or by the next statements, it can only access declarations from previous statements.
+
+      \begin{figure}[H]
+        \begin{minted}[firstline=3]{\statix}
+module x
+rules
+  stmtOk : scope * scope * Statement
+
+  stmtsOk : scope * list(Statement)
+  stmtsOk(_, []).
+  stmtsOk(s, [stmt | tail]) :- {s_decl s_next}
+    new s_decl, s_decl -P-> s,
+    new s_next, s_next -P-> s_decl,
+    stmtOk(s, s_decl, stmt),
+    stmtsOk(s_next, tail).
+
+  stmtOk(s, s_decl, VarDecl(x, sort)) :- { t }
+    t == typeOfSort(s, sort),
+    inequalType(t, UNTYPED()) | error $[Unknown type [sort]] @sort,
+    declareVar(s_decl, x, t),
+    @x.type := t.  
+        \end{minted}
+        \caption{\label{fig:webdsl-simple-variable-declaration-scope}WebDSL statements use different scopes for querying and declaring data from the scope graph}
+      \end{figure}
+
+      Another difference between the let-binding rules from an earlier example and WebDSL variables is the complexity of the shadowing rules. The WebDSL variable shadowing rules which we reverse-engineered from the current compiler and static analysis implementation, state that the same variable identifier may be used multiple times, but never twice in the ``environment''. Such environments are: module scope, entity properties, functions, templates, etc. If a variable reference has multiple declarations in reach, the closest one according to the shadowing rules will be picked. The regular expression that defines the reachability of variables (left out in \textbf{line 9} of \cref{fig:webdsl-simple-variable-declaration-and-resolving}) is shown in \cref{fig:webdsl-simple-variable-well-formedness}.
+
+      \begin{wrapfigure}{r}{0.5\textwidth}
+        \begin{minted}[frame=single]{text}
+          P*
+          F*
+          (
+              (EXTEND? (INHERIT EXTEND?)*)
+            | (DEF? (IMPORT | IMPORTLIB)?)
+          )
+        \end{minted}
+        \caption{\label{fig:webdsl-simple-variable-well-formedness}Well-formedness predicate for variable paths}
+      \end{wrapfigure}
+
+      The edge label \texttt{P} as introduced in \cref{fig:webdsl-simple-variable-declaration-scope} is the edge label used for linking consecutive statements together. The other edge labels such as complicate this regular expression, and will be will be explained in more details in later sections when their use is discussed.
+
+      \Cref{fig:webdsl-simple-variable-well-formedness} above defines what data is reachable from any point in the scope graph, but we also want some restrictions of declarations. The same environment such as function body or an entity definition may never declare the same variable twice. To achieve this, \textbf{line 4} of \cref{fig:webdsl-simple-variable-declaration-and-resolving} uses the helper predicate \texttt{fig:webdsl-simple-variable-declaration-and-resolving}. The implementation of this predicate is straight-forward and shown in \cref{fig:webdsl-simple-variable-no-duplicates}. The predicate queries the current scope and checks whether all scopes reachable using only \texttt{P} edge labels, results in a list containing only one entry.
+
+      \begin{figure}[H]
+        \begin{minted}[firstline=3]{\statix}
+module x
+rules
+  noDuplicateVarDefs : scope * string
+  noDuplicateVarDefs(s, x) :-
+    query var filter P*
+              and { x' :- x' == (x, _) }
+              in s |-> [_].
+        \end{minted}
+        \caption{\label{fig:webdsl-simple-variable-no-duplicates}The same variable identifier may only be declared once in an environment}
+      \end{figure}
 
     \subsection{\label{subsec:simple-entities}Entities and Properties}
 
