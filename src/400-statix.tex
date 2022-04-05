@@ -584,7 +584,7 @@ module x
         \caption{\label{fig:webdsl-entity-example}An example of entity definition in WebDSL}
       \end{figure}
 
-      To prevent duplicate entity definitions, the \texttt{declareType} rule as originally shown in \cref{fig:webdsl-basics-built-in-types-decl} is extended with one additional rule as shown in \cref{fig:webdsl-entity-prevent-duplicates}. \textbf{Line 4} was added to \texttt{declareType}, to make sure when you declare a new type or entity, its name is unique.
+      The \texttt{declareType} and \texttt{resolveType} rules as introduced in \cref{fig:webdsl-basics-built-in-types-decl} need to be updated to work as intended for resolving and declaring entities. To prevent duplicate entity definitions, the \texttt{declareType} rule is extended with one additional rule as shown in \cref{fig:webdsl-entity-new-type-declare-and-resolve}. \textbf{Line 4} was added to \texttt{declareType}, to make sure when you declare a new type or entity, its name is unique.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\statix}
@@ -593,15 +593,59 @@ module x
     declareType : scope * string * TYPE
     declareType(s, name, t) :-
       !type[name, t] in s,
-      resolveType(s, name) == [(_, (_, t))] | error $[Type [name] is defined multiple times] @name.
+      resolveType(s, name) == [(_, (_, t))]
+        | error $[Type [name] is defined multiple times] @name.
+
+    resolveType : scope * string -> list((path * (string * TYPE)))
+    resolveType(s, name) = typesOf(ts) :-
+      query type filter P* DEF?   // resolving a type may
+                                  // optionally follow DEF edge label
+                 and { t' :- t' == (name, _) }
+                 in s |-> ts.
         \end{minted}
-        \caption{\label{fig:webdsl-entity-prevent-duplicates}\texttt{declareType} shows an error when two types with the same name are declared}
+        \caption{\label{fig:webdsl-entity-new-type-declare-and-resolve}\texttt{declareType} now shows an error when two types with the same name are declared and \texttt{resolveType} may optinally follow a \texttt{DEF} edge label}
+      \end{figure}
+
+      In addition to the added constraint to the \texttt{declareType} rule, we added an optional \texttt{DEF} edge label that may be followed when querying the scope graph for a type (\textbf{{line 9}} of \cref{fig:webdsl-entity-new-type-declare-and-resolve}). The \texttt{DEF} (short for defintion) is used to link the scope of top-level elements, such as entities and functions, to the module scope. This can be seen in \textbf{line 13} of \cref{fig:webdsl-entity-declaration-statix}.
+
+      So far, there has been no reason to query for types inside the entity body because we have always worked with empty entities. In practice, entities are filled with properties and functions. \textbf{Line 20} of \cref{fig:webdsl-entity-declaration-statix} calls the \texttt{declEntityBody} predicate, of which the implementation is shown in \cref{fig:webdsl-entity-body-declaration}.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
+module x
+  rules
+  declEntityBody maps declEntityBodyDeclaration(*, *, list(*))
+  declEntityBodyDeclaration : scope * string * EntityBodyDeclaration
+
+  // entity property
+  declEntityBodyDeclaration(s, ent, 
+      Property(x, propkind, sort, PropAnnos(annos))) :- { sortType }
+
+    // resolve the type of the property
+    sortType == typeOfSort(s, sort),
+
+    // there are some restrictions on property types
+    sortType != UNTYPED()
+      | error $[Cannot resolve type [sort]] @sort,
+    sortType != VOID()
+      | error $[Property type 'Void' not allowed] @sort,
+    sortType != REF(_)
+      | error $[Reference type is not allowed in property] @sort,
+    isValidTypeForPropKind(propkind, sort, sortType),
+
+    // declare the property as variable in the entity scope
+    declareVar(s, x, sortType),
+
+    // use a helper predicate to check for the uniqueness of
+    // the property name
+    resolveLocalProperty(s, x) == [_]
+      | error $[Property [x] of entity [ent] is defined multiple times] @x.
+        \end{minted}
+        \caption{\label{fig:webdsl-entity-body-declaration}Statix rules for declaring the entity body}
       \end{figure}
 
       \begin{itemize}
-        \item Declaration and resolving
-        \item Prevent duplicates
-        \item Object creation
+        \item Instantiation
       \end{itemize}
 
     \subsection{\label{subsec:simple-functions}Functions}
@@ -614,8 +658,38 @@ module x
 
     \subsection{\label{subsec:simple-pages}Pages and Templates}
 
+      The user-inferface of a WebDSL application is built out of \textit{pages} and \textit{templates}. A page defines a path that is able to be requested by the browser while a template is a reusable component that can be part of a page or nested in other templates.
+
+      \textbf{TO-DO: Show page and template constructors and relations}
+
+      The name of a page must be unique, while a template can be defined multiple times for different argument types (\textit{overloading}), but never multiple times for the same argument types. Page and template definitions must be declared in the scope graph such that they can be referenced or checked for uniqueness. The statix rules to implement these checks can be found in \cref{fig:webdsl-page-and-template-definition}.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
+module x
+  rules
+  declarePage : scope * string * list(TYPE)
+  declarePage(s, p, ts) :-
+    !page[p, PAGE(p, ts)] in s,
+    resolveTemplate(s, p) == []
+      | error $[Multiple page/template definitions with name [p]] @p,
+    resolvePage(s, p) == [_]
+      | error $[Multiple page/template definitions with name [p]] @p.
+
+  declareTemplate : scope * string * list(TYPE)
+  declareTemplate(s, t, ts) :-
+    !template[t, TEMPLATE(t, ts)] in s,
+    resolvePage(s, t) == []
+      | error $[Multiple page/template definitions with name [t]] @t,
+    filterTemplateResultsArgs(resolveTemplate(s, t), ts) == [_]
+      | error $[Multiple page/template definitions with name [t] and argument types [ts]] @t.
+        \end{minted}
+        \caption{\label{fig:webdsl-page-and-template-definition}Statix rules for declaring WebDSL pages and templates}
+      \end{figure}
+
       \begin{itemize}
         \item Declaration and resolving
+        \item Ajax templates
       \end{itemize}
 
   \section{\label{sec:inheritance}Inheritance}
