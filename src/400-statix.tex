@@ -525,6 +525,14 @@ rules
         \caption{\label{fig:webdsl-simple-variable-no-duplicates}The same variable identifier may only be declared once in an environment}
       \end{figure}
 
+    \subsection{\label{subsec:type-compatibility}}
+
+      \begin{itemize}
+        \item [\textbf{TO-DO:}]
+        \item Explain predicate
+        \item Built-in type compatibility
+      \end{itemize}
+
     \subsection{\label{subsec:simple-entities}Entities and Properties}
 
       Entities form the basis of the type system and data structure in a WebDSL application. Using Hibernate as an object-relational mapping (ORM) tool, instances of entities can be persisted without explicit communication with a database management system. Entities typically have multiple properties which values are persisted, and functions that can be called and will be executed in the scope of the instantiated entity. Entity properties and entity functions together form the entity body declarations.
@@ -645,12 +653,15 @@ module x
       \end{figure}
 
       \begin{itemize}
+        \item [\textbf{TO-DO:}]
+        \item Entity body declarations
         \item Instantiation
       \end{itemize}
 
     \subsection{\label{subsec:simple-functions}Functions}
 
       \begin{itemize}
+        \item [\textbf{TO-DO:}]
         \item Declaration and resolving
         \item Prevent duplicates
         \item Parameters
@@ -660,7 +671,20 @@ module x
 
       The user-inferface of a WebDSL application is built out of \textit{pages} and \textit{templates}. A page defines a path that is able to be requested by the browser while a template is a reusable component that can be part of a page or nested in other templates.
 
-      \textbf{TO-DO: Show page and template constructors and relations}
+      \begin{figure}
+        \begin{minted}[firstline=2]{\statix}
+module x
+  signature
+    constructors
+      PAGE     : string * list(TYPE) -> TYPE
+      TEMPLATE : string * list(TYPE) -> TYPE
+
+    relations
+      page     : string * TYPE
+      template : string * TYPE
+        \end{minted}
+        \caption{\label{fig:statix-page-and-template-constructors}Statix signature for pages and templates}
+      \end{figure}
 
       The name of a page must be unique, while a template can be defined multiple times for different argument types (\textit{overloading}), but never multiple times for the same argument types. Page and template definitions must be declared in the scope graph such that they can be referenced or checked for uniqueness. The statix rules to implement these checks can be found in \cref{fig:webdsl-page-and-template-definition}.
 
@@ -688,8 +712,45 @@ module x
       \end{figure}
 
       \begin{itemize}
-        \item Declaration and resolving
+        \item [\textbf{TO-DO:}]
+        \item Show code and resulting scope graph with a page and a template
+      \end{itemize}
+
+      Type-checking a page reference is easier than the that of a template, since a page definition cannot be overloaded. In order for a page reference to be well-typed, the page must be defined exactly once, and the types of the passed arguments must be compatible with the parameter types of the page. The Statix rules that ticks those boxes is shown in \cref{fig:webdsl-page-type-checking}.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
+module x
+rules
+  pageCallOk : scope * string * list(Exp)
+  pageCallOk(s, p, args) :- {argTypes ts}
+    pageType(s, p) == PAGE(_, ts)
+      | error $[There is no page with signature [p]] @p,
+    argTypes == typesOfExps(s, args),
+    typesCompatible(argTypes, ts) == TRUE()
+      | error $[Given argument types not compatible with page definition] @args.
+    
+  // root page is always accessible from all locations
+  pageCallOk(_, "root", []).
+        \end{minted}
+        \caption{\label{fig:webdsl-page-type-checking}Statix rules for type-checking a page reference}
+      \end{figure}
+
+      \begin{itemize}
+        \item [\textbf{TO-DO:}]
+        \item Explain resolving templates later
         \item Ajax templates
+        \item Template elements
+      \end{itemize}
+
+      \subsection{\label{subsec:access-control}Access Control}
+
+      \begin{itemize}
+        \item [\textbf{TO-DO:}]
+        \item Principal
+        \item References to pages and templates
+        \item Wildcards
+        \item Pointcuts?
       \end{itemize}
 
   \section{\label{sec:inheritance}Inheritance}
@@ -805,6 +866,8 @@ module x
     nonEmptyPathScopeList(_)       = FALSE().
     nonEmptyPathScopeList([(_,_)]) = TRUE().
       \end{minted}
+
+    \subsubsection{Built-in Supertype}
 
   \section{\label{sec:type-extension}Type Extension}
 
