@@ -525,12 +525,28 @@ rules
         \caption{\label{fig:webdsl-simple-variable-no-duplicates}The same variable identifier may only be declared once in an environment}
       \end{figure}
 
-    \subsection{\label{subsec:type-compatibility}}
+    \subsection{\label{subsec:type-compatibility} Type compatibility}
+
+      WebDSL has a notion of type compatiblity. For example, the WebDSL superclass of all entities is conveniently called \texttt{Entity}. When assigning a value to a variable that requires type \texttt{Entity}, passing an instance of a user-defined entity such as \texttt{Person} or \texttt{Project} also suffices. In this case, type \texttt{Person} is compatible with type \texttt{Entity}, but not the other way around. Type compatibility is not limited to entities. For instance, all WebDSL date types (\texttt{}) are compatible with each other. As a last example, null is compatible with many types. The examples given above are shown in \cref{fig:webdsl-basics-type-compatibility-example}.
+
+      \begin{figure}
+        \begin{minted}[firstline=2]{\webdsl}
+application test
+entity Person {}
+
+function f() {
+  var e : Entity := Person{}; // all user-defined entities are compatible with Entity
+  var d : Date := now(); // now() produces a value of type DateTime
+  var p : Person := null; // null is compatible with many types
+}
+        \end{minted}
+        \caption{\label{fig:webdsl-basics-type-compatibility-example}Examples of type compatibility in WebDSL}
+      \end{figure}
 
       \begin{itemize}
         \item [\textbf{TO-DO:}]
         \item Explain predicate
-        \item Built-in type compatibility
+        \item Add (plus) LUB
       \end{itemize}
 
     \subsection{\label{subsec:simple-entities}Entities and Properties}
