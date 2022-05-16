@@ -525,9 +525,9 @@ rules
         \caption{\label{fig:webdsl-simple-variable-no-duplicates}The same variable identifier may only be declared once in an environment}
       \end{figure}
 
-    \subsection{\label{subsec:type-compatibility} Type compatibility}
+    \subsection{\label{subsec:type-compatibility}Type Compatibility}
 
-      WebDSL has a notion of type compatiblity. For example, the WebDSL superclass of all entities is conveniently called \texttt{Entity}. When assigning a value to a variable that requires type \texttt{Entity}, passing an instance of a user-defined entity such as \texttt{Person} or \texttt{Project} also suffices. In this case, type \texttt{Person} is compatible with type \texttt{Entity}, but not the other way around. Type compatibility is not limited to entities. For instance, all WebDSL date types (\texttt{}) are compatible with each other. As a last example, null is compatible with many types. The examples given above are shown in \cref{fig:webdsl-basics-type-compatibility-example}.
+      WebDSL has a notion of type compatiblity. For example, the WebDSL superclass of all entities is conveniently called \texttt{Entity}. When assigning a value to a variable that requires type \texttt{Entity}, passing an instance of a user-defined entity such as \texttt{Person} or \texttt{Project} also suffices. In this case, type \texttt{Person} is compatible with type \texttt{Entity}, but not the other way around. Type compatibility is not limited to entities. For instance, all WebDSL date types (\texttt{Date}, \texttt{Time}, \texttt{DateTime}) are compatible with each other. As a last example, null is compatible with many types. The examples given above are shown in \cref{fig:webdsl-basics-type-compatibility-example}.
 
       \begin{figure}
         \begin{minted}[firstline=2]{\webdsl}
@@ -543,10 +543,53 @@ function f() {
         \caption{\label{fig:webdsl-basics-type-compatibility-example}Examples of type compatibility in WebDSL}
       \end{figure}
 
+      To encode the type compatibility as shown in \cref{fig:webdsl-basics-type-compatibility-example} in Statix, we need a predicate that tells us, given two types \textit{A} and \textit{B}, if type \textit{A} is compatible with with \textit{B}. The signature and its general rules are shown in \cref{fig:type-compatibility-statix-basic}.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
+          module x
+          rules
+  typeCompatible : TYPE * TYPE
+  // By default, two types are not compatible
+  typeCompatible(T1, T2).
+  // Same type is always compatible
+  typeCompatible(T, T).
+        \end{minted}
+        \caption{\label{fig:type-compatibility-statix-basic}WebDSL type compatibility predicate and general rules}
+      \end{figure}
+
+      With only the basic rules from \cref{fig:type-compatibility-statix-basic}, we have created the equality (\texttt{==}) from Statix in predicate form. The advantage of listing it like this, is that we can now add rules to make it fit the WebDSL type system. To continue the example of \texttt{null} being compatible with every type, we can add the rules shown in \cref{fig:null-type-compatibility} to achieve this. An example of how to use our new \texttt{typeCompatible} predicate is also given on \textbf{line 8} of \cref{fig:null-type-compatibility}.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
+          module x
+          rules
+  typeOfExp(_, Null()) = NULL().
+  typeCompatible(NULL(), _).
+
+  // example of usage:
+  stmtOk(s, VarDeclInit(x, sort, exp), _) :- { sortType expType }
+    sortType == typeOfSort(s, sort),
+    expType == typeOfExp(s, exp),
+    typeCompatible(expType, sortType)
+      | error $[Expression [exp] is not of type [sort], got type [expType]] @exp,
+    declareVar(s, x, sort),
+    @x.type := t.
+        \end{minted}
+        \caption{\label{fig:null-type-compatibility}Compatibility of the null expression encoded in Statix}
+      \end{figure}
+
       \begin{itemize}
         \item [\textbf{TO-DO:}]
-        \item Explain predicate
         \item Add (plus) LUB
+      \end{itemize}
+
+    \subsection{\label{subsec:boolean-logic}Boolean Logic in Statix}
+
+      \begin{itemize}
+        \item [\textbf{TO-DO:}]
+        \item Show sort and constructors
+        \item Examples of where it's necessary
       \end{itemize}
 
     \subsection{\label{subsec:simple-entities}Entities and Properties}
@@ -743,7 +786,7 @@ rules
     pageType(s, p) == PAGE(_, ts)
       | error $[There is no page with signature [p]] @p,
     argTypes == typesOfExps(s, args),
-    typesCompatible(argTypes, ts) == TRUE()
+    typesCompatible(argTypes, ts)
       | error $[Given argument types not compatible with page definition] @args.
     
   // root page is always accessible from all locations
