@@ -4,28 +4,35 @@
 
   Computer programming is an essential skill that is increasingly important in diverse disciplines \autocite{Rafalski2019}. To this end, many different programming languages exist, each with different properties and advantages. Over time, the populatity of programming languages change and developers tend to have preferences for one language over the other. In addition to language design choices, the implementation of a language and the tools that come with it can greatly boost the productivity of developers, if done well.
 
-  Another key to boost the productivity of software engineers is abstractions. Abstractions allow developers to think in terms closer to the domain rather than the implementation. In other words, the ideal level of abstraction increases the focus on the what, and steers away from the how. In this thesis, we will focus on a \textit{domain-specific language} (DSL). In contrast to a general-purpose language, a domain-specific language does not intend to provide solutions for problems from all domains, but instead focus on a single domain. This restriction allows for a high level of abstraction in the language itself, in an attempt to boost developer productivity. Popular examples of domain-specific languages are CSS for styling web pages and SQL for efficient database querying.
+  Another key to boost the productivity of software engineers is abstractions. Abstractions allow developers to think in terms closer to the domain rather than the implementation. In other words, the ideal level of abstraction increases the focus on the what, and steers away from the how. In this thesis, we will focus on a \textit{domain-specific language} (DSL). In contrast to a general-purpose language, a domain-specific language does not intend to provide solutions for problems from all domains, but instead focus on a single domain. This restriction allows for a high level of abstraction in the language itself, in an attempt to boost developer productivity. Examples of popular domain-specific languages are CSS for styling web pages and SQL for efficient database querying.
 
   In this thesis, we are using the domain-specific language \textit{WebDSL} as a large case study for the languages \textit{SDF3} and \textit{Statix}. WebDSL is a domain-specific language for developing web applications, developed at and maintained by the Programming Languages research group of the Delft University of Technology.
 
   When inspecting the design and implementation of a programming language, the different components can be classified in two boxes: the front-end and the back-end. The front-end is the part of the programming language that the developer faces directly, it consists of components such as the syntax and early feedback on written code. The back-end makes the programming language operational with, for example, code generation and opmtimization. While the back-end of a programming langauge makes it work, the front-end plays a large role in how developers experiences a programming language. Early feedback in the form of good error messages and hints are required to make the interaction with a programming language efficient \autocite{Becker2019}.
 
-  Because of its academic nature, many research projects added features to WebDSL, all contributing to the success of existing WebDSL applications. With these features, WebDSL is the programming language in which applications are developed with thousands of daily users. The downside of having many different contributors adding new features and a small group of maintainers, is that the development experience, that is a result of the front-end, leaves much to be desired. Currently, the WebDSL implementation is composed of multiple definitions in meta-DSLs supported by the \textit{Spoofax Language Workbench} \autocite{KatsV10}. Spoofax is an environment in which multiple meta-DSLs are used to declaratively specify a domain-specific language. WebDSL is developed in Spoofax. In particular, the WebDSL syntax is defined in SDF2 and the desugaring, typechecking, optimization and code generation is defined in the term transformation language Stratego. The interleaving of all the latter processes in the same Stratego environment poses a threat to the readability and maintainability of the WebDSL language.
+  Because of its academic nature, many research projects added features to WebDSL, all contributing to the success of existing WebDSL applications. With these features, WebDSL is the programming language in which applications are developed with thousands of daily users. The downside of having many different contributors adding new features and a small group of maintainers, is that the development experience, that is a result of the front-end, leaves much to be desired. Currently, the WebDSL implementation is composed of multiple definitions in meta-DSLs supported by the \textit{Spoofax Language Workbench} \autocite{KatsV10}. Spoofax is an environment in which multiple meta-DSLs are used to declaratively specify a programming language. WebDSL is developed in Spoofax. In particular, the WebDSL syntax is defined in SDF2 and the desugaring, typechecking, optimization and code generation is defined in the term transformation language Stratego. The interleaving of all the latter processes in the same Stratego environment poses a threat to the readability and maintainability of the WebDSL language.
 
-  \textbf{Add content about our approach here: using Statix and SDF3, see if the languages are fit for our purposes}
-
-  \textbf{Add research questions here}
+  As opposed to the time at which WebDSL was initially implemented, Spoofax now features more meta-languages specialized in different parts of the language development chain. In this thesis, we will be modernizing the WebDSL front-end, by using the Spoofax meta-languages SDF3 to specify and disambiguate the syntax from which a parser is generated, and Statix to declare the static semantics from which a typechecker is automatically generated.
 
   % Contributions
-  \section{\label{sec:contributions}Contributions}
-    In this thesis, we will be focusing on modernizing the WebDSL front-end, by implementing the syntax definition in SDF3 and the static analyses in Statix and documenting the challenges faced in this process. In this work, the following contributions are made:
+  \section{\label{sec:contributions}Research Questions and Contributions}
+    In this thesis, we aim to answer the following research questions.
+
+    \begin{itemize}
+      \item Is it possible to declare and disambiguate the WebDSL grammar in SDF3?
+      \item Does the parser generated from the SDF3 specification run fast enough for use in practice?
+      \item Is it possible to declare the static semantics of WebDSL in Statix?
+      \item Does the type checker generated from the Statix specification run fast enough for use in practice?
+    \end{itemize}
+
+    Additionally, the following contributions are made.
 
     \begin{itemize}
       \item We present a modernized WebDSL front-end through an implementation of its grammar in SDF3 and its analyses in Statix.
       \item We document the challenges and solutions of implementing the new WebDSL front-end.
       \item We assess the completeness of Statix and SDF3 by attempting to model all language features of WebDSL.
       \item We assess the performance of Statix and SDF3 by benchmarking the new WebDSL front-end with large codebases of existing applications.
-      \item We provide qualitative feedback regarding the development experience with SDF3 and Statix. \textit{TO-DO: Change ``development experience'' to something more descriptive}
+      \item We provide qualitative feedback regarding the language design of SDF3 and Statix.
     \end{itemize}
 
   % Outline
