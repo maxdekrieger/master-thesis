@@ -675,7 +675,7 @@ module x
 
       In addition to the added constraint to the \texttt{declareType} rule, we added an optional \texttt{DEF} edge label that may be followed when querying the scope graph for a type (\textbf{{line 9}} of \cref{fig:webdsl-entity-new-type-declare-and-resolve}). The \texttt{DEF} (short for defintion) is used to link the scope of top-level elements, such as entities and functions, to the module scope. This can be seen in \textbf{line 13} of \cref{fig:webdsl-entity-declaration-statix}.
 
-      So far, there has been no reason to query for types inside the entity body because we have always worked with empty entities. In practice, entities are filled with properties and functions. \textbf{Line 20} of \cref{fig:webdsl-entity-declaration-statix} calls the \texttt{declEntityBody} predicate, of which the implementation is shown in \cref{fig:webdsl-entity-body-declaration}.
+      So far, there has been no reason to query for types inside the entity body because we have always worked with empty entities. In practice, entities are filled with properties and functions. \textbf{Line 20} of \cref{fig:webdsl-entity-declaration-statix} calls the \texttt{declEntityBody} predicate, of which the implementation is shown in \cref{fig:webdsl-entity-body-declaration} and an example of an entity definition with two properties is shown in \cref{fig:webdsl-entity-body-example}.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\statix}
@@ -711,9 +711,38 @@ module x
         \caption{\label{fig:webdsl-entity-body-declaration}Statix rules for declaring the entity body}
       \end{figure}
 
+      \begin{figure}
+        \begin{subfigure}[b]{0.3\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+  module m
+    entity Person { 
+      name        : String
+      dateOfBirth : Date
+    }
+          \end{minted}
+          \caption{\label{fig:webdsl-entity-body-example-webdsl}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.7\textwidth}
+          \centering
+          \begin{tikzpicture}
+            \node (s_m) [scope]   at(-1, 0) {s\_m};
+            \node (s_p) [scope]   at(-1, -2) {s\_person};
+            \node (t_p) [decl]  at(4.5, 0) {Person : ENTITY("Person", s\_person)};
+            \node (name) [decl]  at(5.5, -1.5) {name : BUILTINTYPE(s\_string, "String")};
+            \node (dob) [decl]  at(5.5, -2.5) {dateOfBirth : BUILTINTYPE(s\_date, "Date")};
+  
+            \draw[scope edge] (s_p.north) -- (s_m.south) node[pos=0.5, xshift=2ex] {DEF};
+            \draw[decl edge] (s_m.east) -- (t_p.west) node[midway, sloped, fill=white] {type};
+            \draw[decl edge] (s_p.east) -- (name.west) node[midway, sloped, fill=white] {var};
+            \draw[decl edge] (s_p.east) -- (dob.west) node[midway, sloped, fill=white] {var};
+          \end{tikzpicture}
+          \caption{\label{fig:webdsl-entity-body-example-sg}}
+        \end{subfigure}
+        \caption{\label{fig:webdsl-entity-body-example}An example of an entity definition with multiple properties}
+      \end{figure}
+
       \begin{itemize}
         \item [\textbf{TO-DO:}]
-        \item Entity body declarations
         \item Instantiation
       \end{itemize}
 
