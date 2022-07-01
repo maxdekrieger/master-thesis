@@ -510,7 +510,7 @@ application test
 
       The edge label \texttt{P} as introduced in \cref{fig:webdsl-simple-variable-declaration-scope} is the edge label used for linking consecutive statements together. The other edge labels such as complicate this regular expression, and will be will be explained in more details in later sections when their use is discussed.
 
-      \Cref{fig:webdsl-simple-variable-well-formedness} above defines what data is reachable from any point in the scope graph, but we also want some restrictions of declarations. The same environment such as function body or an entity definition may never declare the same variable twice. To achieve this, \textbf{line 4} of \cref{fig:webdsl-simple-variable-declaration-and-resolving} uses the helper predicate \texttt{noDuplicateVarDefs}. The implementation of this predicate is straight-forward and shown in \cref{fig:webdsl-simple-variable-no-duplicates}. The predicate queries the current scope and checks whether all scopes reachable using only \texttt{P} edge labels, results in a list containing only one entry.
+      \Cref{fig:webdsl-simple-variable-well-formedness} defines what data is reachable from any point in the scope graph, but we also want some restrictions of declarations. The same environment such as function body or an entity definition may never declare the same variable twice. To achieve this, \textbf{line 4} of \cref{fig:webdsl-simple-variable-declaration-and-resolving} uses the helper predicate \texttt{noDuplicateVarDefs}. The implementation of this predicate is straight-forward and shown in \cref{fig:webdsl-simple-variable-no-duplicates}. The predicate queries the current scope and checks whether all scopes reachable using only \texttt{P} edge labels, results in a list containing only one entry.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\statix}
@@ -745,6 +745,7 @@ module x
 
       \begin{itemize}
         \item [\textbf{TO-DO:}]
+        \item Special properties (Derived, \texttt{name})
         \item Instantiation
       \end{itemize}
 
@@ -923,56 +924,61 @@ rules
 
     \subsubsection{Overwriting Functions}
 
-      Generally, overriding functions is not allowed in WebDSL. Entity functions are an exception to this such that entity function definitions shadow global function definitions. With the introduction of inheritance there comes another exception, namely that sub-entities are allowed to overwrite function definitions of their ancestors.
+      Generally, defining two functions with the same name and same argument types is not allowed in WebDSL. Entity functions are an exception to this such that entity function definitions shadow global function definitions. With the introduction of inheritance there comes another exception, namely that sub-entities are allowed to override function definitions of their ancestors.
 
-      Previously, the resolving of entity functions was done using the query as shown in listing \emph{TO-DO} below.
+      Previously, the resolving of entity functions was done using a query that resolves within the entity scope only. With the introduction of entity inheritance, the path well-formedness over edge labels was changed such that functions from ancestors are also in scope. Changing \texttt{filter e} to \texttt{filter INHERIT*} accomplishes this. Both the previous and resulting queries are shown in \cref{fig:entity-function-resolve-old}.
 
-      \begin{minted}[firstline=3]{\statix}
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
   module x
   rules
+    // previously (local entity scope only)
     resolveEntityFunction(s, x) = ps :-
       query function filter e
-                      and { x' :- x' == (x, _) }
-                      min
-                      in s |-> ps.
-      \end{minted}
+                     and { x' :- x' == (x, _) }
+                     min
+                     in s |-> ps.
 
-      With the introduction of entity inheritance, the path well-formedness over edge labels should be tweaked such that functions from ancestors are in scope. Changing \texttt{filter e} to \texttt{filter INHERIT*} accomplishes this. The resulting query is in listing \emph{TO-DO} below.
+    // new (allow resolving to ancestors)
+    resolveEntityFunction(s, x) = ps :-
+      query function filter INHERIT*
+                     and { x' :- x' == (x, _) }
+                     min /* */
+                     in s |-> ps.
+        \end{minted}
+        \caption{\label{fig:entity-function-resolve-old}Statix rules for allowing entity function calls to resolve to definitions in their ancestors}
+      \end{figure}
 
-      \begin{minted}[firstline=3]{\statix}
+
+      This query definition is adequate when sub-entities do not override functions. When a sub-entity does define a function that is already defined in one of its ancestors, resolving the entity function gives two results while the desired outcome is only one result, namely the overridden function defined in the sub-entity. To tackle this challenge, we defined a Statix anonymous shadowing rule combined with a label order. This ensures that when two functions with the same name and argument types exist, only the most specific (i.e. the least inheritance edges) is returned. This is implemented as shown in \cref{fig:entity-function-resolve-with-overriding}.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
   module x
   rules
     resolveEntityFunction(s, x) = ps :-
       query function filter INHERIT*
-                      and { x' :- x' == (x, _) }
-                      min /* */
+                     and { x' :- x' == (x, _) }
+                     /* prioritize local scope over inheritance */
+                     min $ < INHERIT
+                     /* shadow when function name and argument types match */
+                     and {
+                       (f, FUNCTION(args, _, _)),
+                       (f, FUNCTION(args, _, _))
+                     }
                       in s |-> ps.
-      \end{minted}
-
-      This query definition works perfectly when sub-entities do not overwrite functions. When a sub-entity does define a function that is already defined in one of its ancestors, resolving the entity function gives two results while we would like only one result, namely the overwritten function defined in the sub-entity. To tackle this challenge, we defined a Statix anonymous shadowing rule combined with a label order. This ensures that when two functions with the same name and argument types exist, only the most specific (i.e. the least inheritance edges) is returned. This is implemented as shown in listing \emph{TO-DO}.
-
-      \begin{minted}[firstline=3]{\statix}
-  module x
-  rules
-    resolveEntityFunction(s, x) = ps :-
-      query function filter INHERIT*
-                      and { x' :- x' == (x, _) }
-                      /* prioritize local scope over inheritance */
-                      min $ < INHERIT
-                      /* shadow when function name and argument types match */
-                      and {
-                      (f, FUNCTION(args, _, _)),
-                      (f, FUNCTION(args, _, _))
-                      }
-                      in s |-> ps.
-      \end{minted}
+        \end{minted}
+        \caption{\label{fig:entity-function-resolve-with-overriding}Statix rules for resolving entity functions that allow overriding}
+      \end{figure}
 
     \subsubsection{Entity Type Compatibility}
-      A great perk of having inheritance in a language is writing code for that works for super-entities, and then executing this code with sub-entities. To know if the given entity type is compatible with the required entity type, we require a predicate that defines this compatibility. We have created such a predicate while implementing general type compatibility in subsection \emph{TO-DO}, in the form of \lstinline|typeCompatibleB : TYPE * TYPE -> BOOL|.
 
-      With the addition of entity inheritance, we need to expand this definition. To this end, we added the rules as shown in listing \emph{TO-DO}. Given two entity scopes, the \lstinline|inherits(s_sub, s_super)| predicate returns true when the query has one result. The query in the \texttt{inherits} rule requests all paths from scope \texttt{s\_sub} to scope \texttt{s\_super} consisting of only \texttt{INHERIT} edges. Such a path exists if and only if the entity belonging to scope \texttt{s\_sub} inherits the entity belonging to \texttt{s\_super}.
+      A perk of having the notion of inheritance in the WebDSL language, is that it allows for better abstraction and less code duplication. An example of this is a function definition, where the argument type is an entity. This function can be called with an argument of the entity type, or one of its sub-entities. To know if the given type is compatible with the required type, we require a predicate that defines this compatibility. We have created such a predicate while implementing general type compatibility in \cref{subsec:type-compatibility}, in the form of \lstinline|typeCompatibleB : TYPE * TYPE -> BOOL|.
 
-      \begin{minted}[firstline=3]{\statix}
+      With the addition of entity inheritance, we need to expand this definition. To this end, we added the rules as shown in listing \cref{fig:entity-type-compatibility-inheritance}. Given two entity scopes, the \texttt{inherits(s\_sub, s\_super)} predicate returns true when the query has one result. The query in the \texttt{inherits} rule requests all paths from scope \texttt{s\_sub} to scope \texttt{s\_super} consisting of only \texttt{INHERIT} edges. Such a path exists if and only if the entity belonging to scope \texttt{s\_sub} inherits the entity belonging to \texttt{s\_super}. An example of a scope graph with entity inheritance is shown in \cref{fig:webdsl-entity-inheritance-example}.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
   module x
   rules
     typeCompatibleB(ENTITY(s_sub), ENTITY(s_super)) = inherits(s_sub, s_super).
@@ -980,16 +986,20 @@ rules
     inherits : scope * scope -> BOOL
     inherits(s_sub, s_super) = nonEmptyPathScopeList(ps) :-
       query () filter INHERIT*
-                and { s :- s == s_super }
-                min $ < INHERIT
-                in s_sub |-> ps.
+               and { s :- s == s_super }
+               min $ < INHERIT
+               in s_sub |-> ps.
 
     nonEmptyPathScopeList : list((path * scope)) -> BOOL
     nonEmptyPathScopeList(_)       = FALSE().
     nonEmptyPathScopeList([(_,_)]) = TRUE().
-      \end{minted}
+        \end{minted}
+        \caption{\label{fig:entity-type-compatibility-inheritance}Statix rules for entity type compatibility that support inheritance}
+      \end{figure}
 
     \subsubsection{Built-in Supertype}
+
+      Similar to \texttt{Object} in the Java programming language, WebDSL also has a root of the entity hierarchy, namely \texttt{Entity}. If a defined entity does not explicitly inherit from another entity, it will automatically inherit from \texttt{Entity}. 
 
   \section{\label{sec:type-extension}Type Extension}
 
