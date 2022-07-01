@@ -846,52 +846,84 @@ rules
   \section{\label{sec:inheritance}Inheritance}
 
     \subsubsection{Linking the Scopes}
-      The implementation of inheritance requires the scope of the sub- and super-entity to be connected such that Statix queries can resolve to declarations from the super-entity when necessary. To achieve this, we introduce an edge label \texttt{INHERIT} as shown in listing \emph{TO-DO}.
-      \begin{minted}[firstline=3]{\statix}
-  module x
-  signature
-    name-resolution
-      labels
-        INHERIT // inherit edge label for subclasses
-      \end{minted}
-      Declarations of sub-entities will generate constraints as shown in listing \emph{TO-DO}.
-      \begin{minted}[firstline=3]{\statix}
-  module x
-  rules
-    defOk(s_global, Entity(x, super, bodydecs)) :- {s_entity super' s_super}
-      resolveEntity(s_global, super) == [(_, (super', ENTITY(s_super)))],
-      new s_entity, s_entity -INHERIT-> s_super,
-      noCircularInheritance(s_entity),
-      declEntity(s_global, s_entity, x, bodydecs),
-      @super.ref := super'.
-      \end{minted}
+
+      The implementation of inheritance requires the scope of the sub- and super-entity to be connected such that Statix queries can resolve to declarations from the super-entity when necessary. To achieve this, we introduce an edge label \texttt{INHERIT} as shown in \cref{fig:inheritance-statix-rules}.
+
+      \begin{figure}
+        \begin{minted}[firstline=2]{\statix}
+    module x
+    signature
+      name-resolution
+        labels
+          INHERIT // inherit edge label for subclasses
+  
+    rules
+      defOk(s_global, Entity(x, super, bodydecs)) :- {s_entity super' s_super}
+        resolveEntity(s_global, super) == [(_, (super', ENTITY(_, s_super)))],
+        new s_entity, s_entity -INHERIT-> s_super,
+        noCircularInheritance(s_entity),
+        declEntity(s_global, s_entity, x, bodydecs),
+        @super.ref := super'.
+        \end{minted}
+        \caption{\label{fig:inheritance-statix-rules}Entity inheritance Statix rules}
+      \end{figure}
+
+      \begin{figure}
+        \begin{subfigure}[b]{0.1\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+  module m
+    entity Person {
+      // no properties
+    }
+
+    entity Student : Person {
+      // no properties
+    }
+
+          \end{minted}
+          \caption{\label{fig:webdsl-entity-inheritance-example-webdsl}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.9\textwidth}
+          \centering
+          \begin{tikzpicture}
+            \node (s_m) [scope]   at(0, 0) {s\_m};
+            \node (s_p) [scope]   at(2, -3) {s\_person};
+            \node (s_s) [scope]   at(-2, -3) {s\_student};
+            \node (t_p) [decl]  at(3.5, 1.5) {Person : ENTITY("Person", s\_person)};
+            \node (t_s) [decl]  at(-3.5, 1.5) {Person : ENTITY("Student", s\_student)};
+  
+            \draw[scope edge] (s_p.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+            \draw[scope edge] (s_s.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+            \draw[scope edge] (s_s.east) -- (s_p.west) node[midway, sloped, yshift=1ex] {INHERIT};
+            \draw[decl edge] (s_m.north) -- (t_p.south) node[midway, sloped, fill=white] {type};
+            \draw[decl edge] (s_m.north) -- (t_s.south) node[midway, sloped, fill=white] {type};
+          \end{tikzpicture}
+          \caption{\label{fig:webdsl-entity-inheritance-example-sg}}
+        \end{subfigure}
+        \caption{\label{fig:webdsl-entity-inheritance-example}An example of entity definition in WebDSL}
+      \end{figure}
+
       First of all, the super-entity refered to in the declaration must refer to an existing entity in the scope graph. Secondly, the new scope belonging to the sub-entity \texttt{s\_entity} is linked to the scope of the super class \texttt{s\_super} via an \texttt{INHERIT} edge. Finally, some additional constraints are generated to make sure no circular inheritance exists and constraints for the entity body declarations of the sub-entity are generated.
 
-      Previously, the resolving of variables was done using the query as shown in listing \emph{TO-DO}
-      \begin{minted}[firstline=3]{\statix}
-  module x
-  rules
-    resolveVar(s, x) = ps :-
-      query var filter P* F* IMPORT*
-                and { x' :- x' == (x, _) }
-                min $ < P, P < F, F < IMPORT
-                and true
-                in s |-> ps.
-      \end{minted}
-      The new query in listing \emph{TO-DO} reflects the addition of the \texttt{EXTEND} label. The addition of \texttt{INHERIT*} in the query filter makes all variables declared in ancestors reachable.
-      \begin{minted}[firstline=3]{\statix}
-  module x
-  rules
-    resolveVar(s, x) = ps :-
-      query var filter P* F* INHERIT* IMPORT*
-                and { x' :- x' == (x, _) }
-                min $ < P, P < F, F < INHERIT, INHERIT < IMPORT
-                and true
-                in s |-> ps.
-      \end{minted}
+      The variable resolving query as listed in \cref{fig:var-resolve-query-inheritance} reflects the addition of the \texttt{INHERIT} label. The addition of \texttt{INHERIT*} in the query filter makes all variables declared in ancestors reachable, but the shadowing rule as declared after the \texttt{min} keyword ensures correct shadowing behaviour, namely that local variables are preferred over variables defined in ancestors.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
+    module x
+    rules
+      resolveVar(s, x) = ps :-
+        query var filter P* INHERIT*
+                  and { x' :- x' == (x, _) }
+                  min $ < P, P < INHERIT
+                  and true
+                  in s |-> ps.
+        \end{minted}
+        \caption{\label{fig:var-resolve-query-inheritance}The query that specifies what variables can be resolved, updated to reflect entity inheritance}
+      \end{figure}
 
     \subsubsection{Overwriting Functions}
-      Generally, overwriting functions is not allowed in WebDSL. Entity functions are an exception to this such that entity function definitions shadow global function definitions. With the introduction of inheritance there comes another exception, namely that sub-entities are allowed to overwrite function definitions of their ancestors.
+
+      Generally, overriding functions is not allowed in WebDSL. Entity functions are an exception to this such that entity function definitions shadow global function definitions. With the introduction of inheritance there comes another exception, namely that sub-entities are allowed to overwrite function definitions of their ancestors.
 
       Previously, the resolving of entity functions was done using the query as shown in listing \emph{TO-DO} below.
 
