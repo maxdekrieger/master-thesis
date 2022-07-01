@@ -676,6 +676,8 @@ module x
       In addition to the added constraint to the \texttt{declareType} rule, we added an optional \texttt{DEF} edge label that may be followed when querying the scope graph for a type (\textbf{{line 9}} of \cref{fig:webdsl-entity-new-type-declare-and-resolve}). The \texttt{DEF} (short for defintion) is used to link the scope of top-level elements, such as entities and functions, to the module scope. This can be seen in \textbf{line 13} of \cref{fig:webdsl-entity-declaration-statix}.
 
       So far, there has been no reason to query for types inside the entity body because we have always worked with empty entities. In practice, entities are filled with properties and functions. \textbf{Line 20} of \cref{fig:webdsl-entity-declaration-statix} calls the \texttt{declEntityBody} predicate, of which the implementation is shown in \cref{fig:webdsl-entity-body-declaration} and an example of an entity definition with two properties is shown in \cref{fig:webdsl-entity-body-example}.
+      
+      Entity properties are declared under the variable relation inside the entity scope, such that functions inside entities can reference their own properties without using the \texttt{this} prefix. The \texttt{this} construct is supported, but not necessary. Declaring properties in this way, allows us to reuse the already existing rules such as those against duplicate definition, without duplicating the code for another relation.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\statix}
