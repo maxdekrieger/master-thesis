@@ -834,7 +834,7 @@ rules
         \item Template elements
       \end{itemize}
 
-      \subsection{\label{subsec:access-control}Access Control}
+    \subsection{\label{subsec:access-control}Access Control}
 
       \begin{itemize}
         \item [\textbf{TO-DO:}]
@@ -844,9 +844,11 @@ rules
         \item Pointcuts?
       \end{itemize}
 
-  \section{\label{sec:inheritance}Inheritance}
+  \section{\label{sec:advanced-entity-features}Advanced Entity Features}
+  
+    \subsection{\label{subsec:inheritance}Inheritance}
 
-    \subsubsection{Linking the Scopes}
+      \subsubsection{Linking the Scopes}
 
       The implementation of inheritance requires the scope of the sub- and super-entity to be connected such that Statix queries can resolve to declarations from the super-entity when necessary. To achieve this, we introduce an edge label \texttt{INHERIT} as shown in \cref{fig:inheritance-statix-rules}.
 
@@ -997,9 +999,25 @@ rules
         \caption{\label{fig:entity-type-compatibility-inheritance}Statix rules for entity type compatibility that support inheritance}
       \end{figure}
 
-    \subsubsection{Built-in Supertype}
+    \subsection{Property Annotations}
 
-      Similar to \texttt{Object} in the Java programming language, WebDSL also has a root of the entity hierarchy, namely \texttt{Entity}. If a defined entity does not explicitly inherit from another entity, it will automatically inherit from \texttt{Entity}. 
+      \begin{itemize}
+        \item [\textbf{TO-DO:}]
+        \item Annotations that do not influence the scope graph (validate, etc.)
+        \item Inverse annotation
+        \item Derived annotation
+        \item Briefly mention the name annotation
+      \end{itemize}
+
+    \subsection{The Name Property}
+
+      Similar to \texttt{Object} in the Java programming language, WebDSL also has a root of the entity hierarchy, namely \texttt{Entity}. If a defined entity does not explicitly inherit from another entity, it will automatically inherit from \texttt{Entity}. This built-in superclass is convenient to store properties that all entites will have out of the box, such as the property \texttt{id} of type \texttt{UUID} and the property \texttt{created} of type \texttt{DateTime}. User-defined entities are not allowed redefine such properties, but they may to edit the values. An exception to this rule is the property \texttt{name} of type \texttt{String} that all entities have by default, but may be overridden once by sub-entities.
+
+      \begin{itemize}
+        \item [\textbf{TO-DO:}]
+        \item Mention annotations in scope graph and introduce new annotation (OVERRIDABLE)
+        \item Give example in scope graph
+      \end{itemize}
 
   \section{\label{sec:type-extension}Type Extension}
 
