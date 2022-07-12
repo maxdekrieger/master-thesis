@@ -579,10 +579,16 @@ function f() {
         \caption{\label{fig:null-type-compatibility}Compatibility of the null expression encoded in Statix}
       \end{figure}
 
-      \begin{itemize}
-        \item [\textbf{TO-DO:}]
-        \item Add (plus) LUB
-      \end{itemize}
+      \subsubsection{Typing of the addition expression}
+
+        The typing rules for most binary operations such as conjunction is trivial: the resulting value is of boolean type, with the constraint that both operators must be of boolean type. However, the range of values in WebDSL is greater than only natural numbers and booleans. WebDSL supports other numeric types such as \texttt{Float}s and \texttt{Long}s, as well as string types and multiple subtypes of strings such as \texttt{Secret}, \texttt{Text} and \texttt{WikiText}. The addition operator supports most of these values, and the typing of this operator is not as trivial as boolean conjunction. For example: the addition of two strings results in a string, the addition of a string and an integer results in a string value and the addition of a boolean and a string is not supported.
+
+        To calculate the return type of addition, we introduce a functional rule that calculates the least-upper-bound of two types: \texttt{lubForAdd : TYPE * TYPE -> TYPE}.
+
+        \begin{itemize}
+          \item [\textbf{TO-DO:}]
+          \item Give Statix rule and examples of the LUB
+        \end{itemize}
 
     \subsection{\label{subsec:boolean-logic}Boolean Logic in Statix}
 
@@ -777,7 +783,7 @@ module x
         \caption{\label{fig:statix-page-and-template-constructors}Statix signature for pages and templates}
       \end{figure}
 
-      The name of a page must be unique, while a template can be defined multiple times for different argument types (\textit{overloading}), but never multiple times for the same argument types. Page and template definitions must be declared in the scope graph such that they can be referenced or checked for uniqueness. The statix rules to implement these checks can be found in \cref{fig:webdsl-page-and-template-definition}.
+      The name of a page must be unique, while a template can be defined multiple times for different argument types (\textit{overloading}), but never multiple times for the same argument types. Page and template definitions must be declared in the scope graph such that they can be referenced or checked for uniqueness. The statix rules to implement these checks can be found in \cref{fig:webdsl-page-and-template-definition} and an example of a module with a page and a template definition is shown in \cref{fig:webdsl-page-and-template-decl}. In the latter image, the argument type of template \texttt{t} is shortened to \texttt{String}, instead of its full version \texttt{BUILTINTYPE(s\_string, "String")}.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\statix}
@@ -801,11 +807,40 @@ module x
         \end{minted}
         \caption{\label{fig:webdsl-page-and-template-definition}Statix rules for declaring WebDSL pages and templates}
       \end{figure}
+      
+      \begin{figure}
+        \begin{subfigure}[b]{0.3\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+module m
+  page p {
+    "Hello "
+    t("World!")
+  }
 
-      \begin{itemize}
-        \item [\textbf{TO-DO:}]
-        \item Show code and resulting scope graph with a page and a template
-      \end{itemize}
+  template t(s : String) {
+    ~s
+  }
+          \end{minted}
+          \caption{\label{fig:webdsl-page-and-template-decl-webdsl}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.7\textwidth}
+          \centering
+          \begin{tikzpicture}
+            \node (s_m) [scope]   at(-1, 0) {s\_m};
+            \node (s_p) [scope]   at(-2, -2) {s\_p};
+            \node (s_t) [scope]   at(0, -2) {s\_t};
+            \node (t_p) [decl]  at(3, 0.5) {p : PAGE("p", [])};
+            \node (t_t) [decl]  at(4, -0.5) {t : TEMPLATE("t", [String])};
+  
+            \draw[scope edge] (s_p.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+            \draw[scope edge] (s_t.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+            \draw[decl edge] (s_m.east) -- (t_p.west) node[midway, sloped, fill=white] {type};
+            \draw[decl edge] (s_m.east) -- (t_t.west) node[midway, sloped, fill=white] {type};
+          \end{tikzpicture}
+          \caption{\label{fig:webdsl-page-and-template-decl-sg}}
+        \end{subfigure}
+        \caption{\label{fig:webdsl-page-and-template-decl}An example of a module with a page \texttt{p} and a template \texttt{t}}
+      \end{figure}
 
       Type-checking a page reference is easier than the that of a template, since a page definition cannot be overloaded. In order for a page reference to be well-typed, the page must be defined exactly once, and the types of the passed arguments must be compatible with the parameter types of the page. The Statix rules that ticks those boxes is shown in \cref{fig:webdsl-page-type-checking}.
 
@@ -1026,6 +1061,8 @@ rules
     \subsection{\label{subsec:built-in-extension}Built-in Type Extension}
 
   \section{\label{sec:function-template-overloading}Function and Template Overloading}
+
+  \section{\label{sec:generated-definitions}Generated Definitions}
 
   \section{\label{sec:module-system}Module system}
 

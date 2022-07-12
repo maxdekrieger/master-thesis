@@ -45,13 +45,27 @@
       \subsubsection{Java (subset)}
 
         \begin{itemize}
-          \item [\textbf{TO-DO:}]
-          \item Check if implementation of inner classes add "new"/unseen features 
+          \item Packages and imports
+          \begin{itemize}
+            \item Solved remote extension by using a mixin-pattern: compilation units query for all other compilation units within the same package and make their types accessible by adding import edges.
+          \end{itemize}
         \end{itemize}
 
       \subsubsection{Scala (subset)}
 
+        \begin{itemize}
+          \item Accessibilty of definitions: local definitions are available in the surrounding scope, whereas imported definitions are available in the subsequent scopes.
+          \begin{itemize}
+            \item This also implements forward referencing
+            \item Possible inspiration for WebDSL action name resolution
+          \end{itemize}
+        \end{itemize}
+
       \subsection{LMR/Rust}
+
+        \begin{itemize}
+          \item Imports that do influence their own resolution (unordered imports).
+        \end{itemize}
 
   \section{Papers to investigate}
 
