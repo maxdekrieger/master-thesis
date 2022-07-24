@@ -583,20 +583,89 @@ function f() {
 
         The typing rules for most binary operations such as conjunction is trivial: the resulting value is of boolean type, with the constraint that both operators must be of boolean type. However, the range of values in WebDSL is greater than only natural numbers and booleans. WebDSL supports other numeric types such as \texttt{Float}s and \texttt{Long}s, as well as string types and multiple subtypes of strings such as \texttt{Secret}, \texttt{Text} and \texttt{WikiText}. The addition operator supports most of these values, and the typing of this operator is not as trivial as boolean conjunction. For example: the addition of two strings results in a string, the addition of a string and an integer results in a string value and the addition of a boolean and a string is not supported.
 
-        To calculate the return type of addition, we introduce a functional rule that calculates the least-upper-bound of two types: \texttt{lubForAdd : TYPE * TYPE -> TYPE}.
+        To calculate the return type of addition, we introduce a functional rule that calculates the least-upper-bound of two types: \texttt{lubForAdd : TYPE * TYPE -> TYPE}. The implementation of this rule is given in \cref{fig:least-upper-bound-for-addition}. The functional rule \texttt{lubForAddNumeric} is reused in other contexts, in particular when generating the constraints for comparison with operators such as greater-than, to check if two types are comparable.
 
-        \begin{itemize}
-          \item [\textbf{TO-DO:}]
-          \item Give Statix rule and examples of the LUB
-        \end{itemize}
+        \begin{figure}
+          \begin{minted}[firstline=3]{\statix}
+module m
+rules
+  lubForAdd : TYPE * TYPE -> TYPE
+  lubForAdd(T1, T2) = lubForAddNumeric(T1, T2).
+  lubForAdd(t@BUILTINTYPE("String", _), _) = t.
+  lubForAdd(_, t@BUILTINTYPE("String", _)) = t.
+
+  lubForAddNumeric : TYPE * TYPE -> TYPE
+  lubForAddNumeric(_, _) = UNTYPED().
+  lubForAddNumeric(t@BUILTINTYPE("Int", _)    , t) = t.
+  lubForAddNumeric(t@BUILTINTYPE("Long", _)   , t) = t.
+  lubForAddNumeric(t@BUILTINTYPE("Float", _)  , t) = t.
+  lubForAddNumeric(t@NATIVECLASS("Double", _) , t) = t.
+
+  // implicit widening from int to long
+  lubForAddNumeric(BUILTINTYPE("Int", _)      , t@BUILTINTYPE("Long", _))   = t.
+  lubForAddNumeric(t@BUILTINTYPE("Long", _)   , BUILTINTYPE("Int", _))      = t.
+
+  // implicit widening from float to double
+  lubForAddNumeric(t@NATIVECLASS("Double", _) , BUILTINTYPE("Float", _))    = t.
+  lubForAddNumeric(BUILTINTYPE("Float", _)    , t@NATIVECLASS("Double", _)) = t.
+          \end{minted}
+          \caption{\label{fig:least-upper-bound-for-addition}Least-upper-bound rules for addition}
+        \end{figure}
 
     \subsection{\label{subsec:boolean-logic}Boolean Logic in Statix}
 
-      \begin{itemize}
-        \item [\textbf{TO-DO:}]
-        \item Show sort and constructors
-        \item Examples of where it's necessary
-      \end{itemize}
+      So far, most of the WebDSL's static semantics are expressible in Statix. However, the elegance of the Statix definition is sometimes lost due to code duplication. For example, logical negation and disjunction of predicates are not natively expressible in Statix, and require boilerplate code to function. To tackle this challenge, we introduced a notion of explicit boolean results for predicates that are reusable. The implementation in Statix is shown in \cref{fig:boolean-computation-results-in-statix}. The figure shows a predicate from before (\texttt{typeCompatible : TYPE * TYPE}) now changed to return an explicit result: \texttt{typeCompatibleB : TYPE * TYPE -> BOOL}. Additionally, we scope this boolean result in a predicate \texttt{typeCompatible(T1, T2) :- typeCompatibleB(T1, T2) == TRUE().} such that existing references can be left unchanged.
+
+      \begin{figure}
+        \begin{minted}[firstline=2]{\statix}
+module m
+  signature
+    sorts
+      BOOL   // used as return values of functional rules
+
+  constructors
+    TRUE : BOOL
+    FALSE : BOOL
+
+  rules
+    // return a TRUE() or FALSE() value instead of failing/passing constraint
+    typeCompatibleB : TYPE * TYPE -> BOOL
+
+    // scope this explicit results in a predicate to avoid having to work 
+    // with boolean computation everywhere
+    typeCompatible : TYPE * TYPE
+    typeCompatible(T1, T2) :- typeCompatibleB(T1, T2) == TRUE().
+        \end{minted}
+        \caption{\label{fig:boolean-computation-results-in-statix}Boolean computation results in Statix}
+      \end{figure}
+
+      As hinted before, the explicit return values of functional rules open up new possibilities for expressing constraints. One instance of where this is necessary, is expressing the semantics of an equality check in WebDSL. For the expression \texttt{A == B} to type check, the types have to be compatible. The naive implementation would be to define the constraint \texttt{typeCompatible(T\_A, T\_B)}. However, type compatibilty is not symmetrical while the equality check should be: \texttt{A == B $\iff$ B == A}. An example of type compatibilty not being symmetrical is when dealing with entity inheritance (see \cref{subsec:inheritance}). To properly define the static semantics for the equality expression in Statix, we need the newly defined boolean computation rules. The result is shown in \cref{fig:boolean-computation-for-equality-expression}.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
+module m
+  rules
+    or  : BOOL * BOOL
+    orB : BOOL * BOOL -> BOOL
+
+    or(b1, b2) :- orB(b1, b2) == TRUE().
+    
+    orB(_, _) = FALSE().
+    orB(TRUE(), _) = TRUE().
+    orB(FALSE(), TRUE()) = TRUE().
+
+    // (e1 == e2)
+    typeOfExp(s, Eq(e1, e2)) = t :- { T1 T2 }
+      t == bool(s),
+      typeOfExp(s, e1) == T1,
+      typeOfExp(s, e2) == T2,
+      or(
+        typeCompatibleB(T1, T2),
+        typeCompatibleB(T2, T1)
+      ).
+        \end{minted}
+        \caption{\label{fig:boolean-computation-for-equality-expression}Using boolean computation results in Statix for the equality expression}
+      \end{figure}
 
     \subsection{\label{subsec:simple-entities}Entities and Properties}
 
@@ -751,17 +820,8 @@ module x
 
       \begin{itemize}
         \item [\textbf{TO-DO:}]
-        \item Special properties (Derived, \texttt{name})
         \item Instantiation
-      \end{itemize}
-
-    \subsection{\label{subsec:simple-functions}Functions}
-
-      \begin{itemize}
-        \item [\textbf{TO-DO:}]
-        \item Declaration and resolving
-        \item Prevent duplicates
-        \item Parameters
+        \item Forward reference to advanced entity features?
       \end{itemize}
 
     \subsection{\label{subsec:simple-pages}Pages and Templates}
@@ -783,7 +843,7 @@ module x
         \caption{\label{fig:statix-page-and-template-constructors}Statix signature for pages and templates}
       \end{figure}
 
-      The name of a page must be unique, while a template can be defined multiple times for different argument types (\textit{overloading}), but never multiple times for the same argument types. Page and template definitions must be declared in the scope graph such that they can be referenced or checked for uniqueness. The statix rules to implement these checks can be found in \cref{fig:webdsl-page-and-template-definition} and an example of a module with a page and a template definition is shown in \cref{fig:webdsl-page-and-template-decl}. In the latter image, the argument type of template \texttt{t} is shortened to \texttt{String}, instead of its full version \texttt{BUILTINTYPE(s\_string, "String")}.
+      The name of a page must be unique, while a template can be defined multiple times for different argument types (\textit{overloading}), but never multiple times for the same argument types. The statix rules to implement these checks can be found in \cref{fig:webdsl-page-and-template-definition} and an example of a module with a page and a template definition is shown in \cref{fig:webdsl-page-and-template-decl}. In the latter image, the argument type of template \texttt{t} is shortened to \texttt{String}, instead of its full version \texttt{BUILTINTYPE(s\_string, "String")}.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\statix}
@@ -867,6 +927,15 @@ rules
         \item Explain resolving templates later
         \item Ajax templates
         \item Template elements
+      \end{itemize}
+
+    \subsection{\label{subsec:simple-functions}Functions}
+
+      \begin{itemize}
+        \item [\textbf{TO-DO:}]
+        \item Declaration and resolving same as templates
+        \item Entity functions
+        \item Parameters
       \end{itemize}
 
     \subsection{\label{subsec:access-control}Access Control}
@@ -1054,13 +1123,15 @@ rules
         \item Give example in scope graph
       \end{itemize}
 
+  \section{\label{sec:function-template-overloading}Function and Template Overloading}
+
+  \section{\label{sec:actions-and-submitting-forms}Actions and Submitting Forms}
+
   \section{\label{sec:type-extension}Type Extension}
 
     \subsection{\label{subsec:entity-extension}Entity Extension}
 
     \subsection{\label{subsec:built-in-extension}Built-in Type Extension}
-
-  \section{\label{sec:function-template-overloading}Function and Template Overloading}
 
   \section{\label{sec:generated-definitions}Generated Definitions}
 
