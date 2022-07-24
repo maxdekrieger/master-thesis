@@ -16,6 +16,26 @@
 
   The rest of this chapter showcases the different aspects of WebDSL and zooms in on its non-trivial features. First, in \cref{sec:ui} we will describe how WebDSL offers functionality for creating web user interfaces. Next, in \cref{sec:data-model} we illustrate how the langauge manages data models. Thirdly, \cref{sec:access-control} contains information about WebDSL's solution for access control and in \cref{sec:functions} we highlight interesting aspects of its general-purpose object oriented function code. We concluse this chapter by going in detail about WebDSL's current implementation in \cref{sec:current-implementation}.
 
+  \section{\label{sec:why-webdsl}Why WebDSL as case study?}
+
+  WebDSL is an interesting case study for SDF3 and Statix because of two main reasons. Firstly, WebDSL has a large amount of language features inspired by multiple paradigms of programming languages. This means the resulting SDF3 and Statix specifications are arguably the largest specifications to date. Accompanied by the large amount of publicly available source code for evaluation purposes, we aim to make observations about the elegancy of the resulting specifications and the scalability of their performance. Since this thesis is a case study, we cannot make general claims about the performance of SDF3 and Statix, but only reveal and analyse results of the WebDSL specification.
+
+  Secondly, WebDSL contains language features that have never been modelled in Statix before. Specifically, those features are:
+
+  \begin{itemize}
+    \item Bi-directional type extension
+    \begin{itemize}
+      \item TO-DO:
+      \item Is there a better name for this?
+    \end{itemize}
+    \item Generated functions and classes
+    \item A peculiar module system
+    \item TO-DO:
+    \item Are there more unique features?
+  \end{itemize}
+
+  With the implementation of those features in Statix, we aim to contribute to assessing whether Statix is capable of modelling the static semantics of all programming languages.
+
   \section{\label{sec:ui}User Interfaces}
 
     Introduction
