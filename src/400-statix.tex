@@ -818,11 +818,29 @@ module x
         \caption{\label{fig:webdsl-entity-body-example}An example of an entity definition with multiple properties}
       \end{figure}
 
-      \begin{itemize}
-        \item [\textbf{TO-DO:}]
-        \item Instantiation
-        \item Forward reference to advanced entity features?
-      \end{itemize}
+      When instantiating an entity, the properties declared in the entity body may be given a value in the instantiation expression. To express this in Statix, an entity instantiation first retrieves the scope of the entity. If the scope cannot be retrieved, it means that the entity is unknown at the position of the expression, so either the entity was never declared or it is not imported correctly. Secondly, all instantiated properties must be declared under the \texttt{var} relation of the entity scope. An example of the declaration and scope graph of an entity declaration is shown in \cref{fig:webdsl-entity-body-example}. A part of the Statix rules for instantiating entities is shown in \cref{fig:webdsl-entity-instantiation}.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
+module x
+  rules
+  typeOfExp(s, ObjectCreation(x, prop_assignments)) = e :-
+    definedType(s, x) == e,
+    e == ENTITY(_, _),
+    propAssignmentsOk(s, e, prop_assignments).
+
+    propAssignmentsOk maps propAssignmentOk(*, *, list(*))
+    propAssignmentOk : scope * TYPE * PropAssignment
+    propAssignmentOk(s, ent@ENTITY(e, s_ent),
+        PropAssignment(x, exp)) :- { propType expType }
+      typeOfProperty(s, ent, x) == propType,
+      typeOfExp(s, exp) == expType,
+      typeCompatible(expType, propType).
+        \end{minted}
+        \caption{\label{fig:webdsl-entity-instantiation}Statix rules for instantiating an entity}
+      \end{figure}
+
+      Even though the concepts, rules and approach mentioned in this subsection are present in the Statix specification of WebDSL, we had to simplify the examples and shown Statix rules to hide the extra complexity added concepts such as inheritance, property annotations and type extension. Those concepts will be explained in detail in section \cref{sec:advanced-entity-features} and \cref{sec:type-extension}.
 
     \subsection{\label{subsec:simple-pages}Pages and Templates}
 
