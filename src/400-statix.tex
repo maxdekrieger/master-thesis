@@ -920,7 +920,7 @@ module m
         \caption{\label{fig:webdsl-page-and-template-decl}An example of a module with a page \texttt{p} and a template \texttt{t}}
       \end{figure}
 
-      Type-checking a page reference is easier than the that of a template, since a page definition cannot be overloaded. In order for a page reference to be well-typed, the page must be defined exactly once, and the types of the passed arguments must be compatible with the parameter types of the page. The Statix rules that ticks those boxes is shown in \cref{fig:webdsl-page-type-checking}.
+      Type-checking a page reference is easier than the that of a template, since a page definition cannot be overloaded. In order for a page reference to be well-typed, the page must be defined exactly once, and the types of the passed arguments must be compatible with the parameter types of the page. The Statix rules that ticks those boxes is shown in \cref{fig:webdsl-page-type-checking}. The resolving of templates is similar to that of functions and will be explained later in \cref{sec:function-template-overloading}.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\statix}
@@ -940,10 +940,12 @@ rules
         \caption{\label{fig:webdsl-page-type-checking}Statix rules for type-checking a page reference}
       \end{figure}
 
+      Apart from regular templates, WebDSL also has a notion of Ajax templates. Ajax templates can be used as building blocks of the user interface, just like regular templates. Additionally, Ajax templates also have a possibility of being replaced on a rendered page without reloading the whole page, for example to refresh the results of a poll on a page. This addition makes Ajax templates useful for more interactive and modern web applications.
+
+      Certain action code such as the \texttt{replace} and \texttt{refresh} statements are only supposed to work on Ajax templates, and not on regular templates. To this end we need to differentiate between them in the scope graph. We have chosen the most trivial way of implementing this, namely adding an additional argument in the type constructor of a template: \texttt{TEMPLATE : string * list(TYPE) * BOOL -> TYPE}. The last boolean argument indicates whether the template is an Ajax template or not. When resolving templates we can now resolve only Ajax templates by adding a \texttt{TRUE()} to the filter statement of the query.
+
       \begin{itemize}
         \item [\textbf{TO-DO:}]
-        \item Explain resolving templates later
-        \item Ajax templates
         \item Template elements
       \end{itemize}
 
