@@ -948,11 +948,15 @@ rules
 
     \subsection{\label{subsec:simple-functions}Functions}
 
+      In WebDSL, a function is a sequence of statements that perform some sort of computation and can return a value. The type of the return value must be stated in the function header and is part of the signature. The implementation of the declaration and resolving of functions is similar to that of templates, as explained in \cref{subsec:simple-pages}, and therefore will not be repeated here.
+
+      An additional characteristic of functions that is similar to templates, is the use of parameters. The parameters with their corresponding types have to be declared statically. The parameters are readable from the function body, but never writable. Additionally, the name of parameters may shadow the name of definitions outside the function such as entity properties or global definitions. To achieve this, 
+
       \begin{itemize}
         \item [\textbf{TO-DO:}]
-        \item Declaration and resolving same as templates
-        \item Entity functions
         \item Parameters
+        \item Entity functions
+        \item Function return type
       \end{itemize}
 
     \subsection{\label{subsec:access-control}Access Control}
