@@ -940,14 +940,11 @@ rules
         \caption{\label{fig:webdsl-page-type-checking}Statix rules for type-checking a page reference}
       \end{figure}
 
+      The body of templates and pages consist of so called \textit{Template elements}. The simplest template element is simply a text to be printed on the page. Next to plain text, hyperlinks to other pages can be created using the \texttt{navigate} element. If we take \cref{fig:webdsl-page-and-template-decl} as basis, an example of a valid navigate call would be \texttt{navigate p() \{ "Go to p" \}}. To type-check this, the code from \cref{fig:webdsl-page-type-checking} can be used. Other examples of template elements are forms, nested template calls, and at the top of a template, variables can be initialized, followed by a block of computational statements that get executed when the template is being loaded.
+
       Apart from regular templates, WebDSL also has a notion of Ajax templates. Ajax templates can be used as building blocks of the user interface, just like regular templates. Additionally, Ajax templates also have a possibility of being replaced on a rendered page without reloading the whole page, for example to refresh the results of a poll on a page. This addition makes Ajax templates useful for more interactive and modern web applications.
 
       Certain action code such as the \texttt{replace} and \texttt{refresh} statements are only supposed to work on Ajax templates, and not on regular templates. To this end we need to differentiate between them in the scope graph. We have chosen the most trivial way of implementing this, namely adding an additional argument in the type constructor of a template: \texttt{TEMPLATE : string * list(TYPE) * BOOL -> TYPE}. The last boolean argument indicates whether the template is an Ajax template or not. When resolving templates we can now resolve only Ajax templates by adding a \texttt{TRUE()} to the filter statement of the query.
-
-      \begin{itemize}
-        \item [\textbf{TO-DO:}]
-        \item Template elements
-      \end{itemize}
 
     \subsection{\label{subsec:simple-functions}Functions}
 
