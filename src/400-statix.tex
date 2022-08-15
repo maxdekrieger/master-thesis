@@ -417,9 +417,9 @@ rules
 
   resolveVar : scope * string -> list((path * (string * TYPE)))
   resolveVar(s, x) = ps :-
-    query var filter P* /* We will explain the filter later in this section */
+    query var filter P* /* The filter will be expanded throughout the chapter */
               and { x' :- x' == (x, _) }
-              min $ < P /* We will explain the shadowing later in this section */
+              min $ < P
               and true
               in s |-> ps.
         \end{minted}
@@ -950,12 +950,91 @@ rules
 
       In WebDSL, a function is a sequence of statements that perform some sort of computation and can return a value. The type of the return value must be stated in the function header and is part of the signature. The implementation of the declaration and resolving of functions is similar to that of templates, as explained in \cref{subsec:simple-pages}, and therefore will not be repeated here.
 
-      An additional characteristic of functions that is similar to templates, is the use of parameters. The parameters with their corresponding types have to be declared statically. The parameters are readable from the function body, but never writable. Additionally, the name of parameters may shadow the name of definitions outside the function such as entity properties or global definitions. To achieve this, 
+      An additional characteristic of functions that is similar to templates, is the use of parameters. The parameters with their corresponding types have to be declared statically. The parameters are readable from the function body, but never writable or overridable by a local variable. Additionally, the name of parameters may shadow the name of definitions outside the function such as entity properties or global definitions. To enforce these constraints, we introduce a new edge label \texttt{F} for embedding the function scope in their surrounding scope, which is either global or within an entity. Using this new edge label, the shadowing rules can be adjusted to properly check the listed semantics. The result is shown in \cref{fig:webdsl-function-parameters-and-shadowing} and an example of a WebDSL snippet with the resulting scope graph is shown in \cref{fig:webdsl-function-parameters-and-shadowing-example}. In the example, parameter \texttt{x} of function \texttt{f} shadows the globally declared \texttt{x}.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
+module x
+rules
+  functionOk : scope * Function
+  functionOk(s_outer,
+      Function(name, FormalArgs(args), OptSortSome(returnSort), Block(stmts))) 
+        :- { argTypes returnType s_function s_body }
+
+    // embed the function scope with edge label F
+    new s_function, s_function -F-> s_outer,
+
+    // declare parameters in function
+    argTypes == typesOfArgs(s_outer, args),
+    declareParameters(s_function, zipArgTypes(args, argTypes)),
+
+    // create the function body and generate constraints
+    new s_body, s_body -P-> s_function,
+    stmtsOk(s_body, stmts, returnType),
+
+    // declare the function in the outer scope
+    returnType == typeOfSort(s_outer, returnSort),
+    declFunction(s_outer, name, argTypes, returnType).
+
+  // resolve variables via P and F edges
+  resolveVar(s, x) = ps :-
+    query var filter P* F*
+              and { x' :- x' == (x, _) }
+              min $ < P, $ < F,
+                         P < F
+              and true
+              in s |-> ps.
+
+  // a definition is only duplicate in a line of P edges
+  noDuplicateVarDefs : scope * string
+  noDuplicateVarDefs(s, x) :-
+    query var filter P*
+              and { x' :- x' == (x, _) }
+              in s |-> [_].
+        \end{minted}
+        \caption{\label{fig:webdsl-function-parameters-and-shadowing}Statix rules for function parameters and variable shadowing}
+      \end{figure}
+
+      \begin{figure}
+        \begin{subfigure}[b]{0.4\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+module m
+  var x : Int := 1
+
+  function f(x : Int, y : Int) : Int
+  {
+    return x + y;
+  }
+          \end{minted}
+          \caption{\label{fig:webdsl-function-parameters-and-shadowing-example-webdsl}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.6\textwidth}
+          \centering
+          \begin{tikzpicture}
+            \node (s_m) [scope]   at(-1, 0) {s\_m};
+            \node (s_f) [scope]   at(-1, -2) {s\_f};
+            \node (s_f_body) [scope]   at(-1, -4) {s\_f\_body};
+            \node (t_x) [decl]  at(2.5, 0.5) {x : Int};
+            \node (t_f) [decl]  at(4.5, -0.5) {f : FUNCTION("f", [Int], Int)};
+            \node (t_f_x) [decl]  at(2.5, -1.5) {x : Int};
+            \node (t_f_y) [decl]  at(2.5, -2.5) {y : Int};
+  
+            \draw[scope edge] (s_f.north) -- (s_m.south) node[midway, xshift=1ex] {F};
+            \draw[scope edge] (s_f_body.north) -- (s_f.south) node[midway, xshift=1ex] {P};
+            \draw[decl edge] (s_m.east) -- (t_x.west) node[midway, sloped, fill=white] {var};
+            \draw[decl edge] (s_m.east) -- (t_f.west) node[midway, sloped, fill=white] {function};
+            \draw[decl edge] (s_f.east) -- (t_f_x.west) node[midway, sloped, fill=white] {var};
+            \draw[decl edge] (s_f.east) -- (t_f_y.west) node[midway, sloped, fill=white] {var};
+          \end{tikzpicture}
+          \caption{\label{fig:webdsl-function-parameters-and-shadowing-example-sg}}
+        \end{subfigure}
+        \caption{\label{fig:webdsl-function-parameters-and-shadowing-example}An example of a function with parameters}
+      \end{figure}
+
+      Apart from globally declared functions, functions may also be part of an entity. In this case, functions can be called similar to how entity properties are referenced. Lastly, entity functions may have the \texttt{static} annotation, which is similar to static class functions in the Java programming language. Static functions may be called without having an instantiated entity.
 
       \begin{itemize}
         \item [\textbf{TO-DO:}]
-        \item Parameters
-        \item Entity functions
         \item Function return type
       \end{itemize}
 
@@ -1040,9 +1119,11 @@ rules
     module x
     rules
       resolveVar(s, x) = ps :-
-        query var filter P* INHERIT*
+        query var filter P* F* INHERIT*
                   and { x' :- x' == (x, _) }
-                  min $ < P, P < INHERIT
+                  min $ < P, $ < F, $ < INHERIT,
+                             P < F, P < INHERIT,
+                                    F < INHERIT
                   and true
                   in s |-> ps.
         \end{minted}
