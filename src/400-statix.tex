@@ -912,8 +912,8 @@ module m
   
             \draw[scope edge] (s_p.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
             \draw[scope edge] (s_t.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
-            \draw[decl edge] (s_m.east) -- (t_p.west) node[midway, sloped, fill=white] {type};
-            \draw[decl edge] (s_m.east) -- (t_t.west) node[midway, sloped, fill=white] {type};
+            \draw[decl edge] (s_m.east) -- (t_p.west) node[midway, sloped, fill=white] {page};
+            \draw[decl edge] (s_m.east) -- (t_t.west) node[midway, sloped, fill=white] {template};
           \end{tikzpicture}
           \caption{\label{fig:webdsl-page-and-template-decl-sg}}
         \end{subfigure}
@@ -1035,14 +1035,98 @@ module m
 
       \begin{itemize}
         \item [\textbf{TO-DO:}]
-        \item Function body analysis (many different statements)
+        \item List/explain interesting action code type checking
       \end{itemize}
 
     \subsection{\label{subsec:access-control}Access Control}
 
+      When developing any application that will be used in practice, access control is an important part of the system. It controls which user is allowed to see what data, what actions can be executed. Generally, this is implemented through a log-in system where different user accounts are given different rights. In all popular programming languages, developing a system access control is the responsibility of the developer, either through manual coding or using frameworks and libraries. In WebDSL however, access control is embedded in the language and all pages are protected by default.
+
+      Concretely, the developer is able to declare what entity represents a user in the system, and what data the user needs to show to log in. In the rest of the WebDSL code, the globally available security context is extended with the properties \texttt{principal} which references the logged in user, and \texttt{loggedIn} which is true if the user has logged in. If the developer has not specified what entity represents a user, the security context is available but does not have these properties. An example of WebDSL code with resulting scope graph is shown in \cref{fig:webdsl-access-control-example} and the Statix rules used to achieve this are shown in \cref{fig:webdsl-principal-statix}. In the code for extending the security context with two additional properties, the same mechanics are used as for entity and built-in type extension. An explanation can be found later in \cref{sec:type-extension}.
+
+      \begin{figure}
+        \begin{subfigure}[b]{0.4\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+module m
+  entity User {
+    username : String
+    password : Secret
+  }
+
+  principal is User
+    with credentials
+    username, password
+
+  page p {
+    if (securityContext.loggedIn) {
+      "Welcome!"
+    } else {
+      "Log in first!"
+    }
+  }
+          \end{minted}
+          \caption{\label{fig:webdsl-access-control-example-webdsl}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.6\textwidth}
+          \centering
+          \begin{tikzpicture}
+            \node (s_m) [scope]   at(-1, 0) {s\_m};
+            \node (s_u) [scope]   at (-1, -2) {s\_u};
+            \node (s_p) [scope]   at(0.6, -2) {s\_p};
+            \node (s_sc) [scope]   at(2.2, -2) {s\_sc};
+            \node (t_p) [decl]  at(3.5, 0.5) {p : PAGE("p", [])};
+            \node (t_sc) [decl]  at(4.5, -0.5) {securityContext : ENTITY(..., s\_sc)};
+
+            \node (t_pr) [decl]  at(0, -4) {principal : ENTITY("User", s\_u)};
+            \node (t_li) [decl]  at(5, -4) {loggedIn : BOOL};
+  
+            \draw[scope edge] (s_p.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+            \draw[scope edge] (s_u.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+            \draw[decl edge] (s_m.east) -- (t_p.west) node[midway, sloped, fill=white] {page};
+            \draw[decl edge] (s_m.east) -- (t_sc.west) node[midway, sloped, fill=white] {var};
+
+            \draw[decl edge] (t_pr.north) -- (s_sc.south) node[midway, sloped, fill=white] {var};
+            \draw[decl edge] (t_li.north) -- (s_sc.south) node[midway, sloped, fill=white] {var};
+          \end{tikzpicture}
+          \caption{\label{fig:webdsl-access-control-example-sg}}
+        \end{subfigure}
+        \caption{\label{fig:webdsl-access-control-example}An example of access control in WebDSL. The entries related to entity \texttt{User} are omitted for brevity}
+      \end{figure}
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
+module x
+rules
+  principalDefOk : scope * string * list(string)
+  principalDefOk(s, ent, properties) :-
+    { s_ent entityName credentialTypes t }
+    definedType(s, ent) == t@ENTITY(entityName, s_ent),
+    principalPropertyTypes(s_ent, properties, ent) == credentialTypes,
+    compatibleCredentialTypes(properties, credentialTypes),
+    declSecurityContext(s, t, credentialTypes).
+
+  compatibleCredentialTypes maps compatibleCredentialType(list(*), list(*))
+  compatibleCredentialType : string * TYPE
+  compatibleCredentialType(x, s) :-
+    isStringCompatibleType(s).
+
+  declSecurityContext : scope * TYPE * list(TYPE)
+  declSecurityContext(s, principalType, credentialTypes) :-
+    { s_extend_security_context }
+    new s_extend_security_context,
+    declProperty(s_extend_security_context, "securityContext"
+      , "principal", principalType),
+    declProperty(s_extend_security_context, "securityContext"
+      , "loggedIn", bool(s)),
+    declareExtendScope(s, "securityContext", s_extend_security_context),
+    extendScopes(resolveExtendScope(s, "securityContext")
+      , s_extend_security_context).
+        \end{minted}
+        \caption{\label{fig:webdsl-principal-statix}Statix rules for declaring the access control principal}
+      \end{figure}
+
       \begin{itemize}
         \item [\textbf{TO-DO:}]
-        \item Principal
         \item References to pages and templates
         \item Wildcards
         \item Pointcuts?
