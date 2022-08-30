@@ -1033,8 +1033,8 @@ module m
 
       Apart from globally declared functions, functions may also be part of an entity. In this case, functions can be called similar to how entity properties are referenced. Lastly, entity functions may have the \texttt{static} annotation, which is similar to static class functions in the Java programming language. Static functions may be called without having an instantiated entity.
 
+      \textbf{Possible TO-DO:}
       \begin{itemize}
-        \item [\textbf{TO-DO:}]
         \item List/explain interesting action code type checking
       \end{itemize}
 
@@ -1125,8 +1125,8 @@ rules
         \caption{\label{fig:webdsl-principal-statix}Statix rules for declaring the access control principal}
       \end{figure}
 
+      \textbf{Possible TO-DO:}
       \begin{itemize}
-        \item [\textbf{TO-DO:}]
         \item References to pages and templates
         \item Wildcards
         \item Pointcuts?
@@ -1344,7 +1344,7 @@ module m
             \node (t_fin) [decl]  at(5, -1) {firstname : String};
             \node (t_ln) [decl]  at(5, -2) {lastname : String};
             \node (t_fun) [decl]  at(5, -3) {fullname : String};
-            \node (t_der) [decl]  at(5.5, -4) {"fullname" : DERIVED()};
+            \node (t_der) [decl]  at(5.5, -4) {fullname : DERIVED()};
   
             \draw[scope edge] (s_p.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
             \draw[decl edge] (s_m.east) -- (t_p.west) node[midway, sloped, fill=white] {type};
@@ -1360,17 +1360,75 @@ module m
 
       Another interesting annotation to mention, is the \texttt{inverse = <var>} annotation as shown for the \texttt{courses} property of the \texttt{Teacher} entity in \cref{fig:webdsl-properties-example}. The inverse annotation is introduced to prevent data duplication in the database. To continue with the example of \texttt{Teacher} and \texttt{Course} of \cref{fig:webdsl-properties-example}, the \texttt{Course} table saves the corresponding teacher, and when a teacher is fetched from the database, the \texttt{courses} property is instantiated according to the data in the \texttt{Course} table. When specifying \texttt{inverse=teacher}, the Statix specification has to validate that the entity mentioned in the property type (\texttt{Course} in this case) has the \texttt{teacher} property, and that the type of that \texttt{teacher} property is equal to the type of the entity that the inverse annotation was declared in (\texttt{Teacher} in this example). To prevent a situation where none of the two entities is responsible for saving the data, a double inverse annotation is not allowed. To enforce this, another constraint has to be added, namely that the \texttt{teacher} property of \texttt{Course} does not have an inverse annotation. The only way to reliably check this is to save the annotation \texttt{INVERSE()} in the scope graph.
 
-      Lastly, we will explain the \texttt{name} property and annotation.
-
-    \subsection{The Name Property}
+    \subsection{Entity Hierarchy and the Name Property}
 
       Similar to \texttt{Object} in the Java programming language, WebDSL also has a root of the entity hierarchy, namely \texttt{Entity}. If a defined entity does not explicitly inherit from another entity, it will automatically inherit from \texttt{Entity}. This built-in superclass is convenient to store properties that all entites will have out of the box, such as the property \texttt{id} of type \texttt{UUID} and the property \texttt{created} of type \texttt{DateTime}. User-defined entities are not allowed redefine such properties, but they may to edit the values. An exception to this rule is the property \texttt{name} of type \texttt{String} that all entities have by default, but may be overridden once by sub-entities.
 
-      \begin{itemize}
-        \item [\textbf{TO-DO:}]
-        \item Introduce new annotation (OVERRIDABLE)
-        \item Give example in scope graph
-      \end{itemize}
+      To achieve the overridability, we can re-use the property annotations in the scope graph as explained in previous section. The \texttt{name} property of the built-in entity \texttt{Entity} gets a \texttt{OVERRIDABLE()} annotation declared in the scope of \texttt{Entity}, and when attempting to catch duplicate property definitions, we must discard properties from parents that have the \texttt{OVERRIDABLE()} property. An example of the overriding is shown in \cref{fig:name-property-overriding-example} and the Statix code to discard overridable properties is shown in \cref{fig:overridable-properties-statix}. In the Statix rules, there are now two predicates to prevent duplicates: one for within the entity, and another one to check inherited properties. The difference is rules allows for better error messages, but most importantly allows us to only discard properties with the \texttt{OVERRIDABLE()} annotation from inherited properties. At the point of writing this thesis, the built-in name property is the only use case for the \texttt{OVERRIDABLE()} annotation and it is not possible to mark a property as overridable by code.
+
+      \begin{figure}
+        \begin{subfigure}[b]{0.3\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+module m
+  entity Person {
+    name : String
+  }
+          \end{minted}
+          \caption{\label{fig:name-property-overriding-example-webdsl}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.7\textwidth}
+          \centering
+          \begin{tikzpicture}
+            \node (s_m) [scope]   at(-1, 0) {s\_m};
+            \node (s_e) [scope]   at(1.5, -2.5) {s\_entity};
+            \node (s_p) [scope]   at(-1, -2.5) {s\_person};
+            \node (t_e) [decl]  at(5, 0.5) {Entity : ENTITY("Entity", s\_e)};
+            \node (t_p) [decl]  at(5, -0.5) {Person : ENTITY("Person", s\_person)};
+            \node (t_multi) [decl]  at(6.5, -1.5) {...};
+            \node (t_name1) [decl]  at(6.5, -2.5) {name : String};
+            \node (t_anno) [decl]  at(7, -3.5) {name : OVERRIDABLE()};
+            \node (t_name2) [decl]  at(-1, -4.5) {name : String};
+  
+            \draw[scope edge] (s_p.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+            \draw[decl edge] (s_m.east) -- (t_e.west) node[midway, sloped, fill=white] {type};
+            \draw[decl edge] (s_m.east) -- (t_p.west) node[midway, sloped, fill=white] {type};
+            \draw[decl edge] (s_e.east) -- (t_multi.west) node[midway, sloped, fill=white] {var};
+            \draw[decl edge] (s_e.east) -- (t_name1.west) node[midway, sloped, fill=white] {var};
+            \draw[decl edge] (s_e.east) -- (t_anno.west) node[midway, sloped, fill=white] {annotation};
+            \draw[decl edge] (s_p.south) -- (t_name2.north) node[midway, sloped, fill=white] {var};
+          \end{tikzpicture}
+          \caption{\label{fig:name-property-overriding-example-sg}}
+        \end{subfigure}
+        \caption{\label{fig:name-property-overriding-example}An example of overriding the \texttt{name} property}
+      \end{figure}
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
+  module x
+  rules
+    declProperties maps declProperty(*, *, list(*), list(*))
+    declProperty : scope * string * string * TYPE
+    declProperty(s, ent, x, sortType) :-
+      validPropertyName(x),
+      declareVar(s, x, sortType),
+      resolveLocalProperty(s, x) == [_]
+        | error $[Property [x] of entity [ent] is defined multiple times] @x,
+      noDuplicateVarDefsInSuper(s, x)
+        | error $[Cannot override existing entity property [x]] @x.
+
+    noDuplicateVarDefsInSuper : scope * string
+    noDuplicateVarDefsInSuper(s_sub, x) :- { xs nonOverridable }
+      resolveProperty(s_sub, x) == xs,
+      withoutAnnotation(xs, OVERRIDABLE()) == nonOverridable,
+      amountNonOverridableOk(nonOverridable).
+
+    amountNonOverridableOk : list((path * (string * TYPE)))
+    amountNonOverridableOk(_) :- false.
+    amountNonOverridableOk([]).
+    amountNonOverridableOk([_]).
+        \end{minted}
+        \caption{\label{fig:overridable-properties-statix}Statix rules for overridable entity properties}
+      \end{figure}
 
   \section{\label{sec:function-template-overloading}Function and Template Overloading}
 
