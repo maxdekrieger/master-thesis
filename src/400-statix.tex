@@ -1291,13 +1291,76 @@ rules
 
     \subsection{Property Annotations}
 
-      \begin{itemize}
-        \item [\textbf{TO-DO:}]
-        \item Annotations that do not influence the scope graph (validate, etc.)
-        \item Inverse annotation
-        \item Derived annotation
-        \item Briefly mention the name annotation
-      \end{itemize}
+      So far, the Statix specification can validate entities, their properties and their functions. Since the goal is to never manually touch the database specification, we would like to entity properties to be more expressive by for example specifiying default values, or put a constraint on the possible values of a property. WebDSL uses \textit{property annotations} for this. \Cref{fig:webdsl-properties-example} shows an WebDSL code of an entity with properties that have annotations.
+
+      \begin{figure}
+        \begin{minted}[firstline=1]{\webdsl}
+module m
+  entity Course {
+    key : String (default="change-me")
+    ects : Float (validate(ects >= 0, "ECTS may not be lower than 0"))
+    teacher : Teacher (not null)
+  }
+
+  entity Teacher {
+    firstname : String
+    lastname : String (length = 255)
+    courses : [Course] (inverse=teacher)
+    
+    temporaryNumber : Int (transient)
+    fullname : String := getFullName()
+
+    function getFullName() : String {
+      return "~firstname + ~lastname";
+    }
+  }
+        \end{minted}
+        \caption{\label{fig:webdsl-properties-example}Examples of entity property annotations}
+      \end{figure}
+
+      Many property annotations do not influence the scope graph. An example of this is the \texttt{default = <exp>} annotation, where Statix only needs to check whether the given expression is compatible with the property type. For the \texttt{length = <exp>} annotation, the same holds, except that the expression must now have type \texttt{Int}.
+
+      An interesting property to point out is the derived property, as shown in for property \texttt{fullname} of the \texttt{Teacher} entity in \cref{fig:webdsl-properties-example}. While this is not strictly an annotation, it does change something in the scope graph. A derived value can be calculated from other properties of the entity and does not have to be stored. It's value can also not be changed directly. The latter property is something we need to store in the scope graph, such that we can give an error when the developers attempts to assign a value directly to a derived property. For this, a new relation is introduced in Statix, which allows us to declare annotations on properties in the scope of an entity. An example of this is shown in \cref{fig:derived-annotation-example}. When assigning a variable, the left-hand side of the assignment can now be checked for mutability. The implementation of this checks whether the entity property that is referenced on the left-hand side has the \texttt{DERIVED()} annotation. To prevent code duplication, we chose to re-use the \texttt{DERIVED()} property for function parameters, which can only be referenced but never changed in the function body.
+
+      \begin{figure}
+        \begin{subfigure}[b]{0.3\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+module m
+  entity Person {
+    firstname : String
+    lastname  : String
+    fullname  : String :=
+      "~firstname + ~lastname"
+  }
+          \end{minted}
+          \caption{\label{fig:derived-annotation-example-webdsl}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.7\textwidth}
+          \centering
+          \begin{tikzpicture}
+            \node (s_m) [scope]   at(0, 0) {s\_m};
+            \node (s_p) [scope]   at(0, -2.5) {s\_person};
+            \node (t_p) [decl]  at(5.2, 0) {Person : ENTITY("Person", s\_person)};
+            \node (t_fin) [decl]  at(5, -1) {firstname : String};
+            \node (t_ln) [decl]  at(5, -2) {lastname : String};
+            \node (t_fun) [decl]  at(5, -3) {fullname : String};
+            \node (t_der) [decl]  at(5.5, -4) {"fullname" : DERIVED()};
+  
+            \draw[scope edge] (s_p.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+            \draw[decl edge] (s_m.east) -- (t_p.west) node[midway, sloped, fill=white] {type};
+            \draw[decl edge] (s_p.east) -- (t_fin.west) node[midway, sloped, fill=white] {var};
+            \draw[decl edge] (s_p.east) -- (t_ln.west) node[midway, sloped, fill=white] {var};
+            \draw[decl edge] (s_p.east) -- (t_fun.west) node[midway, sloped, fill=white] {var};
+            \draw[decl edge] (s_p.east) -- (t_der.west) node[midway, sloped, fill=white] {annotation};
+          \end{tikzpicture}
+          \caption{\label{fig:derived-annotation-example-sg}}
+        \end{subfigure}
+        \caption{\label{fig:derived-annotation-example}An example of a derived property in an entity}
+      \end{figure}
+
+      Another interesting annotation to mention, is the \texttt{inverse = <var>} annotation as shown for the \texttt{courses} property of the \texttt{Teacher} entity in \cref{fig:webdsl-properties-example}. The inverse annotation is introduced to prevent data duplication in the database. To continue with the example of \texttt{Teacher} and \texttt{Course} of \cref{fig:webdsl-properties-example}, the \texttt{Course} table saves the corresponding teacher, and when a teacher is fetched from the database, the \texttt{courses} property is instantiated according to the data in the \texttt{Course} table. When specifying \texttt{inverse=teacher}, the Statix specification has to validate that the entity mentioned in the property type (\texttt{Course} in this case) has the \texttt{teacher} property, and that the type of that \texttt{teacher} property is equal to the type of the entity that the inverse annotation was declared in (\texttt{Teacher} in this example). To prevent a situation where none of the two entities is responsible for saving the data, a double inverse annotation is not allowed. To enforce this, another constraint has to be added, namely that the \texttt{teacher} property of \texttt{Course} does not have an inverse annotation. The only way to reliably check this is to save the annotation \texttt{INVERSE()} in the scope graph.
+
+      Lastly, we will explain the \texttt{name} property and annotation.
 
     \subsection{The Name Property}
 
@@ -1305,7 +1368,7 @@ rules
 
       \begin{itemize}
         \item [\textbf{TO-DO:}]
-        \item Mention annotations in scope graph and introduce new annotation (OVERRIDABLE)
+        \item Introduce new annotation (OVERRIDABLE)
         \item Give example in scope graph
       \end{itemize}
 
