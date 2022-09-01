@@ -1452,7 +1452,7 @@ module m
     "~c.name (Breed: ~c.breed)"
   }
       \end{minted}
-      \caption{\label{fig:template-overloading-example}An example of template overloading in WebDSL}
+      \caption{\label{fig:template-overloading-example}An example of defining overloaded templates in WebDSL}
     \end{figure}
 
     Overloading complicates the static analysis in two ways. The first and easiest to implement is that functions may now be defined multiple times with the same name, as long as the amount of arguments and argument types do not exactly match. The Statix rules that achieve this are shown in \cref{fig:statix-overloaded-function-definitions}. The essence of the rules is that all functions with the relevant name are retrieved, and the declarations with argument types exactly matching with the relevant types are counted. The resulting number should be 1, namely the newly declared function.
@@ -1480,7 +1480,7 @@ rules
       \caption{\label{fig:statix-overloaded-function-definitions}Statix rules for allowing overloaded function definitions}
     \end{figure}
 
-    Now that the static analysis allows for overloaded functions and templates to be defined, the code that typechecks function calls and template calls should be updated to reflect the new changes. The semantics of resolving the correct overloaded function or template are as follows:
+    Now that the static analysis allows for overloaded functions and templates to be defined, the code that typechecks function calls and template calls should be updated to reflect the new changes. The semantics of resolving the correct overloaded function or template are listed below. A practical example of how these rules work is shown in \cref{fig:template-overloading-referencing-example}.
 
     \begin{enumerate}
       \item Retrieve all function signatures with the matching name from the scope graph
@@ -1493,10 +1493,88 @@ rules
       \end{itemize}
     \end{enumerate}
 
-    \textbf{TO-DO:}
+    \begin{figure}
+      \begin{minted}[firstline=1]{\webdsl}
+module m
+
+  entity Animal {
+    name : String
+  }
+  entity Cat : Animal {
+    breed : String
+  }
+
+  template description(a : Animal) {
+    "~a.name"
+  }
+  template description(c : Cat) {
+    "~c.name (Breed: ~c.breed)"
+  }
+
+  page p {
+    var a := Animal{ name := "Alice" }
+    var c := Cat{ name := "Charlie", breed := "Sphynx" }
+
+    description(a) // will output "Alice"
+    description(c) // wil output "Charlie (Breed: Sphynx)"
+  }
+      \end{minted}
+      \caption{\label{fig:template-overloading-referencing-example}An example of referencing overloaded templates in WebDSL}
+    \end{figure}
+
+    The implementation of resolving the correctly overloaded function according to the listed semantics is shown in \cref{fig:statix-overloaded-function-calls}. The essence of the semantics is encoded in the Statix rules, but the brevity and elegancy is lost due to many helper predicates being required to transform the data into the correct forms to perform the queries that calculate the inheritance edges, and filter the function signatures accordingly. Note that the \texttt{typeOfFunctionCall} predicate is not specific to functions, because the signature requires a string and a list of expressions, which causes the predicate to be re-usable for resolving template calls.
+
+    \begin{figure}
+      \begin{minted}[firstline=3]{\statix}
+module m
+rules
+  typeOfFunctionCall : scope * string * list(Exp) 
+    * list((path * (string * TYPE))) -> TYPE
+  typeOfFunctionCall(s, f, args, funSigs) = t :- { argTypes f' result }
+    argTypes == typesOfExps(s, args),
+    result == mostSpecificSigs(
+      argTypes
+      , typeCompatibleSigs(funSigs, argTypes
+    )),
+    [(f', FUNCTION(_, _, t, _))] == result
+      | error $[Cannot resolve function [f] with compatible argument types] @f.
+
+  // function that gets all functions/templates with matching name
+  // and compatible argument types
+  typeCompatibleSigs : list((path * (string * TYPE))) * list(TYPE)
+    -> list((string * TYPE))
+  /* implementation not shown for brevity */
+    
+  // function that prunes the list of compatible signatures
+  // to a list of most specific signatures
+  mostSpecificSigs : list(TYPE) * list((string * TYPE)) -> list((string * TYPE))
+  // In case no functions are compatible, return empty list
+  mostSpecificSigs(args, []) = [].
+  // In case of only one compatible signature, return that
+  mostSpecificSigs(args, fs@[_]) = fs.
+  mostSpecificSigs(args, sigs) = mostSpecificSigs_helper(args, sigs, 
+    matchingSigs(stripRefTypes(args), sigs)).
+
+  // helper function for mostSpecificFunSigs that returns
+  // the exactly matching signatures if they exists,
+  // else return the most specific (least inheritance) signatures
+  mostSpecificSigs_helper : list(TYPE) * list((string * TYPE))
+    * list((string * TYPE)) -> list((string * TYPE))
+  mostSpecificSigs_helper(args, sigs, matching) = matching.
+  mostSpecificSigs_helper(args, sigs, [])       = 
+    filterLeastInheritanceAmount(
+      minOfList(inheritanceAmounts) 
+      , zipInheritanceAmountWithSig(inheritanceAmounts, sigs)) :-
+    inheritanceAmounts == inheritanceAmounts(args, sigs).
+  
+  // at least 10 more helper predicates are not shown that calculate
+  // the amount of inheritance edges and perform the filtering
+      \end{minted}
+      \caption{\label{fig:statix-overloaded-function-calls}Statix rules for resolving overloaded function calls}
+    \end{figure}
+
+    \textbf{Possible TO-DO:}
     \begin{itemize}
-      \item Give examples in WebDSL code.
-      \item Show Statix code.
       \item Change implementation to throw an error when an overloaded function is not "strictly better" than another (e.g. another one has a more specific argument type for at least one of the arguments).
     \end{itemize}
 
