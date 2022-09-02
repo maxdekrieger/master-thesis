@@ -1567,7 +1567,7 @@ rules
       , zipInheritanceAmountWithSig(inheritanceAmounts, sigs)) :-
     inheritanceAmounts == inheritanceAmounts(args, sigs).
   
-  // at least 10 more helper predicates are not shown that calculate
+  // at least ten more helper predicates are not shown that calculate
   // the amount of inheritance edges and perform the filtering
       \end{minted}
       \caption{\label{fig:statix-overloaded-function-calls}Statix rules for resolving overloaded function calls}
@@ -1578,7 +1578,62 @@ rules
       \item Change implementation to throw an error when an overloaded function is not "strictly better" than another (e.g. another one has a more specific argument type for at least one of the arguments).
     \end{itemize}
 
-  \section{\label{sec:actions-and-submitting-forms}Actions and Submitting Forms}
+  \section{\label{sec:actions-and-submitting-forms}Placeholders, Actions and Submitting Forms}
+
+    Forms are the basis of most information systems on the web. WebDSL has linguistically integrated forms through inputs and actions. The static analysis of referencing actions and placeholders is unlike variable referencing, due to their scoping semantics. Actions abd placeholders are defined in pages or templates and may be referred to in the rest of the page or function body. Unlike variables, actions and placeholders do not follow the declare-before-use principle (explained in \cref{subsec:simple-variables}). Actions and placeholders may be defined anywhere in the body, and referenced from anywhere in the body, but there is a twist. Inside the action body, the statements and expressions may reference variables defined in the template or page body, and thus the scope of the action must be linked to the scope of the template of page in some way.
+    
+    Summarized, actions and placeholders cannot be declared in the scope they are defined in, since that scope follows a declare-before-use regime, but the body of an action must have access to the scope it was declared in. As a solution to this challenge, the Statix rules for declaring a page were altered to not only create a scope for its body, but create an additional scope where placeholders and actions will be declared. This scope is passed along such that variables are queryable using the regular function body scope, and querying placeholders and actions is available using the additional scope. An example of an action and its representation in the scope graph is shown in \cref{fig:actions-example}.
+
+    \begin{figure}
+      \begin{subfigure}[b]{0.3\textwidth}
+        \begin{minted}[firstline=1]{\webdsl}
+module m
+
+entity Person {
+  firstname : String
+}
+
+page p {
+  var person := Person{}
+
+  form {
+    input(person.firstname)
+    submit a() { "Save" }
+  }
+
+  action a() {
+    person.save();
+    return p();
+  }
+}
+        \end{minted}
+        \caption{\label{fig:actions-example-webdsl}}
+      \end{subfigure}
+      \begin{subfigure}[b]{0.7\textwidth}
+        \centering
+        \begin{tikzpicture}
+          \node (s_m) [scope]   at(-1, 0) {s\_m};
+          \node (s_e) [scope]   at(1.5, -2.5) {s\_entity};
+          \node (s_p) [scope]   at(-1, -2.5) {s\_person};
+          \node (t_e) [decl]  at(5, 0.5) {Entity : ENTITY("Entity", s\_e)};
+          \node (t_p) [decl]  at(5, -0.5) {Person : ENTITY("Person", s\_person)};
+          \node (t_multi) [decl]  at(6.5, -1.5) {...};
+          \node (t_name1) [decl]  at(6.5, -2.5) {name : String};
+          \node (t_anno) [decl]  at(7, -3.5) {name : OVERRIDABLE()};
+          \node (t_name2) [decl]  at(-1, -4.5) {name : String};
+
+          \draw[scope edge] (s_p.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+          \draw[decl edge] (s_m.east) -- (t_e.west) node[midway, sloped, fill=white] {type};
+          \draw[decl edge] (s_m.east) -- (t_p.west) node[midway, sloped, fill=white] {type};
+          \draw[decl edge] (s_e.east) -- (t_multi.west) node[midway, sloped, fill=white] {var};
+          \draw[decl edge] (s_e.east) -- (t_name1.west) node[midway, sloped, fill=white] {var};
+          \draw[decl edge] (s_e.east) -- (t_anno.west) node[midway, sloped, fill=white] {annotation};
+          \draw[decl edge] (s_p.south) -- (t_name2.north) node[midway, sloped, fill=white] {var};
+        \end{tikzpicture}
+        \caption{\label{fig:actions-example-sg}}
+      \end{subfigure}
+      \caption{\label{fig:actions-example}An example of defining and referencing actions}
+    \end{figure}
 
   \section{\label{sec:type-extension}Type Extension}
 
