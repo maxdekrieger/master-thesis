@@ -1582,7 +1582,7 @@ rules
 
     Forms are the basis of most information systems on the web. WebDSL has linguistically integrated forms through inputs and actions. The static analysis of referencing actions and placeholders is unlike variable referencing, due to their scoping semantics. Actions abd placeholders are defined in pages or templates and may be referred to in the rest of the page or function body. Unlike variables, actions and placeholders do not follow the declare-before-use principle (explained in \cref{subsec:simple-variables}). Actions and placeholders may be defined anywhere in the body, and referenced from anywhere in the body, but there is a twist. Inside the action body, the statements and expressions may reference variables defined in the template or page body, and thus the scope of the action must be linked to the scope of the template of page in some way.
     
-    Summarized, actions and placeholders cannot be declared in the scope they are defined in, since that scope follows a declare-before-use regime, but the body of an action must have access to the scope it was declared in. As a solution to this challenge, the Statix rules for declaring a page were altered to not only create a scope for its body, but create an additional scope where placeholders and actions will be declared. This scope is passed along such that variables are queryable using the regular function body scope, and querying placeholders and actions is available using the additional scope. An example of an action and its representation in the scope graph is shown in \cref{fig:actions-example}.
+    Summarized, actions and placeholders cannot be declared in the scope they are defined in, because that scope follows a declare-before-use regime, but the body of an action must have access to the scope it was declared in. As a solution to this challenge, the Statix rules for declaring a page or template were altered to not only create a scope for its body, but create an additional scope where placeholders and actions will be declared. This scope is passed along such that variables are queryable using the regular function body scope, and querying placeholders and actions is available using the additional scope. An example of an action and its representation in the scope graph is shown in \cref{fig:actions-example}.
 
     \begin{figure}
       \begin{subfigure}[b]{0.3\textwidth}
@@ -1593,7 +1593,7 @@ entity Person {
   firstname : String
 }
 
-page p {
+template t {
   var person := Person{}
 
   form {
@@ -1612,27 +1612,77 @@ page p {
       \begin{subfigure}[b]{0.7\textwidth}
         \centering
         \begin{tikzpicture}
-          \node (s_m) [scope]   at(-1, 0) {s\_m};
-          \node (s_e) [scope]   at(1.5, -2.5) {s\_entity};
-          \node (s_p) [scope]   at(-1, -2.5) {s\_person};
-          \node (t_e) [decl]  at(5, 0.5) {Entity : ENTITY("Entity", s\_e)};
-          \node (t_p) [decl]  at(5, -0.5) {Person : ENTITY("Person", s\_person)};
-          \node (t_multi) [decl]  at(6.5, -1.5) {...};
-          \node (t_name1) [decl]  at(6.5, -2.5) {name : String};
-          \node (t_anno) [decl]  at(7, -3.5) {name : OVERRIDABLE()};
-          \node (t_name2) [decl]  at(-1, -4.5) {name : String};
+          \node (s_m) [scope]   at(-2, 0) {s\_m};
+          \node (t_p) [decl]  at(4, 0.5) {Person : ENTITY("Person", s\_person)};
+          \node (t_t) [decl]  at(3, -0.5) {t : Template("t", []])};
+          \node (s_p) [scope]   at(-2, -2.5) {s\_person};
+          \node (t_p_name) [decl]  at(-2, -4.3) {firstname : String};
+          \node (s_t) [scope]   at(2, -2.5) {s\_t};
+          \node (s_t_body) [scope]   at(0.7, -5) {s\_t\_body};
+          \node (s_t_body2) [scope]   at(0.7, -6.8) {s\_t\_body2};
+          \node (t_t_p) [decl] at (-3, -6.8) {person : Person};
+          \node (s_a) [scope]   at(0.7, -8.6) {s\_a};
+          \node (s_t_pha) [scope]   at(3.3, -5) {s\_t\_pha};
+          \node (t_a) [decl]  at(3.3, -8) {a : ACTION("a", [])};
 
-          \draw[scope edge] (s_p.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
-          \draw[decl edge] (s_m.east) -- (t_e.west) node[midway, sloped, fill=white] {type};
           \draw[decl edge] (s_m.east) -- (t_p.west) node[midway, sloped, fill=white] {type};
-          \draw[decl edge] (s_e.east) -- (t_multi.west) node[midway, sloped, fill=white] {var};
-          \draw[decl edge] (s_e.east) -- (t_name1.west) node[midway, sloped, fill=white] {var};
-          \draw[decl edge] (s_e.east) -- (t_anno.west) node[midway, sloped, fill=white] {annotation};
-          \draw[decl edge] (s_p.south) -- (t_name2.north) node[midway, sloped, fill=white] {var};
+          \draw[decl edge] (s_m.east) -- (t_t.west) node[midway, sloped, fill=white] {template};
+          \draw[scope edge] (s_p.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+          \draw[decl edge] (s_p.south) -- (t_p_name.north) node[midway, sloped, fill=white] {var};
+          \draw[scope edge] (s_t.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+          \draw[scope edge] (s_t_body.north) -- (s_t.south) node[midway, sloped, yshift=1ex] {P};
+          \draw[scope edge] (s_t_body2.north) -- (s_t_body.south) node[midway, xshift=-1ex] {P};
+          \draw[decl edge] (s_t_body2.west) -- (t_t_p.east) node[midway, sloped, fill=white] {var};
+          \draw[scope edge] (s_a.north) -- (s_t_body2.south) node[midway, xshift=-1ex] {P};
+          \draw[scope edge] (s_t_pha.north) -- (s_t.south) node[midway, sloped, yshift=1ex] {P};
+          \draw[decl edge] (s_t_pha.south) -- (t_a.north) node[midway, sloped, fill=white] {function};
         \end{tikzpicture}
         \caption{\label{fig:actions-example-sg}}
       \end{subfigure}
       \caption{\label{fig:actions-example}An example of defining and referencing actions}
+    \end{figure}
+
+    The updated Statix rules for typechecking a page or template definition, and defining actions in shown in \cref{fig:actions-placeholders-statix}. The Statix rules contain a separate predicate \texttt{templateActionOk} where the last boolean parameter indicates whether the action should be declared or not, and this is passed to \texttt{optionallyDeclareTemplate}. The declaration is optional because it is possible to create a form with a submit button that defines an action inline; an anonymous action in some sense. The anonymous inline action definition can now be type-checked by re-using the \texttt{templateActionOk} predicate.
+
+    The Statix rules which implement the placeholders and actions code behave correctly because of Statix' scheduling algorithm as first described by in the original Statix paper \autocite{VanAntwerpen2018} and further characterized by Rouvoet et al. \autocite{RouvoetAPKV20}.
+
+    \begin{figure}
+      \begin{minted}[firstline=3]{\statix}
+module m
+rules
+  defineTemplateOk(s, DefineTemplate(mods, t
+      , FormalArgs(args), _, elements))
+    :- {fargTypes s_template s_pha s_body}
+    new s_template, s_template -DEF-> s,
+    argTypes == typesOfArgs(s, args),
+    declareParameters(s_template, zipArgTypes(fargs, argTypes)),
+    new s_pha, s_pha -P-> s_template,   // scope for placeholders and actions
+    new s_body, s_body -P-> s_pha,      // scope for template body
+    declareTemplate(s, t, argTypes, isAjaxTemplate(mods)),
+    overriddenElementExists(s, Template(), t, isAjaxTemplate(mods)),
+    templateElementsOk(s_body, s_pha, elements).
+
+  templateElementOk(s, _, s_pha
+    , Action2TemplateElement(Action(_, a, FormalArgs(args), Block(stmts))))
+    :- templateActionOk(s, s_pha, a, args, stmts, TRUE()).
+
+  templateActionOk : scope * scope * string
+    * list(FormalArg) * list(Statement) * BOOL
+  templateActionOk(s, s_pha, a, args, stmts, declare)
+    :- {s_fun s_fun_body argTypes}
+    new s_fun, s_fun -P-> s,
+    argTypes == typesOfArgs(s, args),
+    declareParameters(s_fun, zipArgTypes(args, argTypes)),
+    new s_fun_body, s_fun_body -P-> s_fun,
+    optionallyDeclareAction(s_pha, a, args, argTypes, declare),
+    stmtsOk(s_fun_body, stmts, PAGE(_, _)).
+
+  optionallyDeclareAction : scope * string * list(FormalArg) * list(TYPE) * BOOL
+  optionallyDeclareAction(_, _, _, _, FALSE()).
+  optionallyDeclareAction(s, a, args, ts, TRUE())
+    :- declareAction(s, a, args, ts).
+      \end{minted}
+      \caption{\label{fig:actions-placeholders-statix}Statix rules for declaring actions}
     \end{figure}
 
   \section{\label{sec:type-extension}Type Extension}
