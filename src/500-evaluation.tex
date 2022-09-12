@@ -13,12 +13,44 @@ In this chapter we will evaluate the results of the work done in this thesis. Fi
     \item Edge cases
   \end{itemize}
 
+  SDF3:
+
+  \begin{itemize}
+    \item Expect same in WebDSL's arsing test suite
+    \item Parse analysis test suite files with SDF2 and SDF3 specification, expect to fail/ambiguous on the exact same files
+    \item Parse YellowGrass and Codefinder, expect to fail/ambiguous on the exact same files
+    \item (Compare ASTs by hand)
+    \item Explain differences
+  \end{itemize}
+
+  Statix:
+
+  \begin{itemize}
+    \item Analysis test suite: expect to pass all
+    \item Analyze YellowGrass and Codefinder, expect 0 errors
+    \item Explain differences
+  \end{itemize}
+
 \section{\label{sec:performance}Performance}
 
   \begin{itemize}
     \item Explain metrics and methods
     \item Results
     \item Discuss results
+  \end{itemize}
+
+  SDF3:
+
+  \begin{itemize}
+    \item Parse analysis test suite files with both SDF2 and SDF3, show difference in timings
+    \item Parse YellowGrass and Codefinder with both SDF2 and SDF3, show difference in timings
+  \end{itemize}
+
+  Statix:
+
+  \begin{itemize}
+    \item Analyze analysis test suite files with both Stratego and Statix analysis, show difference in timings
+    \item Analyze YellowGrass and Codefinder with both Stratego and Statix analysis, show difference in timings
   \end{itemize}
 
 \section{\label{sec:usability}Usability}
