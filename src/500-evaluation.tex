@@ -2,9 +2,45 @@
 
 \chapter{\label{chap:evaluation}Evaluation}
 
-In this chapter we will evaluate the results of the work done in this thesis. First we will assess the correctness of the modernized WebDSL front-end by defining what correctness means in absence of a formal specification and evaluating accordingly. Next, we will share, inspect and reason about the performance of the new parser and static analyses. Lastly, we conclude this chapter by discussing the usability of the modernized implementation in practice.
+In this chapter we evaluate the newly introduced SDF3 and Statix specifications for WebDSL. The new specifications have two concrete use-cases, namely serving as a case study for SDF3 and Statix, and being used on a daily basis by WebDSL developers. For both purposes it is useful to gather information about how the specifications behave in various situations. As a result of the case study, we want to show strengths and weaknesses of SDF3 and Statix based on information from the specifications, and for the WebDSL developers we would like to decide whether the new specifications are ready to be used in practice.
 
-\section{\label{sec:correctness}Correctness}
+For both specifications, we will evaluate their correctness and performance on existing test suites, as well as WebDSL code that is used in practice. Then, we conclude this chapter by discussing the usability of the modernized implementation in practice.
+
+\section{\label{sec:eval-sdf3}Evaluating the WebDSL SDF3 Specification}
+
+  Evaluating the SDF3 specification of the WebDSL grammar is done in two parts: its correctness and its performance in terms of generated parse tables and their run time. In this section we will use the current implementation of the WebDSL grammar in SDF2 as the reference grammar for correctness and performance.
+
+  \subsection{Correctness}
+
+    In this thesis we do not formally prove the correctness of the new grammar. Instead, we parse test suites that are intended for the current SDF2 specification and parse open source WebDSL applications that are used in practice.
+
+    The test suite consists of 231 WebDSL snippets, ranging from single expressions to complete functioning applications. To re-use this test suite for the SDF3 specification, we converted the snippets into SPT tests and the result is that all of the 231 snippets parse succesfully.
+
+    Upon closer inspection of the original test suite, while converting it to an SPT test suite, we concluded it was not a complete test suite of all syntax constructs but mostly contained syntax fragments which were problematic in the past to serve as a regression test suite. For the sake of completion, we decided to extend the SPT test suite, leading to a new total of 1118 SPT tests, where the newly added test have an expected AST result, instead of only expecting the snippets to parse correctly.
+
+    \begin{itemize}
+      \item Parse YellowGrass and Codefinder, expect to fail/ambiguous on the exact same files
+    \end{itemize}
+
+    One thing to note in discussing correctness of the WebDSL SDF3 completeness is that, while the results are promising, the SDF3 specification has introduced many new sorts and constructors for disambiguation purposes, and to comply with the Statix Signature Generator expectations. The effect of this change is that the resulting ASTs were not compared and we can therefore not guarantee correctness of the disambiguation, other than the subjective confidence gained from handpicking snippets and comparing the ASTs manually.
+
+  \subsection{Performance}
+
+    \begin{itemize}
+      \item Defining correctness in absence of a formal specification
+      \item How correct is the implementation WebDSL
+      \item Explain correctness
+      \item Edge cases
+    \end{itemize}
+
+    Performance:
+
+    \begin{itemize}
+      \item Parse analysis test suite files with both SDF2 and SDF3, show difference in timings
+      \item Parse YellowGrass and Codefinder with both SDF2 and SDF3, show difference in timings
+    \end{itemize}
+
+\section{\label{sec:eval-statix}Statix}
 
   \begin{itemize}
     \item Defining correctness in absence of a formal specification
@@ -13,17 +49,7 @@ In this chapter we will evaluate the results of the work done in this thesis. Fi
     \item Edge cases
   \end{itemize}
 
-  SDF3:
-
-  \begin{itemize}
-    \item Expect same in WebDSL's arsing test suite
-    \item Parse analysis test suite files with SDF2 and SDF3 specification, expect to fail/ambiguous on the exact same files
-    \item Parse YellowGrass and Codefinder, expect to fail/ambiguous on the exact same files
-    \item (Compare ASTs by hand)
-    \item Explain differences
-  \end{itemize}
-
-  Statix:
+  Correctness:
 
   \begin{itemize}
     \item Analysis test suite: expect to pass all
@@ -31,22 +57,7 @@ In this chapter we will evaluate the results of the work done in this thesis. Fi
     \item Explain differences
   \end{itemize}
 
-\section{\label{sec:performance}Performance}
-
-  \begin{itemize}
-    \item Explain metrics and methods
-    \item Results
-    \item Discuss results
-  \end{itemize}
-
-  SDF3:
-
-  \begin{itemize}
-    \item Parse analysis test suite files with both SDF2 and SDF3, show difference in timings
-    \item Parse YellowGrass and Codefinder with both SDF2 and SDF3, show difference in timings
-  \end{itemize}
-
-  Statix:
+  Performance:
 
   \begin{itemize}
     \item Analyze analysis test suite files with both Stratego and Statix analysis, show difference in timings
