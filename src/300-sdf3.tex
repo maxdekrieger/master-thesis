@@ -116,7 +116,7 @@
         \\\\Even though this functions properly, it is hard to read in the Statix rules. For this reason, we changed the WebDSL SDF3 to contain less injections by inserting constructors with descriptive names where injections were.
         \\\\TO-DO: Show result
 
-      \subsubsection{Optional Sorts}
+      \subsubsection{\label{subsubsec:sdf3-optional-sorts}Optional Sorts}
 
         As mentioned in \cref{subsec:sdf3-syntax}, SDF3 has built-in support for optional sorts, resulting in \texttt{Some(\_)} and \texttt{None()} terms.
         \\\\The resulting terms cannot be translated to Statix signatures, since this would mean a lot of duplicate Some and None constructors belonging to different sorts.

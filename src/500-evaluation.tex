@@ -48,15 +48,81 @@ For both specifications, we will evaluate their correctness and performance on e
       \caption{\label{tbl:parse-table-differences}Data about the size of the parse tables generated from the SDF2 and SDF3 grammar specifications.}
     \end{table}
 
+    The parse table generated from the SDF3 specification has more states, gotos and actions than the parse table from the SDF2 specification. Even though the described grammar did not change, it is implemented differently, leading to the increase in parse table size. To see the impact of the larger parse table on the run time, we executed the evaluation on YellowGrass, Reposearch and all files in the analysis test suite, which contains complete WebDSL programs as opposed to the syntax test suite.
+
+    To execute the evaluation, we used a 2019 MacBook Pro running macOS Montery 12.2. The machine has a 2,3 GHz 8-core Intel Core i9 with 64 GB RAM available. The evaluation scripts\footnote{https://github.com/metaborg/jsglr2evaluation} were configured to parse the described files with the SDF2 parse table, as well as the SDF3 parse table using the JSGLR1 parser implementation. Using the Java Microbenchmark Harness\footnote{https://github.com/openjdk/jmh}, we timed the run time of the parsers using 5 warmup iterations and 10 regular iterations.
+
+    \begin{figure}
+      \begin{tikzpicture}
+ 
+        \begin{axis} [ybar, axis on top,
+            title={Benchmark Results (Analysis test suite)},
+            ylabel={Run time (ms)},
+            bar width=40,
+            xmin=0,
+            xmax=3,
+            xticklabels={,SDF2,SDF3,},
+            nodes near coords,
+            ymin=0]
+         
+          \addplot coordinates {(1,394)};
+          \addplot coordinates {(2,450)};
+         
+        \end{axis}
+         
+        \end{tikzpicture}
+      \caption{\label{fig:syntax-performance-charts}Run time of SDF2 definition vs. SDF3 definition}
+    \end{figure}
+
     \begin{itemize}
       \item[TO-DO:]
-      \item Explain statistics in table
-      \item Write about setup: jsglr2evaluationsuite, PC specs, JMH, config
       \item Parse analysis test suite files with both SDF2 and SDF3, show difference in timings
       \item Parse YellowGrass and RepoSearch with both SDF2 and SDF3, show difference in timings
     \end{itemize}
 
-  \subsection{Usability}
+  \subsection{Maintainability}
+
+    Two of the goals of introducing SDF3 as successor of SDF2 in the syntax formalism family, were to support more declarative syntax definition and to make the syntax definitions more readable and understandable \autocite{AmorimV20}. \Cref{fig:sdf3-maintainability-1} shows snippets of the SDF2 and SDF3 specifications that define a WebDSL for-loop. The snippets show that the SDF3 syntax is more similar to other grammar formalisms such as EBNF \autocite{BackusBGK0NPRSV63} and for this reason we argue that the WebDSL syntax definition in SDF3 is easier to read and understand than its predecessor in SDF2.
+
+    \begin{figure}
+      \begin{subfigure}[b]{1\textwidth}
+        \begin{minted}[firstline=3]{\sdftwo}
+module WebDSL-UI
+  exports
+  context-free syntax
+
+    "for" "(" Id ":" Sort "in" Exp OptFilter ")"
+      "{" TemplateElement* "}" ForSeparator -> TemplateElement {cons("For")}
+
+    "separated-by" "{" TemplateElement* "}" -> ForSeparator{cons("ForSeparator")}
+                                            -> ForSeparator{cons("None")}
+        \end{minted}
+        \caption{\label{fig:sdf3-maintainability-1-sdf2}}
+      \end{subfigure}
+      \begin{subfigure}[b]{1\textwidth}
+        \begin{minted}[firstline=2]{\sdfthree}
+module WebDSL-UI
+  context-free sorts
+
+    TemplateElement ForSeparator
+
+  context-free syntax
+
+    TemplateElement.For = <
+      for ( <VarId> : <Sort> in <Exp> <OptFilter> ) {
+        <TemplateElement*>
+      } <ForSeparator>
+    >
+
+    ForSeparator.ForSeparator     = <separated-by { <TemplateElement*> }>
+    ForSeparator.ForSeparatorNone = <>
+        \end{minted}
+        \caption{\label{fig:sdf3-maintainability-1-sdf3}}
+      \end{subfigure}
+      \caption{\label{fig:sdf3-maintainability-1}Defining a WebDSL for-loop in SDF2 and SDF3}
+    \end{figure}
+
+    However, being easier to read and understand does not automatically make the new syntax definition easier to maintain. The compliance with the Statix Signature Generator\footnote{https://www.spoofax.dev/howtos/statix/signature-generator/} imposes constraints on the grammar, such as disallowing optional sorts, which in the worst case causes the amount of sorts in the grammar to double as described in \cref{subsubsec:sdf3-optional-sorts}. Additionally, disambiguation without the \texttt{prefer} and \texttt{avoid} keywords, as described in \cref{sec:webdsl-sdf3-disambiguation}, creates the need for even more sorts which artificially complicate the grammar definition.
 
 \section{\label{sec:eval-statix}Statix}
 

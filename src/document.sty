@@ -167,6 +167,30 @@
   firstnumber=1
 }
 
+\newcommand{\sdfthree}{spoofax_lexer.py -O "language=org/metaborg/org.metaborg.meta.lang.template" -x}
+\setminted[\sdfthree]{
+  frame=single,
+  xleftmargin=1em,  
+  linenos,
+  autogobble=false,
+  numbersep=-11pt,
+  escapeinside=&&,
+  firstline=2,
+  firstnumber=1
+}
+
+\newcommand{\sdftwo}{spoofax_lexer.py -O "language=org/metaborg/org.metaborg.meta.lang.sdf" -x}
+\setminted[\sdftwo]{
+  frame=single,
+  xleftmargin=1em,  
+  linenos,
+  autogobble=false,
+  numbersep=-11pt,
+  escapeinside=&&,
+  firstline=2,
+  firstnumber=1
+}
+
 \newcommand{\webdsl}{spoofax_lexer.py -O "language=org/example/webdslstatix" -x}
 \setminted[\webdsl]{
   xleftmargin=1em,
@@ -183,3 +207,6 @@
 
 \tikzset{scope edge/.style={thick,-{Triangle}, font=\ttfamily}}
 \tikzset{decl edge/.style={dashed,-{Square}, font=\ttfamily}}
+
+% Graphs
+\usepackage{pgfplots}
