@@ -36,6 +36,7 @@ For both specifications, we will evaluate their correctness and performance on e
     Grammar specifications in SDF2 and SDF3 are not interpreted directly. Both formalisms generate a parse table, which is interpreted by the parser implementation JSGLR. JSGLR is an implementation of SGLR parsing in Java, used within the Spoofax Language Workbench. Because of this architecture, it is insightful to inspect the generated parse tables and highlight the differences, as well as comparing the run times of both parsers on the test suite and existing applications.
 
     \begin{table}[h]
+      \centering
       \begin{tabular}{ |c||c | c | p{2cm} | c | p{2.2cm}| }
         \hline
         Parse table from & States & Gotos & Max gotos per state & Actions & Max actions per state \\
@@ -144,20 +145,57 @@ module WebDSL-UI
     One of the goals of analyzing source code before compiling and running it, is to provide early feedback to the developer regarding possible errors. The range of errors that can be caught early is extensive in WebDSL compared to other programming languages, because of the linguistic integration of user interfaces, request handling, access control and the data model.
 
     For evaluating the correctness of the Statix specification, we first run the static analysis on Reposearch and YellowGrass. Both applications are well-formed programs without errors, therefore the desired result of the static analysis is to report no errors.
-    
+
+    \begin{table}[h]
+      \centering
+      \begin{tabular}{ | c || c | c | c | }
+        \hline
+        Project & Files & Lines of code & Errors \\
+        \hline
+        Reposearch & 36 & 8.722 & 4 \\
+        \hline
+        Yellowgrass & 75 & 12.898 & 6 \\
+        \hline
+      \end{tabular}
+      \caption{\label{tbl:statix-reposearch-yellowgrass-results}Results of running the static analysis on Reposearch and Yellowgras.}
+    \end{table}
+
     \begin{itemize}
       \item[TO-DO:]
-      \item Show result of analysis on Reposearch and YellowGrass
-      \item Discuss Differences
+      \item Discuss results
     \end{itemize}
 
-    It is trivial to implement a static analysis that gives no errors at all, and it would technically suit our goal of analysing Reposearch and YellowGrass without errors. To make sure the Statix specification gives feedback when it encounters an incorrect program, we run the Statix static analysis on the analysis test suite of the current implementation in Stratego. In total, the test suite consists of 521 small programs, testing different aspects of the WebDSL language. 273 files contain a correct program and expect the analysis to give no errors, while 248 programs contain in incorrect program where the static analysis must give specific feedback. The expectation in those 248 files can be one of the following:
+    It is trivial to write a program that does not analyse anything and therefore never give an error, and it would technically suit our goal of analysing Reposearch and YellowGrass without errors. To make sure the Statix specification gives feedback when it encounters an incorrect program, we run the Statix static analysis on the analysis test suite of the current implementation in Stratego. In total, the test suite consists of 521 small programs, testing different aspects of the WebDSL language. 273 files contain a correct program and expect the analysis to give no errors, while 248 programs contain in incorrect program where the static analysis must give specific feedback. The expectation as in those 248 files are listed as first lines in the file as comments, and can be one or more of the following.
+
+    \begin{itemize}
+      \item Should give an error containing the message $s$, denoted by \texttt{//s}.
+      \item Should give an error containing the message $s$ exactly $x$ times, denoted by \texttt{//\#x s}.
+      \item Should not show an error with message $s$, denoted by \texttt{//\^{}s}.
+    \end{itemize}
+
+    The results of running the Statix specification on the analysis test suite is shown in \cref{tbl:statix-test-suite-results} below.
+
+    \begin{table}[h]
+      \centering
+      \begin{tabular}{ | c || c | c | }
+        \hline
+        & Test succeeded & Test failed \\
+        \hline
+        Correct programs & 231 & 42 \\
+        \hline
+        Incorrect programs & 71 & 177 \\
+        \hline\hline
+        Total & 302 & 219 \\
+        \hline
+      \end{tabular}
+      \caption{\label{tbl:statix-test-suite-results}Results of the analysis test suite.}
+    \end{table}
+
+    The result of the analysis test suite is the most variable of all results, as it is an ongoing process, as tweaking error messages and giving more specific error messages in certain circumstances is time consuming. At the time of writing, the Git repository containing implementation of the static analysis has over 400 commits and more tests are passing each week.
 
     \begin{itemize}
       \item[TO-DO:]
-      \item Show test expectations
-      \item Show result of analysis on test suite
-      \item Discuss differences
+      \item Discuss results more
     \end{itemize}
 
   \subsection{Performance}
