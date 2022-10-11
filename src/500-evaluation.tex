@@ -21,8 +21,8 @@ For both specifications, we will evaluate their correctness and performance on e
     In addition to the test suite, we used two open-source WebDSL applications for verifying that the new parser generated from the SDF3 specification does not suddenly fail or see ambiguities in existing applications:
 
     \begin{itemize}
-      \item \textbf{YellowGrass:} A tag based issue tracker similar to GitHub Issues, complete with access control and used daily by WebDSL developers. YellowGrass consists of 54 WebDSL files plus 20 WebDSL library files and 1 standard library file, coming to a total of 12.898 lines of code spread over 75 files.
       \item \textbf{Reposearch:} A source code search engine that helps to find implementation details, example usages, etc. Reposearch consists of 16 main files, 19 library files and 1 standard library file, totalling at 8.722 lines of code spread over 36 files.
+      \item \textbf{YellowGrass:} A tag based issue tracker similar to GitHub Issues, complete with access control and used daily by WebDSL developers. YellowGrass consists of 54 WebDSL files plus 20 WebDSL library files and 1 standard library file, coming to a total of 12.898 lines of code spread over 75 files.
     \end{itemize}
 
     The result of parsing both applications with the new parser generated with the SDF3 specification is that no ambiguities were found.
@@ -48,37 +48,46 @@ For both specifications, we will evaluate their correctness and performance on e
       \caption{\label{tbl:parse-table-differences}Data about the size of the parse tables generated from the SDF2 and SDF3 grammar specifications.}
     \end{table}
 
-    The parse table generated from the SDF3 specification has more states, gotos and actions than the parse table from the SDF2 specification. Even though the described grammar did not change, it is implemented differently, leading to the increase in parse table size. To see the impact of the larger parse table on the run time, we executed the evaluation on YellowGrass, Reposearch and all files in the analysis test suite, which contains complete WebDSL programs as opposed to the syntax test suite.
+    The parse table generated from the SDF3 specification has more states, gotos and actions than the parse table from the SDF2 specification. Even though the described grammar did not change, it is implemented differently, leading to the increase in parse table size. To see the impact of the larger parse table on the run time, we executed the evaluation on Reposearch, YellowGrass and all files in the analysis test suite, which contains complete WebDSL programs as opposed to the syntax test suite. The analysis test suite consists of 521 small files, with a total of 19.644 lines of code.
 
     To execute the evaluation, we used a 2019 MacBook Pro running macOS Montery 12.2. The machine has a 2,3 GHz 8-core Intel Core i9 with 64 GB RAM available. The evaluation scripts\footnote{https://github.com/metaborg/jsglr2evaluation} were configured to parse the described files with the SDF2 parse table, as well as the SDF3 parse table using the JSGLR1 parser implementation. Using the Java Microbenchmark Harness\footnote{https://github.com/openjdk/jmh}, we timed the run time of the parsers using 5 warmup iterations and 10 regular iterations.
 
     \begin{figure}
+      \pgfplotstableread{
+   	    size  sdf2  sdf3
+        0     317   377
+    	  1     362   467
+    	  2     493   538
+      }\parsingbenchmarkresults
       \begin{tikzpicture}
- 
-        \begin{axis} [ybar, axis on top,
-            title={Benchmark Results (Analysis test suite)},
+        \begin{axis} [ybar,
+            axis on top,
+            width=\textwidth,
+            title={Parser Benchmark Results},
+            legend style={
+              legend columns=2,
+              at={(xticklabel cs:0.5)},
+              anchor=north,
+              draw=none
+            },
+            bar width=30,
+            ymin=0,
             ylabel={Run time (ms)},
-            bar width=40,
-            xmin=0,
-            xmax=3,
-            xticklabels={,SDF2,SDF3,},
             nodes near coords,
-            ymin=0]
-         
-          \addplot coordinates {(1,394)};
-          \addplot coordinates {(2,450)};
-         
+            xtick=data,
+            xticklabels={Reposearch, YellowGrass, Analysis Test Suite},
+            enlarge x limits=0.3
+            ]
+        
+          \addplot table[x=size, y=sdf2] {\parsingbenchmarkresults};
+          \addplot table[x=size, y=sdf3] {\parsingbenchmarkresults};
+          \legend{SDF2, SDF3}
         \end{axis}
-         
-        \end{tikzpicture}
+      \end{tikzpicture}
       \caption{\label{fig:syntax-performance-charts}Run time of SDF2 definition vs. SDF3 definition}
     \end{figure}
 
-    \begin{itemize}
-      \item[TO-DO:]
-      \item Parse analysis test suite files with both SDF2 and SDF3, show difference in timings
-      \item Parse YellowGrass and RepoSearch with both SDF2 and SDF3, show difference in timings
-    \end{itemize}
+    The result of benchmarking the run time of the syntax definitions is shown in \cref{fig:syntax-performance-charts}. Similar to the growth of the parse table generated from the SDF3 definition, the run time has also increased, as was to be expected.
 
   \subsection{Maintainability}
 
@@ -126,29 +135,39 @@ module WebDSL-UI
 
 \section{\label{sec:eval-statix}Statix}
 
-  \begin{itemize}
-    \item Defining correctness in absence of a formal specification
-    \item How correct is the implementation WebDSL
-    \item Explain correctness
-    \item Edge cases
-  \end{itemize}
+  Static consistency checking through static analysis is one of the core aspects of WebDSL \autocite{Hemel2011}. However, since no formal semantics of WebDSL are described, we rely on the current implementation of the static analysis in Stratego as the ground thruth.
+  
+  The evaluation of the Statix specification of WebDSL consists of three parts. First, we list results on the correctness; whether the static analysis allows well-formed programs to pass and whether it gives the correct feedback for erroneous programs. Next, we evaluate the performance in terms of run time on the applications Reposearch and YellowGrass. Lastly, we make qualitative observations on the maintainability of the new Statix specifications.
 
   \subsection{Correctness}
 
+    One of the goals of analyzing source code before compiling and running it, is to provide early feedback to the developer regarding possible errors. The range of errors that can be caught early is extensive in WebDSL compared to other programming languages, because of the linguistic integration of user interfaces, request handling, access control and the data model.
+
+    For evaluating the correctness of the Statix specification, we first run the static analysis on Reposearch and YellowGrass. Both applications are well-formed programs without errors, therefore the desired result of the static analysis is to report no errors.
+    
     \begin{itemize}
-      \item Analysis test suite: expect to pass all
-      \item Analyze YellowGrass and Reposearch, expect 0 errors
-      \item Explain differences
+      \item[TO-DO:]
+      \item Show result of analysis on Reposearch and YellowGrass
+      \item Discuss Differences
+    \end{itemize}
+
+    It is trivial to implement a static analysis that gives no errors at all, and it would technically suit our goal of analysing Reposearch and YellowGrass without errors. To make sure the Statix specification gives feedback when it encounters an incorrect program, we run the Statix static analysis on the analysis test suite of the current implementation in Stratego. In total, the test suite consists of 521 small programs, testing different aspects of the WebDSL language. 273 files contain a correct program and expect the analysis to give no errors, while 248 programs contain in incorrect program where the static analysis must give specific feedback. The expectation in those 248 files can be one of the following:
+
+    \begin{itemize}
+      \item[TO-DO:]
+      \item Show test expectations
+      \item Show result of analysis on test suite
+      \item Discuss differences
     \end{itemize}
 
   \subsection{Performance}
 
     \begin{itemize}
       \item Analyze analysis test suite files with both Stratego and Statix analysis, show difference in timings
-      \item Analyze YellowGrass and Reposearch with both Stratego and Statix analysis, show difference in timings
+      \item Analyze Reposearch and YellowGrass with both Stratego and Statix analysis, show difference in timings
     \end{itemize}
 
-  \subsection{Usability}
+  \subsection{Maintainability}
 
     \begin{itemize}
       \item Lack of user-friendliness of the error messages generated by Statix
