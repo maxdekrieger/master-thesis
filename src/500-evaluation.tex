@@ -191,18 +191,32 @@ module WebDSL-UI
       \caption{\label{tbl:statix-test-suite-results}Results of the analysis test suite.}
     \end{table}
 
-    The result of the analysis test suite is the most variable of all results, as it is an ongoing process, as tweaking error messages and giving more specific error messages in certain circumstances is time consuming. At the time of writing, the Git repository containing implementation of the static analysis has over 400 commits and more tests are passing each week.
+    The result of the analysis test suite shows that the Statix specification of WebDSL is not yet on the level of the current static analysis in terms of correctness. While there are more passing tests than failing tests, there is room for improvement in both categories of the test suite, but particularly in the incorrect programs. The result of the analysis test suite scales with the engineering effort put in, and cannot be solely explained by Statix' shortcomings. At the time of writing, the Git repository containing implementation of the static analysis has over 400 commits and is created over the course of two and a half years.
 
-    \begin{itemize}
-      \item[TO-DO:]
-      \item Discuss results more
-    \end{itemize}
+    \subsubsection{Discussion of Failed Tests}
+
+      Failing tests can be divided in categories. While some categories of failing tests are able to be solved by more engineering effort, others are inherent to using Statix as a language for implementing a static analysis.
+
+      \textbf{Error messages that are not specific enough.} This is not something fundamentally wrong in the Statix language, as it can be improved by more development effort on the Statix specification, but at the cost of the elegancy of the rules. Consider the statement \texttt{var b : Bool := nonexistingvariable;}. The error in this code snippet is that a non-existing variable is being referenced, but the expression cannot be typed properly, resulting in another error on the statement as a whole that says that the expression must be of boolean type.
+
+      \textbf{Error messages that Statix can not generate.} Some tests require an error along the lines of \texttt{A function with Signature f(string, int) does not exist}. Statix is unable to format strings to produce such an error. Statix is able to use string concatenation in error messages, but the given expression will always be surrounded by quotes. Apart from the quotes, a lack of string manipulation functions in Statix prevents users from properly formatting AST terms back to human readable signatures.
+
+      \textbf{Collateral errors.} This is mostly targeted by the test expectation where a certain error $s$ should not be present (\texttt{//\^{}s}). Statix as a language is not ideal for these test expectations, as errors are designed to show when the corresponding constraint fails. All generated constraints must either fail or succeed and there is no way to stop execution after a failed constraint, having the result of showing multiple errors.
+
+      \textbf{Unimplemented features.} WebDSL has an extensive history and many features were added and deprecated over time. However, the deprecated features are still present in the analysis test suite, leading to failing tests. More development effort could make the tests pass.
 
   \subsection{Performance}
 
+    Providing early feedback on written code to developers is an essential part of increasing productivity \autocite{Becker2019}. For this reason, we want the static analysis to give quick and accurate results. To make claims about the run time of the WebDSL specification in Statix, we run the specification on two open-source applications: Reposearch and YellowGrass, and compare it to the run time of the current static analysis in Stratego.
+
+    To execute the evaluation, we used a 2019 MacBook Pro running macOS Montery 12.2. The machine has a 2,3 GHz 8-core Intel Core i9 with 64 GB RAM available. The evaluation scripts\footnote{https://github.com/metaborg/statix-benchmark/} were configured to analyze the two applications. Using the Java Microbenchmark Harness\footnote{https://github.com/openjdk/jmh}, we timed the run time of the Statix specification using 5 warmup iterations and 20 regular iterations. The run time of the current static analysis in Stratego was measured using a shell-script that executed the command-line tool shipped with the WebDSL compiler\footnote{https://github.com/webdsl/webdsl}.
+
     \begin{itemize}
-      \item Analyze analysis test suite files with both Stratego and Statix analysis, show difference in timings
-      \item Analyze Reposearch and YellowGrass with both Stratego and Statix analysis, show difference in timings
+      \item[TO-DO:]
+      \item Show results of Statix vs. Stratego
+      \item Discuss results
+      \item Add paragraph introducing the stxlib for built-in.app
+      \item Discuss results with stxlib
     \end{itemize}
 
   \subsection{Maintainability}
