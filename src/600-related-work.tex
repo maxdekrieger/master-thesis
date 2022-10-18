@@ -2,6 +2,18 @@
 
 \chapter{\label{chap:related-work}Related work}
 
+  \section{WebDSL}
+
+    \begin{itemize}
+      \item https://researchr.org/publication/Visser07 : Original WebDSL paper, introduced langauge and its constructs, described the components and the syntax, even mentions type-checking with Stratego transformation/annotation and shows two examples.
+      \item https://researchr.org/publication/GroenewegenHKV08
+      \item https://researchr.org/publication/GroenewegenV08
+      \item https://researchr.org/publication/GroenewegenHV10
+      \item https://researchr.org/publication/HemelGKV11
+      \item https://researchr.org/publication/GroenewegenV13
+      \item https://researchr.org/publication/GroenewegenCV20
+    \end{itemize}
+
   \section{Statix Case Studies}
 
     \subsection{A Constraint Language for Static Semantic Analysis Based on Scope Graphs}
@@ -61,18 +73,48 @@
           \end{itemize}
         \end{itemize}
 
-      \subsection{LMR/Rust}
+      \subsubsection{LMR/Rust}
 
         \begin{itemize}
           \item Imports that do influence their own resolution (unordered imports).
         \end{itemize}
+
+    \subsection{Master Theses}
+
+      \begin{itemize}
+        \item Taico
+        \begin{itemize}
+          \item Incrementalizing Statix
+          \item Case study: extremely minimal Java
+        \end{itemize}
+        \item Aron
+        \begin{itemize}
+          \item Composing Statix specifications
+          \item Case study: Mini-SDF + Mini-Stratego
+          \item Case study: Mod + Mini-SQL
+        \end{itemize}
+        \item Phil
+        \begin{itemize}
+          \item Uses Statix and NaBL for language parametric renaming transformations
+          \item No self-implemented case studies
+        \end{itemize}
+        \item Loek
+        \begin{itemize}
+          \item Uses Statix for language parametric function inlining
+          \item No self-implemented case studies
+        \end{itemize}
+        \item Ivo
+        \begin{itemize}
+          \item Case study: PIE DSL 2 in Statix
+        \end{itemize}
+      \end{itemize}
 
   \section{Subjects to investigate}
 
     \begin{itemize}
       \item MPS CodeRules
       \begin{itemize}
-        \item Constraint programming for 
+        \item Constraint programming for MPS
       \end{itemize}
       \item https://github.com/JetBrains/mps-coderules
     \end{itemize}
