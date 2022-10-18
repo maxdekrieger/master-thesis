@@ -227,8 +227,8 @@ module WebDSL-UI
     \begin{figure}
       \pgfplotstableread{
         size  stratego  statix-1  statix-2  statix-4  statix-8
-        0     2.41      0         0         4.04      0
-        1     2.65      0         0         4.61      0
+        0     2.41      12.08     6.39      3.93      3.15
+        1     2.65      13.99     7.51      4.59      3.51
       }\analysisbenchmarkresults
       \begin{tikzpicture}
         \begin{axis} [ybar,
@@ -261,12 +261,7 @@ module WebDSL-UI
       \caption{\label{fig:analysis-performance-charts}Run time of the WebDSL static analysis in Stratego vs. Statix}
     \end{figure}
 
-    \begin{itemize}
-      \item[TO-DO:]
-      \item Change results to not include the "without-library" result, but instead use statix with 1, 2, 4, 8 threads
-    \end{itemize}
-
-    \cref{fig:analysis-performance-charts} shows the result of evaluating the WebDSL static analysis in terms of run time. As opposed to the Stratego implementation which always runs on a single core, the Statix specification utilizes all available cores on a machine. Regardless of the amount of cores, the Statix run time scales with the largest file in the project. Due to performance increases such refactoring the WebDSL module system (\cref{sec:module-system}) and pre-analyzing the WebDSL standard library (\cref{sec:built-in-library}), the performance of the largest Statix specification to date is decent. We argue that it is an acceptable run time for use in practice as long as the development machine has at least 4 cores.
+    \cref{fig:analysis-performance-charts} shows the result of evaluating the WebDSL static analysis in terms of run time. As opposed to the Stratego implementation which always runs on a single core, the Statix specification utilizes all available cores on a machine. Regardless of the amount of cores, the Statix run time scales with the largest file in the project. Due to performance increases such refactoring the WebDSL module system (\cref{sec:module-system}) and pre-analyzing the WebDSL standard library (\cref{sec:built-in-library}), the performance of the largest Statix specification to date is decent. We argue that it is an acceptable run time for use in practice, 
 
   \subsection{Maintainability}
 
