@@ -1,23 +1,5 @@
 % Manual citations here
 
-@inproceedings{Groenewegen2020,
-author = {Groenewegen, Danny M. and Chastelet, Elmer van and Visser, Eelco},
-title = {Evolution of the WebDSL Runtime: Reliability Engineering of the WebDSL Web Programming Language},
-year = {2020},
-isbn = {9781450375078},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3397537.3397553},
-doi = {10.1145/3397537.3397553},
-abstract = {Web applications are ideal for implementing information systems; they can organize and persist the data in a database, do not require installation on client machines, and can be instantly updated everywhere. However, web programming is complex due to its heterogeneous nature, causing web frameworks to suffer from insufficient or leaky abstraction, weak static consistency checking, and security features that are not enforced. We developed the WebDSL web programming language, which supports direct expression of intent, strong static consistency checking, linguistic abstractions for web programming concerns, and automatically enforces security features for web applications. We have used WebDSL for over 10 years to create information systems for academic workflows with thousands of users. Based on our experiences with these applications, we improved the WebDSL compiler and runtime to increase robustness, performance, and security of applications. In this experience report, we reflect on the lessons learned and improvements made to the language runtime.},
-booktitle = {Conference Companion of the 4th International Conference on Art, Science, and Engineering of Programming},
-pages = {77–83},
-numpages = {7},
-keywords = {web programming, domain-specific languages, web security, integrated development environments, experience report, compilers, web applications},
-location = {Porto, Portugal},
-series = { '20}
-}
-
 @inproceedings{Visser2007,
   title = {{WebDSL}: {A} Case Study in Domain-Specific Language Engineering},
   author = {Eelco Visser},
@@ -38,6 +20,23 @@ series = { '20}
   isbn = {978-3-540-88642-6},
 }
 
+@inproceedings{GroenewegenV08,
+  title = {Declarative Access Control for {WebDSL}: Combining Language Integration and Separation of Concerns},
+  author = {Danny M.  Groenewegen and Eelco Visser},
+  year = {2008},
+  doi = {10.1109/ICWE.2008.15},
+  url = {http://dx.doi.org/10.1109/ICWE.2008.15},
+  tags = {WebDSL, semantics, rule-based, separation of concerns, transformation language,  action semantics, language design, weaving, rules, web applications, DSL, abstraction, access control policies, access control, aspect weaving, design, role-based access control, systematic-approach, transformation, domain-specific language},
+  researchr = {https://researchr.org/publication/GroenewegenV08},
+  cites = {26},
+  citedby = {7},
+  pages = {175-188},
+  booktitle = {Proceedings of the Eighth International Conference on Web Engineering, ICWE 2008, 14-18 July 2008, Yorktown Heights, New York, USA},
+  editor = {Daniel Schwabe and Francisco Curbera and Paul Dantzig},
+  publisher = {IEEE},
+  isbn = {978-0-7695-3261-5},
+}
+
 @article{Hemel2011,
   title = "Static consistency checking of web applications with WebDSL",
   journal = "Journal of Symbolic Computation",
@@ -50,6 +49,86 @@ series = { '20}
   doi = "https://doi.org/10.1016/j.jsc.2010.08.006",
   url = "http://www.sciencedirect.com/science/article/pii/S0747717110001367",
   author = "Zef Hemel and Danny M. Groenewegen and Lennart C.L. Kats and Eelco Visser"
+}
+
+@article{GroenewegenV13,
+  title = {Integration of data validation and user interface concerns in a {DSL} for web applications},
+  author = {Danny M.  Groenewegen and Eelco Visser},
+  year = {2013},
+  doi = {10.1007/s10270-010-0173-9},
+  url = {http://dx.doi.org/10.1007/s10270-010-0173-9},
+  tags = {WebDSL},
+  researchr = {https://researchr.org/publication/GroenewegenV13},
+  cites = {0},
+  citedby = {0},
+  journal = {Software and Systems Modeling},
+  volume = {12},
+  number = {1},
+  pages = {35-52},
+}
+
+@inproceedings{Groenewegen2020,
+author = {Groenewegen, Danny M. and Chastelet, Elmer van and Visser, Eelco},
+title = {Evolution of the WebDSL Runtime: Reliability Engineering of the WebDSL Web Programming Language},
+year = {2020},
+isbn = {9781450375078},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3397537.3397553},
+doi = {10.1145/3397537.3397553},
+abstract = {Web applications are ideal for implementing information systems; they can organize and persist the data in a database, do not require installation on client machines, and can be instantly updated everywhere. However, web programming is complex due to its heterogeneous nature, causing web frameworks to suffer from insufficient or leaky abstraction, weak static consistency checking, and security features that are not enforced. We developed the WebDSL web programming language, which supports direct expression of intent, strong static consistency checking, linguistic abstractions for web programming concerns, and automatically enforces security features for web applications. We have used WebDSL for over 10 years to create information systems for academic workflows with thousands of users. Based on our experiences with these applications, we improved the WebDSL compiler and runtime to increase robustness, performance, and security of applications. In this experience report, we reflect on the lessons learned and improvements made to the language runtime.},
+booktitle = {Conference Companion of the 4th International Conference on Art, Science, and Engineering of Programming},
+pages = {77–83},
+numpages = {7},
+keywords = {web programming, domain-specific languages, web security, integrated development environments, experience report, compilers, web applications},
+location = {Porto, Portugal},
+series = { '20}
+}
+
+@InProceedings{Neron2015,
+  author="Neron, Pierre
+  and Tolmach, Andrew
+  and Visser, Eelco
+  and Wachsmuth, Guido",
+  editor="Vitek, Jan",
+  title="A Theory of Name Resolution",
+  booktitle="Programming Languages and Systems",
+  year="2015",
+  publisher="Springer Berlin Heidelberg",
+  address="Berlin, Heidelberg",
+  pages="205--231",
+  abstract="We describe a language-independent theory for name binding and resolution, suitable for programming languages with complex scoping rules including both lexical scoping and modules. We formulate name resolution as a two-stage problem. First a language-independent scope graph is constructed using language-specific rules from an abstract syntax tree. Then references in the scope graph are resolved to corresponding declarations using a language-independent resolution process. We introduce a resolution calculus as a concise, declarative, and languageindependent specification of name resolution. We develop a resolution algorithm that is sound and complete with respect to the calculus. Based on the resolution calculus we develop language-independent definitions of $\alpha$-equivalence and rename refactoring. We illustrate the approach using a small example language with modules. In addition, we show how our approach provides a model for a range of name binding patterns in existing languages.",
+  isbn="978-3-662-46669-8"
+}
+
+@techreport{TUD-SERG-2015-001,
+  title = {A Theory of Name Resolution with extended Coverage and Proofs},
+  author = {Pierre Neron and Andrew P. Tolmach and Eelco Visser and Guido Wachsmuth},
+  year = {2015},
+  month = {January},
+  note = {Extended version of ESOP 2015 paper "A Theory of Name Resolution"},
+  researchr = {https://researchr.org/publication/TUD-SERG-2015-001},
+  cites = {0},
+  citedby = {0},
+  institution = {Software Engineering Research Group. Delft University of Technology},
+  type = {Technical Report},
+  number = {TUD-SERG-2015-001},
+}
+
+@inproceedings{AntwerpenNTVW16,
+  title = {A constraint language for static semantic analysis based on scope graphs},
+  author = {Hendrik van Antwerpen and Pierre Néron and Andrew P. Tolmach and Eelco Visser and Guido Wachsmuth},
+  year = {2016},
+  doi = {10.1145/2847538.2847543},
+  url = {http://doi.acm.org/10.1145/2847538.2847543},
+  researchr = {https://researchr.org/publication/AntwerpenNTVW16},
+  cites = {0},
+  citedby = {0},
+  pages = {49-60},
+  booktitle = {Proceedings of the 2016 ACM SIGPLAN Workshop on Partial Evaluation and Program Manipulation, PEPM 2016, St. Petersburg, FL, USA, January 20 - 22, 2016},
+  editor = {Martin Erwig and Tiark Rompf},
+  publisher = {ACM},
+  isbn = {978-1-4503-4097-7},
 }
 
 @article{VanAntwerpen2018,
@@ -71,20 +150,96 @@ series = { '20}
   keywords = {type system, domain-specific language, scope graphs, static semantics, name resolution, type checker}
 }
 
-@InProceedings{Neron2015,
-  author="Neron, Pierre
-  and Tolmach, Andrew
-  and Visser, Eelco
-  and Wachsmuth, Guido",
-  editor="Vitek, Jan",
-  title="A Theory of Name Resolution",
-  booktitle="Programming Languages and Systems",
-  year="2015",
-  publisher="Springer Berlin Heidelberg",
-  address="Berlin, Heidelberg",
-  pages="205--231",
-  abstract="We describe a language-independent theory for name binding and resolution, suitable for programming languages with complex scoping rules including both lexical scoping and modules. We formulate name resolution as a two-stage problem. First a language-independent scope graph is constructed using language-specific rules from an abstract syntax tree. Then references in the scope graph are resolved to corresponding declarations using a language-independent resolution process. We introduce a resolution calculus as a concise, declarative, and languageindependent specification of name resolution. We develop a resolution algorithm that is sound and complete with respect to the calculus. Based on the resolution calculus we develop language-independent definitions of $\alpha$-equivalence and rename refactoring. We illustrate the approach using a small example language with modules. In addition, we show how our approach provides a model for a range of name binding patterns in existing languages.",
-  isbn="978-3-662-46669-8"
+@article{RouvoetAPKV20,
+  title = {Knowing when to ask: sound scheduling of name resolution in type checkers derived from declarative specifications},
+  author = {Arjen Rouvoet and Hendrik van Antwerpen and Casper Bach Poulsen and Robbert Krebbers and Eelco Visser},
+  year = {2020},
+  doi = {10.1145/3428248},
+  url = {https://doi.org/10.1145/3428248},
+  researchr = {https://researchr.org/publication/RouvoetAPKV20},
+  cites = {0},
+  citedby = {0},
+  journal = {Proceedings of the ACM on Programming Languages},
+  volume = {4},
+  number = {OOPSLA},
+}
+
+@inproceedings{AntwerpenV21,
+  title = {Scope States: Guarding Safety of Name Resolution in Parallel Type Checkers},
+  author = {Hendrik van Antwerpen and Eelco Visser},
+  year = {2021},
+  doi = {10.4230/LIPIcs.ECOOP.2021.1},
+  url = {https://doi.org/10.4230/LIPIcs.ECOOP.2021.1},
+  researchr = {https://researchr.org/publication/AntwerpenV21},
+  cites = {0},
+  citedby = {0},
+  booktitle = {35th European Conference on Object-Oriented Programming, ECOOP 2021, July 11-17, 2021, Aarhus, Denmark (Virtual Conference)},
+  editor = {Anders Møller and Manu Sridharan},
+  volume = {194},
+  series = {LIPIcs},
+  publisher = {Schloss Dagstuhl - Leibniz-Zentrum für Informatik},
+  isbn = {978-3-95977-190-0},
+}
+
+@article{ZwaanAV22,
+  title = {Incremental Type-Checking for Free: Using Scope Graphs to Derive Incremental Type-Checkers},
+  author = {Aron Zwaan and Hendrik van Antwerpen and Eelco Visser},
+  year = {2022},
+  doi = {10.1145/3276484},
+  url = {https://doi.org/10.1145/3563303},
+  cites = {0},
+  citedby = {0},
+  journal = {Proceedings of the ACM on Programming Languages},
+  volume = {6},
+  number = {OOPSLA2},
+}
+
+@mastersthesis{Aerts2019,
+  title = {{Incrementalizing Statix: A Modular and Incremental Approach for Type Checking and Name Binding using Scope Graphs}},
+  author = {Taico Aerts},
+  year = {2019},
+  url = {http://resolver.tudelft.nl/uuid:3e0ea516-3058-4b8c-bfb6-5e846c4bd982},
+  researchr = {https://researchr.org/publication/Aerts2019},
+  school = {Delft University of Technology},
+}
+
+@mastersthesis{Zwaan2021,
+  title = {Composable Type System Specification using Heterogeneous Scope Graphs},
+  author = {Aron Zwaan},
+  year = {2021},
+  url = {http://resolver.tudelft.nl/uuid:68b7291c-0f81-4a70-89bb-37624f8615bd},
+  researchr = {https://researchr.org/publication/Zwaan2021},
+  cites = {0},
+  citedby = {0},
+  school = {Delft University of Technology},
+}
+
+@mastersthesis{Wilms2022,
+  title = {Extending the Domain Specific Language for the Pipelines for Interactive Environments build system},
+  author = {Ivo Wilms},
+  year = {2022},
+  url = {http://resolver.tudelft.nl/uuid:567a7faf-1460-4348-8344-4746a18fb0b1},
+  researchr = {https://researchr.org/publication/Wilms2022},
+  cites = {0},
+  citedby = {0},
+  school = {Delft University of Technology},
+}
+
+@inproceedings{PelsmaekerAV19,
+  title = {Towards Language-Parametric Semantic Editor Services Based on Declarative Type System Specifications (Brave New Idea Paper)},
+  author = {Daniël A. A. Pelsmaeker and Hendrik van Antwerpen and Eelco Visser},
+  year = {2019},
+  doi = {10.4230/LIPIcs.ECOOP.2019.26},
+  url = {https://doi.org/10.4230/LIPIcs.ECOOP.2019.26},
+  researchr = {https://researchr.org/publication/PelsmaekerAV19},
+  cites = {0},
+  citedby = {0},
+  booktitle = {33rd European Conference on Object-Oriented Programming, ECOOP 2019, July 15-19, 2019, London, United Kingdom},
+  editor = {Alastair F. Donaldson},
+  volume = {134},
+  series = {LIPIcs},
+  publisher = {Schloss Dagstuhl - Leibniz-Zentrum fuer Informatik},
+  isbn = {978-3-95977-111-5},
 }
 
 @inproceedings{Becker2019,
@@ -135,20 +290,6 @@ series = { '20}
   address = {Reno/Tahoe, Nevada},
   publisher = {ACM},
   isbn = {978-1-4503-0203-6},
-}
-
-@article{RouvoetAPKV20,
-  title = {Knowing when to ask: sound scheduling of name resolution in type checkers derived from declarative specifications},
-  author = {Arjen Rouvoet and Hendrik van Antwerpen and Casper Bach Poulsen and Robbert Krebbers and Eelco Visser},
-  year = {2020},
-  doi = {10.1145/3428248},
-  url = {https://doi.org/10.1145/3428248},
-  researchr = {https://researchr.org/publication/RouvoetAPKV20},
-  cites = {0},
-  citedby = {0},
-  journal = {Proceedings of the ACM on Programming Languages},
-  volume = {4},
-  number = {OOPSLA},
 }
 
 @inproceedings{AmorimV20,

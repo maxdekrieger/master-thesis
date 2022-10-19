@@ -2,112 +2,54 @@
 
 \chapter{\label{chap:related-work}Related work}
 
+  In this chapter we discuss work related to compiler front-ends of domain-specific languages. First, we examine published research related to WebDSL that address its grammar and static analysis. Second, we examine work concerning SDF3 and Statix and recent case studies using these meta languages. To conclude, we discuss related work on language workbenches other than Spoofax.
+
   \section{WebDSL}
 
-    \begin{itemize}
-      \item https://researchr.org/publication/Visser07 : Original WebDSL paper, introduced langauge and its constructs, described the components and the syntax, even mentions type-checking with Stratego transformation/annotation and shows two examples.
-      \item https://researchr.org/publication/GroenewegenHKV08
-      \item https://researchr.org/publication/GroenewegenV08
-      \item https://researchr.org/publication/GroenewegenHV10
-      \item https://researchr.org/publication/HemelGKV11
-      \item https://researchr.org/publication/GroenewegenV13
-      \item https://researchr.org/publication/GroenewegenCV20
-    \end{itemize}
+    The paper of Visser (\citeyear{Visser2007}) introduced WebDSL as a case study of Stratego. The work lists most language constructs of the first WebDSL version, combined with SDF2 snippets of their syntax and Stratego code that demonstrates how code is generated for the WebDSL construct. Despite type checking not being mentioned for all language constructs, an extensive example plus implementation in Stratego is given for typechecking a for-loop and the declaration and resolving of a variable is WebDSL. Other work by Groenewegen and Visser present linguistically integrated extensions of WebDSL regarding access control (\citeyear{GroenewegenV08}) and data validation (\citeyear{GroenewegenV13}).
 
-  \section{Statix Case Studies}
+    The work of Hemel et al. (\citeyear{Hemel2011}) identifies static consistency checking as lacking for web frameworks that were modern at the time and they provide an analysis of how the web frameworks deal with certain consistency checks. Hemel et al. argue that domain-specific languages should be designed for consistency checking, providing a deep-dive on WebDSL as example. Additionally, they present how to perform such consistency checks with Stratego, essentially explaining an early version of the current WebDSL static analysis in Stratego.
 
-    \subsection{A Constraint Language for Static Semantic Analysis Based on Scope Graphs}
+    The latest publication on WebDSL by Groenewegen et al. (\citeyear{Groenewegen2020}) reflects on the WebDSL language as a whole, and provides an experience report of using WebDSL for over 10 years for increasingly ambitious applications.
 
-      \subsubsection{LMR (Language with Modules and Records)}
+  \section{Statix}
 
-        \begin{itemize}
-          \item Module system
-          \item Definitions (nominal records, functions, variables, etc)
-          \item Expressions
-          \item Constants
-        \end{itemize}
+    Scope graphs were introduced by Neron et al. (\citeyear{Neron2015}) as a language-independent framework for describing name binding in programming languages. Van Antwerpen et al. (\citeyear{AntwerpenNTVW16}) build upon this work and extend the scope graph framework with generalized edge labels and introduce a constraint language with a solver that is able to express name binding and typing constraints. In a subsequent publication, Van Antwerpen et al. (\citeyear{VanAntwerpen2018}) further extend the scope graph framework to increase the range of language constructs that can be modelled, such as parameterized types. Additionally, this work introduces Statix as a declarative language to specify type systems. In later work, the performance of Statix was boosted by Van Antwerpen and Visser (\citeyear{AntwerpenV21}) through the introduction of the concurrent Statix solver, and by Zwaan et al. (\citeyear{ZwaanAV22}) who introduced an incremental Statix solver.
 
-    \subsection{Scopes as Types}
+    \subsection{Case Studies}
 
-      \subsubsection{Simply-typed Lambda Calculus with Records}
+      The paper that introduced scope graphs by Neron et al. (\citeyear{Neron2015}) contains several illustrations on how scope graphs can model the name binding structure of programs. In the paper, the authors illustrate how to model various concepts of the Language with Modules and Records (LMR) such as let-bindings and, unsurprisingly, modules and records. The extended version (\citeyear{TUD-SERG-2015-001}) contains examples on definition-before-use, Java packages and imports and C\# partial classes. Van Antwerpen et al. (\citeyear{AntwerpenNTVW16}) use the LMR example again, but in addition to showing the scope graph, they list the typing constraints for certain snippets, and show an algorithm with rules that dictate how to traverse any LMR program and generate constraints.
 
-        \begin{itemize}
-          \item Records
-          \item Structural subtyping
-        \end{itemize}
+      The work that introced Statix \autocite{VanAntwerpen2018} contained case studies on simply-typed lambda calculus that shows records and structural subtyping, Featherweight Java that presents classes and nominal subtyping. Lastly, the paper contains a case study on System F that illustrates Statix' ability to deal with parametric polymorphism.
 
-      \subsubsection{Featherweight Java}
+      The research of Rouvoet et al. (\citeyear{RouvoetAPKV20}) on sound scheduling of name resolution queries also contains various case studies of languages used in practice, modelled in MiniStatix: the core constraint language of Statix, with some extras implemented in Haskell. The case studies are on a subset of name resolution for Java and scala, and the whole of LMR. In their evaluation they used a combination of valid and invalid programs, similar to this thesis. In contrast to this thesis, Rouvoet et al. do not use error message expectations, simply a fail or succeed expectation but the aim of their evaluation was different than ours. 
 
-        \begin{itemize}
-          \item Classes
-          \item Nominal subtyping
-        \end{itemize}
+      Van Antwerpen et al. (\citeyear{AntwerpenV21}) implement a subset of Java in Statix to evaluate their work on real-world codebases, similar to what we show in this thesis. However, their work is not evaluated on erroneous programs, as their goal is to benchmark the parallel Statix solver in terms of run time.
 
-      \subsubsection{System F}
+      In addition to published research, there are multiple Master's theses that contain Statix case studies:
 
-        \begin{itemize}
-          \item Parametric types
-          \begin{itemize}
-            \item Solved by lazily duplicating the parametric type structure when an instantiation is made with a concrete type
-          \end{itemize}
-        \end{itemize}
-
-    \subsection{Knowing when to ask: sound scheduling of name resolution in type checkers derived from declarative specifications}
-
-      \subsubsection{Java (subset)}
-
-        \begin{itemize}
-          \item Packages and imports
-          \begin{itemize}
-            \item Solved remote extension by using a mixin-pattern: compilation units query for all other compilation units within the same package and make their types accessible by adding import edges.
-          \end{itemize}
-        \end{itemize}
-
-      \subsubsection{Scala (subset)}
-
-        \begin{itemize}
-          \item Accessibilty of definitions: local definitions are available in the surrounding scope, whereas imported definitions are available in the subsequent scopes.
-          \begin{itemize}
-            \item This also implements forward referencing
-            \item Possible inspiration for WebDSL action name resolution
-          \end{itemize}
-        \end{itemize}
-
-      \subsubsection{LMR/Rust}
-
-        \begin{itemize}
-          \item Imports that do influence their own resolution (unordered imports).
-        \end{itemize}
-
-    \subsection{Master Theses}
+      \textbf{Aerts (\citeyear{Aerts2019}): Incrementalizing Statix: A Modular and Incremental Approach for Type Checking and Name Binding using Scope Graphs.}
 
       \begin{itemize}
-        \item Taico
-        \begin{itemize}
-          \item Incrementalizing Statix
-          \item Case study: extremely minimal Java
-        \end{itemize}
-        \item Aron
-        \begin{itemize}
-          \item Composing Statix specifications
-          \item Case study: Mini-SDF + Mini-Stratego
-          \item Case study: Mod + Mini-SQL
-        \end{itemize}
-        \item Phil
-        \begin{itemize}
-          \item Uses Statix and NaBL for language parametric renaming transformations
-          \item No self-implemented case studies
-        \end{itemize}
-        \item Loek
-        \begin{itemize}
-          \item Uses Statix for language parametric function inlining
-          \item No self-implemented case studies
-        \end{itemize}
-        \item Ivo
-        \begin{itemize}
-          \item Case study: PIE DSL 2 in Statix
-        \end{itemize}
+        \item Incrementalizing Statix
+        \item Case study: extremely minimal Java
       \end{itemize}
+  
+      \textbf{Zwaan (\citeyear{Zwaan2021}): Composable Type System Specification using Heterogeneous Scope Graphs.}
+      
+      \begin{itemize}
+        \item Composing Statix specifications
+        \item Case study: Mini-SDF + Mini-Stratego
+        \item Case study: Mod + Mini-SQL
+      \end{itemize}
+  
+      \textbf{Wilms (\citeyear{Wilms2022}): Extending the Domain Specific Language for the Pipelines for Interactive Environments build system.}
+
+      \begin{itemize}
+        \item Case study: PIE DSL 2 in Statix
+      \end{itemize}
+    
+  \section{Other Language Workbenches}
 
   \section{Subjects to investigate}
 

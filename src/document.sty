@@ -132,6 +132,11 @@
   %style=numeric
 ]{biblatex}
 
+\DeclareCiteCommand{\citeyear}
+    {}
+    {\bibhyperref{\printfield{year}}}
+    {\multicitedelim}
+    {}
 
 % Continuous counter
 \usepackage{xassoccnt}

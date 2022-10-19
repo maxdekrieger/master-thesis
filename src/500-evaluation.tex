@@ -269,7 +269,7 @@ module WebDSL-UI
     
     Where Stratego is a more general term transformation language, Statix is developped specifically for implementing static analysis using scope graphs. This smaller domain allows the language engineer to express certain concepts with ease. Examples include declaration, resolving, shadowing and overriding. Additionally, the declarative nature of Statix increases focus on the what, instead of the how. Its syntax reads closer to inference rules, with an predicate being the conclusion, and the constraints being the premises.
 
-    A positive aspect of defining the static analysis in Statix, is that we are able to profit from all new features introduced in Statix such as concurrency, incrementality and performance increases in general, as opposed to the more imperative implementation in Stratego.
+    A positive aspect of defining the static analysis in Statix is that, as opposed to the more imperative and handcrafted implementation in Stratego, we are able to profit from all new features introduced in Statix such as concurrency \autocite{AntwerpenV21}, incrementality \autocite{ZwaanAV22} or better editor services based on the Statix specification \autocite{PelsmaekerAV19}.
 
     Unfortunately, the elegancy and brevity of the WebDSL Statix specification is lost due to the amount of boilerplate code, helper functions and code duplication for specific error messages. A lack of provided list functions such as a \textit{zip}, \textit{map} or \textit{filter} function requires multiple definitions of these, essentially duplicates but for different types.
 
