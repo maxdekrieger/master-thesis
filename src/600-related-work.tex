@@ -26,81 +26,61 @@
 
       Van Antwerpen et al. (\citeyear{AntwerpenV21}) implement a subset of Java in Statix to evaluate their work on real-world codebases, similar to what we show in this thesis. However, their work is not evaluated on erroneous programs, as their goal is to benchmark the parallel Statix solver in terms of run time.
 
-      In addition to published research, there are multiple Master's theses that contain Statix case studies:
+      In addition to published research, there are multiple Master's theses that contain Statix case studies.
 
-      \textbf{Aerts (\citeyear{Aerts2019}): Incrementalizing Statix: A Modular and Incremental Approach for Type Checking and Name Binding using Scope Graphs.}
-
-      \begin{itemize}
-        \item Incrementalizing Statix
-        \item Case study: extremely minimal Java
-      \end{itemize}
+      \textbf{Aerts (\citeyear{Aerts2019}).} In his Master's thesis, Aerts described, implemented and evaluated an approach for incrementalizing Statix based on separate compilation and dynamic dependency detection. In the evaluation, Aerts implemented a simplified version of Java in Statix that focusses on type-dependent name resolution.
   
-      \textbf{Zwaan (\citeyear{Zwaan2021}): Composable Type System Specification using Heterogeneous Scope Graphs.}
-      
-      \begin{itemize}
-        \item Composing Statix specifications
-        \item Case study: Mini-SDF + Mini-Stratego
-        \item Case study: Mod + Mini-SQL
-      \end{itemize}
+      \textbf{Zwaan (\citeyear{Zwaan2021}).} Zwaan provided a runtime that is able to handle composed Statix specifications. He validated his work by integrating Statix specifications of a small subset of SDF3 (Mini-SDF) and Stratego (Mini-STR). Additionally, his Master's thesis contains another case study where the specifications of a small toy-language with expressions, record types, functions and modules (Mod) and a subset of SQL (Mini-SQL).
   
-      \textbf{Wilms (\citeyear{Wilms2022}): Extending the Domain Specific Language for the Pipelines for Interactive Environments build system.}
-
-      \begin{itemize}
-        \item Case study: PIE DSL 2 in Statix
-      \end{itemize}
+      \textbf{Wilms (\citeyear{Wilms2022}).} In Wilms' Master's thesis, he introduced PIE DSL 2, a successor of domain specific language accompanying incremental build system PIE \autocite{KonatSEV19}. As part of the PIE DSL 2 implementation, Wilms implemented the static semantics in Statix which modelled many interesting features such as a module system similar to Java, class inheritance and parameterized types.
     
   \section{Other Language Workbenches}
 
-  \section{Subjects to investigate}
+    \subsection{Subjects to investigate}
 
-    \begin{itemize}
-      \item MPS CodeRules
       \begin{itemize}
-        \item Constraint programming for MPS
+        \item MPS CodeRules
+        \begin{itemize}
+          \item Constraint programming for MPS
+          \item https://github.com/JetBrains/mps-coderules
+        \end{itemize}
+        \item Type errors for the IDE with Xtext and Xsemantics
+        \begin{itemize}
+          \item https://www.degruyter.com/document/doi/10.1515/comp-2019-0003/html
+          \item 2019, journal Open Computer Science
+          \item Implements typechers for two small languages with the Xtext language workbench
+          \item Describes what to pay attention to when implementing a typechecker (error recovery, useful error messages, etc.)
+          \item Key difference: This thesis contains a larger case study and is written in Spoofax meta-languages
+        \end{itemize}
+        \item Xbase: implementing domain-specific languages for Java
+        \begin{itemize}
+          \item https://dl.acm.org/doi/abs/10.1145/2480361.2371419
+          \item 2012, GPCE '12 (Generative Programming and Component Engineering)
+        \end{itemize}
+        \item Migrating custom DSL implementations to a language workbench (tool demo)
+        \begin{itemize}
+          \item https://dl.acm.org/doi/abs/10.1145/3276604.3276608
+          \item 2018, SLE '18 (Software Language Engineering)
+        \end{itemize}
+        \item The State of the Art in Language Workbenches
+        \begin{itemize}
+          \item https://link.springer.com/chapter/10.1007/978-3-319-02654-1\_11
+          \item 2013, SLE '13 (Software Language Engineering)
+          \item 
+        \end{itemize}
+        \item Evaluating and comparing language workbenches: Existing results and benchmarks for the future
+        \begin{itemize}
+          \item https://www.sciencedirect.com/science/article/pii/S1477842415000573
+          \item 2015, journal Computer Languages Systems \& Structures
+        \end{itemize}
+        \item Towards a Spreadsheet-Based Language Workbench
+        \begin{itemize}
+          \item https://ieeexplore.ieee.org/abstract/document/9643797
+          \item 2021, MODELS-C '21 (Model Driven Engineering Languages and Systems Companion)
+        \end{itemize}
+        \item Language Workbench Support for Block-Based DSLs
+        \begin{itemize}
+          \item https://core.ac.uk/download/pdf/301639649.pdf
+          \item 2018, BLOCKS+ in SPLASH '18 (Systems, Programming, Languages and Applications: Software for Humanity)
+        \end{itemize}
       \end{itemize}
-      \item https://github.com/JetBrains/mps-coderules
-    \end{itemize}
-
-  \section{Papers to investigate}
-
-    \begin{itemize}
-      \item Type errors for the IDE with Xtext and Xsemantics
-      \begin{itemize}
-        \item https://www.degruyter.com/document/doi/10.1515/comp-2019-0003/html
-        \item 2019, journal Open Computer Science
-        \item Implements typechers for two small languages with the Xtext language workbench
-        \item Describes what to pay attention to when implementing a typechecker (error recovery, useful error messages, etc.)
-        \item Key difference: This thesis contains a larger case study and is written in Spoofax meta-languages
-      \end{itemize}
-      \item Xbase: implementing domain-specific languages for Java
-      \begin{itemize}
-        \item https://dl.acm.org/doi/abs/10.1145/2480361.2371419
-        \item 2012, GPCE '12 (Generative Programming and Component Engineering)
-      \end{itemize}
-      \item Migrating custom DSL implementations to a language workbench (tool demo)
-      \begin{itemize}
-        \item https://dl.acm.org/doi/abs/10.1145/3276604.3276608
-        \item 2018, SLE '18 (Software Language Engineering)
-      \end{itemize}
-      \item The State of the Art in Language Workbenches
-      \begin{itemize}
-        \item https://link.springer.com/chapter/10.1007/978-3-319-02654-1\_11
-        \item 2013, SLE '13 (Software Language Engineering)
-        \item 
-      \end{itemize}
-      \item Evaluating and comparing language workbenches: Existing results and benchmarks for the future
-      \begin{itemize}
-        \item https://www.sciencedirect.com/science/article/pii/S1477842415000573
-        \item 2015, journal Computer Languages Systems \& Structures
-      \end{itemize}
-      \item Towards a Spreadsheet-Based Language Workbench
-      \begin{itemize}
-        \item https://ieeexplore.ieee.org/abstract/document/9643797
-        \item 2021, MODELS-C '21 (Model Driven Engineering Languages and Systems Companion)
-      \end{itemize}
-      \item Language Workbench Support for Block-Based DSLs
-      \begin{itemize}
-        \item https://core.ac.uk/download/pdf/301639649.pdf
-        \item 2018, BLOCKS+ in SPLASH '18 (Systems, Programming, Languages and Applications: Software for Humanity)
-      \end{itemize}
-    \end{itemize}
