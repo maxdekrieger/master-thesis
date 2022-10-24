@@ -29,22 +29,19 @@
       In addition to published research, there are multiple Master's theses that contain Statix case studies.
 
       \textbf{Aerts (\citeyear{Aerts2019}).} In his Master's thesis, Aerts described, implemented and evaluated an approach for incrementalizing Statix based on separate compilation and dynamic dependency detection. In the evaluation, Aerts implemented a simplified version of Java in Statix that focusses on type-dependent name resolution.
-  
+
       \textbf{Zwaan (\citeyear{Zwaan2021}).} Zwaan provided a runtime that is able to handle composed Statix specifications. He validated his work by integrating Statix specifications of a small subset of SDF3 (Mini-SDF) and Stratego (Mini-STR). Additionally, his Master's thesis contains another case study where the specifications of a small toy-language with expressions, record types, functions and modules (Mod) and a subset of SQL (Mini-SQL).
-  
+
       \textbf{Wilms (\citeyear{Wilms2022}).} In Wilms' Master's thesis, he introduced PIE DSL 2, a successor of domain specific language accompanying incremental build system PIE \autocite{KonatSEV19}. As part of the PIE DSL 2 implementation, Wilms implemented the static semantics in Statix which modelled many interesting features such as a module system similar to Java, class inheritance and parameterized types.
-    
+
   \section{Alternative Approaches}
 
     The Spoofax language workbench provides meta-DSLs such as SDF3, Statix and Stratego for implementing all aspects of a domain-specific language. However, many alternative approaches exist.
 
     One such approach to defining a static analysis is by using Datalog. Datalog is a subset of Prolog and similar to Statix, it is a declarative logic programming language. Where Statix builds and queries a scope graph, Datalog builds and queries a deductive database. Recent work by Pacak et al. (\citeyear{PacakES20}) utlize the performance of Datalog's incremental solvers by expressing algorithmic typing rules in Datalog.
 
-    \subsection{Subjects to investigate}
+    Xtext \autocite{EfftingeVoelter2006} is a language workbench that generates with a heavy focus on generated tooling, such as a compiler infrastructure and IDE support, based on the Xtext grammar language. Xtext utilizes the Eclipse Modeling Framework \autocite{Steinberg2009EMF} and provides an API to customize behaviour of the generated tooling using dependency injection \autocite{eysholdt2010xtext}. For example, this customization allows for changing the scoping and name binding rules, or adjusting the code generator.
 
-      \begin{itemize}
-        \item Datalog to define static analysis
-        \item Other workbench: Xbase/Xtext
-        \item Rascal metaprogramming language
-        \item MPS CodeRules to define static analysis
-      \end{itemize}
+    Rascal is a metaprogramming language, developed by the CWI SWAT group (\citeyear{KlintSV09}). A commonality of Spoofax and Rascal is that both are in a sense based on the ASF+SDF formalism \autocite{Klint93}. A complete language implementation can be defined using Rascal, including a generated parser, static analysis and code generation. Rascal supports the generation of constraints for program analysis, but does not provide a built-in constrait solver, as they believe hand-crafted specialisations are important for making program analysis scale. In the paper titled \textit{Rascal, 10 years later} (\citeyear{KlintSV19}), Klint et al. mentions constraint-based type checking as an ongoing project.
+
+    The MPS platform by Jetbrains \autocite{Dmitriev2004LanguageOP} is a commercial language workbench with a focus on projectional editing, using representations such as tables and graphs. The first language developed in JetBrains MPS was BaseLanguage, a dialect of Java. The other language definition DSLs of MPS build on BaseLanguage \autocite{PechSV13}. Similar to Xtext, MPS provides many IDE functionality such as type checking and even code completion out-of-the-box. A recent experimental feature of JetBrains MPS named CodeRules\footnote{https://jetbrains.github.io/mps-coderules/about} allows for type inference and type checking using logical programming with constraints, similar to Statix.
