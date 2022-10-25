@@ -154,7 +154,7 @@ module WebDSL-UI
   
   The evaluation of the Statix specification of WebDSL consists of three parts. First, we list results on the correctness; whether the static analysis allows well-formed programs to pass and whether it gives the correct feedback for erroneous programs. Next, we evaluate the performance in terms of run time on the applications Reposearch and YellowGrass. Lastly, we make qualitative observations on the maintainability of the new Statix specifications.
 
-  \subsection{Correctness}
+  \subsection{\label{subsec:eval-statix-correctness}Correctness}
 
     One of the goals of analyzing source code before compiling and running it, is to provide early feedback to the developer regarding possible errors. The range of errors that can be caught early is extensive in WebDSL compared to other programming languages, because of the linguistic integration of user interfaces, request handling, access control and the data model.
 
@@ -206,17 +206,17 @@ module WebDSL-UI
 
       Failing tests can be divided in categories. While some categories of failing tests are able to be solved by more engineering effort, others are inherent to using Statix as a language for implementing a static analysis.
 
-      \textbf{Error messages that are not specific enough.} This is not something fundamentally wrong in the Statix language, as it can be improved by more development effort on the Statix specification, but at the cost of the brevity of the specification.
+      \paragraph{Error messages that are not specific enough} This is not something fundamentally wrong in the Statix language, as it can be improved by more development effort on the Statix specification, but at the cost of the brevity of the specification.
 
-      \textbf{Error messages that Statix can not generate.} Some tests require an error along the lines of \texttt{A function with Signature f(string, int) does not exist}. Statix is unable to format strings to produce such an error. Statix is able to use string concatenation in error messages, but the given expression will always be surrounded by quotes. Apart from the quotes, a lack of string manipulation functions in Statix prevents users from properly formatting AST terms back to human readable signatures.
+      \paragraph{Error messages that Statix can not generate} Some tests require an error along the lines of \texttt{A function with Signature f(string, int) does not exist}. Statix is unable to format strings to produce such an error. Statix is able to use string concatenation in error messages, but the given expression will always be surrounded by quotes. Apart from the quotes, a lack of string manipulation functions in Statix prevents users from properly formatting AST terms back to human readable signatures.
 
-      \textbf{Cascading errors.} This is mostly targeted by the test expectation where a certain error $s$ should not be present (\texttt{//\^{}s}). Statix as a language is not ideal for these test expectations, as errors are designed to show when the corresponding constraint fails. All generated constraints must either fail or succeed and there is no way to stop execution after a failed constraint, having the result of showing multiple errors. Consider the following expression:
+      \paragraph{Cascading errors} This is mostly targeted by the test expectation where a certain error $s$ should not be present (\texttt{//\^{}s}). Statix as a language is not ideal for these test expectations, as errors are designed to show when the corresponding constraint fails. All generated constraints must either fail or succeed and there is no way to stop execution after a failed constraint, having the result of showing multiple errors. Consider the following expression:
       
       $$\texttt{var i : Int := nonexistingvariable + 2;}$$
       
       The error in this code snippet is that a non-existing variable is being referenced, but the expression cannot be typed properly, resulting in another error on the statement as a whole that says that the expression must be of boolean type.
       
-      \textbf{Unimplemented features.} WebDSL has an extensive history and many features were added and deprecated over time. However, the deprecated features are still present in the analysis test suite, leading to failing tests. More development effort could make the tests pass.
+      \paragraph{Unimplemented features} WebDSL has an extensive history and many features were added and deprecated over time. However, the deprecated features are still present in the analysis test suite, leading to failing tests. More development effort could make the tests pass.
 
   \subsection{Performance}
 

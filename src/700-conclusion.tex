@@ -2,9 +2,26 @@
 
 \chapter{\label{chap:conclusion}Conclusion}
 
+  In this thesis, we have presented a new front-end for WebDSL. WebDSL is a domain-specific language for web programming, inspired by multiple programming language paradigms. WebDSL is used to create applications such as WebLab and conf.researchr.org, which have thousands of daily users.
+
+  We have shown the conversion of the WebDSL grammar from an SDF2 specification to an SDF3 that is disambiguated without post-parse filters, and where the the definition of sorts and constructors can be reused for Statix. The grammar formalism SDF3 generates a parse table which can be executed to efficiently transform textual programs into abstract syntax trees that are used in subsequent components of the compilation chain, such as static analysis.
+
+  Next, we presented the static semantics of WebDSL modelled in Statix. Statix is a declarative constraint-based programming language using the concept of scope graphs to model program structures and types. Statix comes with a built-in constraint solver that schedules the constraints in a sounds way, builds and queries the scope graph and is able to show error messages for failing constraints.
+
+  The challenges of implementing the new front-end are documented in this thesis and we provided qualitative feedback on how to further improve the meta-DSLs SDF3 and Statix.
+
+  Lastly, the resulting modernized front-end of WebDSL was evaluated in terms of correctness and run time performance using large test suites and WebDSL applications that are used in practice.
+
   \section{\label{sec:future-work}Future work}
 
-    \begin{itemize}
-      \item Use analysis results for back-end
-      \item Incrementalization in back-end?
-    \end{itemize}
+  While the modernized WebDSL front-end using SDF3 and Statix is promising, there are many possibilities for improving and extending the work shown in this thesis.
+
+  \paragraph{Increased Engineering Effort} We argue that the correctness of the modernized WebDSL static analysis scales with the engineering effort put in to the Statix specification (see \cref{subsec:eval-statix-correctness}). For the development of web applications with WebDSL, catching more erroneous programs before compilation and reporting telling error messages is essential, especially since the current implementation in Stratego is capable of doing so.
+
+  \paragraph{Implement Revised Module System in Compiler Back-End} In this thesis we described and implemented a revised module system for WebDSL in Statix (see \cref{sec:module-system}) that can be described as a traditional module system where (with some exceptions) referencing a declaration made in another module requires importing that module. Additionally, it supports wildcard imports for pragmatic purposes during WebDSL development. Currently, the WebDSL compiler adheres to the module system as listed in the original WebDSL paper \autocite{Visser2007}, where it is described as follows: \textit{``a very simple module system has been chosen that supports distributing functionality over files, without separate compilation''}. 
+
+  \paragraph{Connect Modernized Front-End to Existing Compiler Back-End} The WebDSL static analysis implemented in Stratego is not solely used for error reporting in the IDE. It generates signatures for definitions as discussed in \cref{sec:statix-string-manipulation} for which code should be generated, and it creates dynamic rules with name binding and type checking information on which the code generator depends. Re-implementing the current WebDSL back-end to use the Statix analysis results from the Statix Stratego API\footnote{https://www.spoofax.dev/references/statix/stratego-api/} is a possibility, but this may require a significant amount of time. An alternative is to write a connecting piece of software in Stratego that takes the Statix analysis result as input and generates the correct dynamic rules and AST terms such that the current WebDSL back-end can largely be used as is.
+
+  \textbf{TO-DO: Write about interaction between analysis and transformation rules: https://researchr.org/publication/HemelKGV10}
+
+  \paragraph{Evaluate the Incremental Statix Solver} The recently published incremental Statix solver by Zwaan et al. (\citeyear{ZwaanAV22}) is promising in terms of speeding up the run time of executing Statix specifications. Although their work uses the WebDSL specification that we presented in this thesis, it would be interesting to further evaluate the run time on other (larger) applications such as WebLab and conf.researchr.org, and the impact of specific WebDSL language constructs on the incrementality.
