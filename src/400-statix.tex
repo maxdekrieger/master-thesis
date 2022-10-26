@@ -308,7 +308,7 @@
 
     \subsection{\label{subsec:built-in-types-and-constants}Built-in Types and Constant Expressions}
 
-      Constant expressions such as strings, integers and booleans form the building blocks of more complication constructs. For reasons explained later (see section \cref{subsec:built-in-extension}), a built-in type such as string is not declared as \texttt{STRING : TYPE} but instead as \texttt{BUILTINTYPE : scope * string -> TYPE}, where the instantiation of the string type is as follows: \texttt{BUILTINTYPE(s, "String")}.
+      Constant expressions such as strings, integers and booleans form the building blocks of more complication constructs. For reasons explained later (see \cref{sec:type-extension}), a built-in type such as string is not declared as \texttt{STRING : TYPE} but instead as \texttt{BUILTINTYPE : scope * string -> TYPE}, where the instantiation of the string type is as follows: \texttt{BUILTINTYPE(s, "String")}.
 
       These built-in types are declared in a scope that is reachable from almost every location, the project scope, once per analysis. All WebDSL type declarations are made under the \texttt{type} relation, which associates the human readable type name with a \texttt{TYPE} term: \texttt{type : string * TYPE}. The part of the Statix specification to achieve this, and the resulting scope graph are shown in \cref{fig:webdsl-basics-built-in-types-decl}.
 
@@ -1644,7 +1644,7 @@ template t {
 
     The updated Statix rules for typechecking a page or template definition, and defining actions in shown in \cref{fig:actions-placeholders-statix}. The Statix rules contain a separate predicate \texttt{templateActionOk} where the last boolean parameter indicates whether the action should be declared or not, and this is passed to \texttt{optionallyDeclareTemplate}. The declaration is optional because it is possible to create a form with a submit button that defines an action inline; an anonymous action in some sense. The anonymous inline action definition can now be type-checked by re-using the \texttt{templateActionOk} predicate.
 
-    The Statix rules which implement the placeholders and actions code behave correctly because of Statix' scheduling algorithm as first described by in the original Statix paper \autocite{VanAntwerpen2018} and further characterized by Rouvoet et al. \autocite{RouvoetAPKV20}.
+    The Statix rules which implement the placeholders and actions code behave correctly because of Statix' constraint scheduling algorithm as first described by in the original Statix paper \autocite{VanAntwerpen2018} and further improved by Rouvoet et al. \autocite{RouvoetAPKV20}.
 
     \begin{figure}
       \begin{minted}[firstline=3]{\statix}
@@ -1687,12 +1687,135 @@ rules
 
   \section{\label{sec:type-extension}Type Extension}
 
-    \subsection{\label{subsec:entity-extension}Entity Extension}
+    WebDSL allows the developer to define types such as entities or use existing built-in types such as strings and dates. Often times, when working on a new functionality for existing applications, developers want to extend existing entities with new properties or functions. To this end, WebDSL allows for entity extension across modules. In addition to entities, WebDSL also allows extension of built-in types. The built-in types can not be extended with arbitrary properties or functions. Since the WebDSL built-in types are based on Java types, developers can expose properties of those Java types for use in WebDSL code. In this section we discuss how we implemented these semantics in Statix.
 
-    \subsection{\label{subsec:built-in-extension}Built-in Type Extension}
+    \Cref{fig:entity-extension-example-webdsl} shows a WebDSL program containing the entity \texttt{Person} with one property and an extension of that entity with another property and a function. In \cref{fig:entity-extension-example-sg}, we show how we represent the program in a scope graph. When a (partial) entity is defined, a declaration is made in the scope graph under the \texttt{extendscope} relation that declares the scope linked to the name of the entity. When declaring the type in the module (such as \texttt{Entity("person", s\_person)}), all scopes linked to the entity are retrieved from the scope graph and linked together using \texttt{EXTEND} edges.
+
+    \begin{figure}
+      \begin{subfigure}[b]{0.4\textwidth}
+        \begin{minted}[firstline=1]{\webdsl}
+module m
+
+entity Person {
+  firstname : String
+}
+
+extend entity Person {
+  lastname : String
+
+  function logname() {
+    log("~firstname + ~lastname");
+  }
+}
+        \end{minted}
+        \caption{\label{fig:entity-extension-example-webdsl}}
+      \end{subfigure}
+      \begin{subfigure}[b]{0.6\textwidth}
+        \centering
+        \begin{tikzpicture}
+          \node (s_m) [scope]   at(-4, 0) {s\_m};
+          \node (t_p_1) [decl]  at(2, 2.5) {Person : s\_person};
+          \node (t_p_2) [decl]  at(3, 1.25) {Person : s\_person\_2};
+          \node (t_p) [decl]  at(2, 0) {Person : ENTITY("Person", s\_person)};
+          \node (s_p_1) [scope]   at(-4, -2) {s\_person};
+          \node (s_p_2) [scope]   at(0, -2) {s\_person\_2};
+          \node (t_p_1_firstname) [decl]  at(-4, -4) {firstname : String};
+          \node (t_p_2_lastname) [decl]  at(1.5, -4) {lastname : String};
+          \node (t_p_2_logname) [decl]  at(-2.5, -5) {logname : FUNCTION("logname", [], Void)};
+
+          \draw[decl edge] (s_m.east) -- (t_p_1.west) node[midway, sloped, fill=white] {extendscope};
+          \draw[decl edge] (s_m.east) -- (t_p_2.west) node[midway, sloped, fill=white] {extendscope};
+          \draw[decl edge] (s_m.east) -- (t_p.west) node[midway, sloped, fill=white] {type};
+          \draw[scope edge] (s_p_1.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+          \draw[scope edge] (s_p_2.north) -- (s_m.south) node[midway, sloped, yshift=1ex] {DEF};
+          \draw[scope edge] (s_p_1.east) to [bend right]  node[midway, sloped, yshift=-1ex] {EXTEND} (s_p_2.west);
+          \draw[scope edge] (s_p_2.west) to [bend right]  node[midway, sloped, yshift=1ex] {EXTEND} (s_p_1.east);
+          \draw[decl edge] (s_p_1.south) -- (t_p_1_firstname.north) node[midway, sloped, fill=white] {var};
+          \draw[decl edge] (s_p_2.south) -- (t_p_2_lastname.north) node[midway, sloped, fill=white] {var};
+          \draw[decl edge] (s_p_2.south) -- (t_p_2_logname.north) node[midway, sloped, fill=white] {function};
+        \end{tikzpicture}
+        \caption{\label{fig:entity-extension-example-sg}}
+      \end{subfigure}
+      \caption{\label{fig:entity-extension-example}An example of extending entity scopes}
+    \end{figure}
+
+    The Statix rules that transform a WebDSL program with extended entities into the scope graph as shown in \cref{fig:entity-extension-example} are listed in \cref{fig:extend-entity-statix}. Note that the original entity does not need to import all modules in which it is extended. \textbf{line 9} of \cref{fig:extend-entity-statix} shows the regular expression for well-formedness of the path to resolve declarations in the \texttt{extendscopes} relation. It includes the optional \texttt{GLOBAL} edge, which is the edge from the global scope to every module, meaning that entity extensions in all modules, regardless of imports, are the result of the query. \textbf{Line 30} enforces that an \texttt{extend entity} declaration does always import the main entity declarations. The main entity declaration is what separates WebDSL entities from C\# partial classes from WebDSL extend entities: WebDSL entities main entity definition and explicit extensions, as opposed to C\# partial classes that do not have a main definition.
+
+    \begin{figure}
+      \begin{minted}[firstline=3]{\statix}
+module m
+rules
+  declareExtendScope : scope * string * scope
+  declareExtendScope(s, e, s_extend) :-
+    !extendscope[e, s_extend] in s.
+
+  resolveExtendScope : scope * string -> list((path * (string * scope)))
+  resolveExtendScope(s, x) = ps :-
+    // extended entities do not have to be imported and
+    // can be resolved via the global scope edge:
+    query extendscope filter P* F* DEF? (IMPORT | IMPORTLIB)? GLOBAL?
+      and { e' :- e' == (x, _) }
+      min $ < P, $ < F, $ < DEF, $ < IMPORT, $ < IMPORTLIB, $ < GLOBAL,
+          P < F, P < DEF, P < IMPORT, P < IMPORTLIB, P < GLOBAL,
+          F < DEF, F < IMPORT, F < IMPORTLIB, F < GLOBAL,
+          DEF < IMPORT, DEF < IMPORTLIB, DEF < GLOBAL,
+          IMPORT < GLOBAL, IMPORTLIB < GLOBAL
+      and { (entity, entity_scope), (entity, entity_scope) }
+      in s |-> ps.
+
+  declEntity : scope * scope * string * list(EntityBodyDeclaration)
+  declEntity(s, s_entity, entity_name, bodydecs) :- { entityType }
+    // declare entity_scope to be linked to entity_name
+    declareExtendScope(s, entity_name, s_entity),
+    // link scopes using EXTEND edges
+    extendScopes(resolveExtendScope(s, entity_name), s_entity),
+    entityType == ENTITY(entity_name, s_entity),
+    declareType(s, entity_name, entityType).
+
+  declExtendEntity : scope * string * list(EntityBodyDeclaration)
+  declExtendEntity(s, entity_name, bodydecs) :- {s_extend_entity entity_scopes}
+    resolveType(s, entity_name) == [(_, (_, ENTITY(_, _)))]
+      | error $[Entity [entity_name] is not defined],
+    new s_extend_entity, s_extend_entity -DEF-> s,
+    declareExtendScope(s, entity_name, s_extend_entity),
+    extendScopes(resolveExtendScope(s, entity_name), s_extend_entity),
+    declEntityBody(s_extend_entity, entity_name, bodydecs).
+
+  extendScopes maps extendScope(list(*), *)
+  extendScope : (path * (string * scope)) * scope
+  extendScope((_, (_, s)), s). // Do not inherit own scope
+  extendScope((_, (_, s')), s) :-
+    s -EXTEND-> s'.
+      \end{minted}
+      \caption{\label{fig:extend-entity-statix}Statix rules for extending entities}
+    \end{figure}
 
   \section{\label{sec:module-system}Module system}
 
   \section{\label{sec:built-in-library}Pre-analyzed built-in library}
+
+    \subsection{\label{subsec:built-in-extension}Built-in Type Extension}
+
+      In the WebDSL Statix specification, built-in types are declared when processing the WebDSL standard library \texttt{built-in.app}. However, this clashes with our definition of extending types as explained in \cref{sec:type-extension}. The scopes of extended types are combined once, after which the type is declared. In Statix, existing scopes resolved via queries cannot be extended in order to keep the constraint scheduling sound. This does not impact types which are not declared in the standard library (such as all entities), but at first glance, this would nullify our attempt at implementing built-in type extension.
+
+      To combat this challenge, we changed the implementation of the query that resolves types in the WebDSL Statix specification, to the rules listed in \cref{fig:built-in-type-extension-statix}. \textbf{Lines 6, 7 and 8} show that the query for resolving now has a shadowing rule that allows shadowing types that are defined in an imported Statix library.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\statix}
+module m
+rules
+  resolveType : scope * string -> list((path * (string * TYPE)))
+  resolveType(s, name) = typesOf(ts) :-
+    query type filter P* F* ((EXTEND? INHERIT*) | (DEF? (IMPORT | IMPORTLIB)?))
+               and { e' :- e' == (name, _) }
+               // allow shadowing of types defined in an imported statix library
+               min $ < IMPORTLIB, P < IMPORTLIB, F < IMPORTLIB,
+               EXTEND < IMPORTLIB, INHERIT < IMPORTLIB,
+               DEF < IMPORTLIB, IMPORT < IMPORTLIB
+               and true
+               in s |-> ts.
+        \end{minted}
+        \caption{\label{fig:built-in-type-extension-statix}Statix rules for built-in type extension in Statix}
+      \end{figure}
 
   \section{\label{sec:statix-string-manipulation}String Manipulation in Statix}
