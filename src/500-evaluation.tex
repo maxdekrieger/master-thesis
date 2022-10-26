@@ -261,7 +261,7 @@ module WebDSL-UI
       \caption{\label{fig:analysis-performance-charts}Run time of the WebDSL static analysis in Stratego vs. Statix}
     \end{figure}
 
-    \cref{fig:analysis-performance-charts} shows the result of evaluating the WebDSL static analysis in terms of run time. As opposed to the Stratego implementation which always runs on a single core, the Statix specification utilizes all available cores on a machine. Regardless of the amount of cores, the Statix run time scales with the largest file in the project. Due to performance increases such refactoring the WebDSL module system (\cref{sec:module-system}) and pre-analyzing the WebDSL standard library (\cref{sec:built-in-library}), the performance of the largest Statix specification to date is decent. We argue that it is an acceptable run time for use in practice, 
+    \cref{fig:analysis-performance-charts} shows the result of evaluating the WebDSL static analysis in terms of run time. As opposed to the Stratego implementation which always runs on a single core, the Statix specification utilizes all available cores on a machine. Regardless of the amount of cores, the Statix run time scales with the largest file in the project. Due to performance increases such refactoring the WebDSL module system (\cref{sec:module-system}) and pre-analyzing the WebDSL standard library (\cref{sec:built-in-library}), the run time of the Statix WebDSL analysis is in the same order of magnitude as the Stratego WebDSL analysis from four cores onwards.
 
   \subsection{Maintainability}
 
