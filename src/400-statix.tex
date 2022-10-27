@@ -1739,7 +1739,7 @@ extend entity Person {
       \caption{\label{fig:entity-extension-example}An example of extending entity scopes}
     \end{figure}
 
-    The Statix rules that transform a WebDSL program with extended entities into the scope graph as shown in \cref{fig:entity-extension-example} are listed in \cref{fig:extend-entity-statix}. Note that the original entity does not need to import all modules in which it is extended. \textbf{line 9} of \cref{fig:extend-entity-statix} shows the regular expression for well-formedness of the path to resolve declarations in the \texttt{extendscopes} relation. It includes the optional \texttt{GLOBAL} edge, which is the edge from the global scope to every module, meaning that entity extensions in all modules, regardless of imports, are the result of the query. \textbf{Line 30} enforces that an \texttt{extend entity} declaration does always import the main entity declarations. The main entity declaration is what separates WebDSL entities from C\# partial classes from WebDSL extend entities: WebDSL entities main entity definition and explicit extensions, as opposed to C\# partial classes that do not have a main definition.
+    The Statix rules that transform a WebDSL program with extended entities into the scope graph as shown in \cref{fig:entity-extension-example} are listed in \cref{fig:extend-entity-statix}. Note that the original entity does not need to import all modules in which it is extended. \textbf{Line 9} of \cref{fig:extend-entity-statix} shows the regular expression for well-formedness of the path to resolve declarations in the \texttt{extendscopes} relation. It includes the optional \texttt{GLOBAL} edge, which is the edge from the global scope to every module, meaning that entity extensions in all modules, regardless of imports, are the result of the query. \textbf{Line 30} enforces that an \texttt{extend entity} declaration does always import the main entity declarations. The main entity declaration is what separates WebDSL entities from C\# partial classes from WebDSL extend entities: WebDSL entities main entity definition and explicit extensions, as opposed to C\# partial classes that do not have a main definition.
 
     \begin{figure}
       \begin{minted}[firstline=3]{\statix}
@@ -1792,6 +1792,174 @@ rules
 
   \section{\label{sec:module-system}Module system}
 
+    The paper that introduced WebDSL \autocite{Visser2007} contains the following description of the its module system: {``a very simple module system has been chosen that supports distributing functionality over files, without separate compilation''}. We describe the current WebDSL module system as having transitive and symmetric imports. The implementation of the module system in the current compiler maintains a list of modules of which an application consists. When a module is imported by the main application file or transitively imported, the module is added to the list and its definitions are visible to all other modules in the list. An example application with these semantics and its scope graph is visualized in \cref{fig:current-module-system}. The implementation of these semantics are listed in \cref{fig:current-module-system-statix}.
+
+    The modelling of this system causes an explosion in this amount of import edges between module scopes, as it is a fully connected graph for all modules that are (transitively) imported by the application root. The amount of import edges would scale quadratically with the number of imported modules:
+
+    $$import edges = \#modules(\#modules - 1) + \#modules$$
+
+    The additional $+ \#modules$ in this calculation is for the import edges to the global scope.
+
+    \begin{figure}
+      \begin{subfigure}[b]{0.2\textwidth}
+        \begin{subfigure}[b]{1\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+application a
+  imports m1
+          \end{minted}
+          \caption{\label{fig:current-module-system-webdsl-a}}
+        \end{subfigure}
+        \begin{subfigure}[b]{1\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+module m1
+  imports m2
+          \end{minted}
+          \caption{\label{fig:current-module-system-webdsl-m1}}
+        \end{subfigure}
+        \begin{subfigure}[b]{1\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+module m2
+          \end{minted}
+          \caption{\label{fig:current-module-system-webdsl-m2}}
+        \end{subfigure}
+        \begin{subfigure}[b]{1\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+module m3
+          \end{minted}
+          \caption{\label{fig:current-module-system-webdsl-m3}}
+        \end{subfigure}
+        % \caption{\label{fig:current-module-system-webdsl}}
+      \end{subfigure}
+      \begin{subfigure}[b]{0.8\textwidth}
+        \centering
+        \begin{tikzpicture}
+          \node (s_global) [scope]   at(0, 0) {s\_g};
+          \node (s_a) [scope]   at(0, -4) {s\_a};
+          \node (s_m1) [scope]   at(-2, -6) {s\_m1};
+          \node (s_m2) [scope]   at(2, -6) {s\_m2};
+          \node (s_m3) [scope]   at(4, -6) {s\_m3};
+          \node (d_app) [decl]  at(-3, 3) {\_APPLICATION\_SCOPE : s\_a};
+          \node (d_a) [decl]  at(-3, 2) {a : s\_a};
+          \node (d_m1) [decl]  at(-1, 2) {m1 : s\_m1};
+          \node (d_m2) [decl]  at(1, 2) {m2 : s\_m2};
+          \node (d_m3) [decl]  at(3, 2) {m3 : s\_m3};
+
+          \draw[decl edge] (s_global.north) -- (d_app.south) node[midway, sloped, fill=white] {mod};
+          \draw[decl edge] (s_global.north) -- (d_a.south) node[midway, sloped, fill=white] {mod};
+          \draw[decl edge] (s_global.north) -- (d_m1.south) node[midway, sloped, fill=white] {mod};
+          \draw[decl edge] (s_global.north) -- (d_m2.south) node[midway, sloped, fill=white] {mod};
+          \draw[decl edge] (s_global.north) -- (d_m3.south) node[midway, sloped, fill=white] {mod};
+
+          \draw[scope edge] (s_a.north) -- (s_global.south) node[midway, sloped, yshift=1ex] {IMPORT};
+          \draw[scope edge] (s_m1.north) -- (s_global.south) node[midway, sloped, yshift=1ex] {IMPORT};
+          \draw[scope edge] (s_m2.north) -- (s_global.south) node[midway, sloped, yshift=1ex] {IMPORT};
+          \draw[scope edge] (s_m3.north) -- (s_global.south) node[midway, sloped, yshift=1ex] {IMPORT};
+
+          \draw[scope edge] (s_a.west) to [bend right]  node[midway, sloped, yshift=1ex] {IMPORT} (s_m1.north);
+          \draw[scope edge] (s_m1.north) to [bend right]  node[midway, sloped, yshift=-1ex] {IMPORT} (s_a.west);
+          
+          \draw[scope edge] (s_a.east) to [bend right]  node[midway, sloped, yshift=-1ex] {IMPORT} (s_m2.north);
+          \draw[scope edge] (s_m2.north) to [bend right]  node[midway, sloped, yshift=1ex] {IMPORT} (s_a.east);
+
+          \draw[scope edge] (s_m1.east) to [bend right]  node[midway, sloped, yshift=-1ex] {IMPORT} (s_m2.west);
+          \draw[scope edge] (s_m2.west) to [bend right]  node[midway, sloped, yshift=1ex] {IMPORT} (s_m1.east);
+        \end{tikzpicture}
+        \caption{\label{fig:current-module-system-sg}}
+      \end{subfigure}
+      \caption{\label{fig:current-module-system}An example of the current WebDSL module system}
+    \end{figure}
+
+    \begin{figure}
+      \begin{minted}[firstline=3]{\statix}
+module m
+rules
+  unitOk(s_global, Application(app, sections)) :- {s_app}
+    new s_app, s_app -IMPORT-> s_global,
+    declareMod(s_global, app, s_app),
+    declareMod(s_global, "_APPLICATION_SCOPE", s_app),
+    importModules(s_global, s_app, app, sections),
+    rootPageDefined(s_app, app).
+
+  unitOk(s_global, Module(m, sections)) :- {s_mod}
+    new s_mod, s_mod -IMPORT-> s_global,
+    declareMod(s_global, m, s_mod),
+    importModules(s_global, s_mod, m, sections),
+    importedByApplicationRoot(s_global, s_mod, m).
+
+  importModules : scope * scope * string * list(Section)
+  importModules(s_global, s, m, sections) :-
+    declareImports(s_global, m, sections),
+    extendModuleScope(s_global, m, s).
+
+  extendModuleScope : scope * string * scope
+  extendModuleScope(s_global, m, s) :- {modules}
+    resolveImport(s_global, m) == modules,
+    importModulesInScope(s_global, s, modules).
+
+  importedByApplicationRoot : scope * scope * string
+  importedByApplicationRoot(s_global, s_mod, mod) :- {s_app}
+    resolveMod(s_global, "_APPLICATION_SCOPE") == [(_, (_, s_app))],
+    try { query () filter IMPORT*
+                    and { s_app' :- s_app' == s_app }
+                    in s_mod |-> [_|_]
+        } | warning $[Module is not imported by the application root] @mod.
+      \end{minted}
+      \caption{\label{fig:current-module-system-statix}Statix rules for modelling the current module system}
+    \end{figure}
+
+    This representation of the WebDSL module system in scope graphs is functional, however, we found this to be extremely taxing on the run time performance of an analysis. To gather information about the performance of the current module system semantics in the WebDSL Statix specification, we conducted an experiment where the same program was analyzed multiple times, but with the addition of extra empty modules. The result as shown in \cref{fig:statix-performance-current-modules} confirms our suspicion.
+
+    To run the experiment, we used a 2019 MacBook Pro running macOS Montery 12.2. The machine has a 2,3 GHz 8-core Intel Core i9 with 64 GB RAM available, of which 8 GB was dedicated to the evaluation scripts. The evaluation scripts\footnote{https://github.com/metaborg/statix-benchmark/} were configured to analyze the same application with different amounts of empty modules. Using the Java Microbenchmark Harness\footnote{https://github.com/openjdk/jmh}, we timed the run time of the Statix specification using 5 warmup iterations and 20 regular iterations.
+
+    \begin{figure}
+      \pgfplotstableread{
+   	    size  time
+        0     1.25
+    	  1     1.39
+    	  2     1.72
+    	  3     3.17
+    	  4     4.13
+    	  5     7.81
+    	  6     28.92
+      }\parsingbenchmarkresults
+      \begin{tikzpicture}
+        \begin{axis} [ybar,
+            axis on top,
+            width=\textwidth,
+            title={Current Module System Run Time},
+            bar width=30,
+            ymin=0,
+            ylabel={Run time (s)},
+            xlabel={Amount of modules},
+            nodes near coords,
+            xtick=data,
+            xticklabels={1, 2, 5, 10, 20, 50, 100},
+            enlarge x limits=0.3
+            ]
+        
+          \addplot table[x=size, y=time] {\parsingbenchmarkresults};
+        \end{axis}
+      \end{tikzpicture}
+      \caption{\label{fig:statix-performance-current-modules}Run time of WebDSL Statix definition with the current module system.}
+    \end{figure}
+
+    From the results shown in \cref{fig:statix-performance-current-modules}, we argue that the implementation of the current WebDSL module system in Statix, approach does not scale to real world applications. We attempted to run the Statix specification on two open-source WebDSL applications.
+
+    \begin{itemize}
+      \item \textbf{Reposearch\footnote{https://codefinder.org/, Source code: https://github.com/webdsl/reposearch/}:} A source code search engine that helps to find implementation details and example usages. Reposearch consists of 16 main files, 19 library files and 1 standard library file, totalling at 8,722 lines of code spread over 36 files.
+      \item \textbf{YellowGrass\footnote{https://yellowgrass.org/, Source code: https://github.com/webdsl/yellowgrass/}:} A tag based issue tracker similar to GitHub Issues, complete with access control and used daily by WebDSL developers. YellowGrass consists of 54 WebDSL files plus 20 WebDSL library files and 1 standard library file, coming to a total of 12,898 lines of code spread over 75 files.
+    \end{itemize}
+
+    Running the static analysis on Reposearch took roughly 25 minutes, and on YellowGrass it took more than 8 hours.
+
+    \subsection{\label{subsec:revised-module-system}Revised WebDSL Module System}
+
+      We designed a revised module system for WebDSL, in an attempt to improve the static analysis run time. In addition, the revised module system is designed to largely keep existing WebDSL applications as they are, such that no substantial effort is required to adhere to the revised module system. We considered three options for the revised module system.
+      
+      \paragraph{Everything is Global} The first option boils down to getting rid of imports altogether and using one global scope. The upside of this approach is that existing WebDSL applications do not have to be changed at all, since the import statement will be deprecated and it does not change the behaviour of programs. The downside is that, since all declarations and resolving takes place in the global scope, it negates the possible performance boosts provided by the concurrent \autocite{AntwerpenV21} or incremental \autocite{ZwaanAV22} Statix solver.
+
+      \paragraph{Strict Modules} The second option is to get rid of transitive and symmetric imports, 
+  
   \section{\label{sec:built-in-library}Pre-analyzed built-in library}
 
     \subsection{\label{subsec:built-in-extension}Built-in Type Extension}
