@@ -2027,9 +2027,17 @@ rules
 
       \cref{tbl:statix-performance-other-modules-rs-yg} lists the run time of the different module systems on Reposearch and YellowGrass. Similar to the test with the empty modules, there is a great performance boost from using any of the revised module systems. Surprisingly, the strict and wildcard module system take more than double the time of the global module system for YellowGrass. This is in contrast with \cref{fig:statix-performance-other-modules}, so we suspect that having populated modules instead of empty modules impacts the performance of the strict- and wildcard imports by having longer (and therefore more costly) query paths and shadowing rules in a module system with imports.
 
-      Although all revised module systems would massively boost the performance of the WebDSL Statix specification, taking longer than a minute for a real world application is not acceptable for a static analysis. To this end, we need to speed up the analysis time even more. For reasons explained in the next section, we chose to go forward with the module system with wildcard imports.
+      Although all revised module systems would massively boost the performance of the WebDSL Statix specification, taking longer than a minute for a real world application is not acceptable for a static analysis. To this end, we need to speed up the analysis time even more. For other performance boosts as we explain in the next section, a scope graph representation with split modules was required. Since the wildcard import system is more convenient for WebDSL developers, the WebDSL Statix specification is developped with the revised module system that uses wildcard imports.
 
   \section{\label{sec:built-in-library}Pre-analyzed built-in library}
+
+    WebDSL applications heavily rely on the standard library named \texttt{built-in.app}. It contains all necessary type, page, template and function definitions and even the WebDSL compiler itself depends on this file being present. The \texttt{built-in.app} consists of 3,397 lines of WebDSL code and is by far the largest file in all WebDSL applications.
+
+    The concurrent Statix solver provides speed-ups by distributing the compilation units over the available processor cores on the development machine. However, the granularity of compilation units in the concurrent Statix solver is file-level granularity which results in the run time scaling with the largest file in the project \autocite{AntwerpenV21}. Van Antwerpen and Visser evaluated their concurrent Statix solver on multiple Java projects without dependencies besides the Java standard library (JRE). They indicate that the JRE dominated the run time of the concurrent Statix solver and decided to pre-compute the scope graph for the JRE and statically load it at the start of type-checking.
+
+    We investigated the approach of pre-computing the WebDSL \texttt{built-in.app} scope graph and statically loading it at the start of type checking. However, this requires the modules in WebDSL to be clearly separated and this impacted our choice for a revised module system as explained in the previous section (\cref{subsec:revised-module-system}).
+
+    \textbf{TO-DO: Show speedup, discuss results and discuss difference in timings with previous section due to the evaluation happening at a later stage}
 
     \subsection{\label{subsec:built-in-extension}Built-in Type Extension}
 
