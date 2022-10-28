@@ -1946,8 +1946,8 @@ rules
     From the results shown in \cref{fig:statix-performance-current-modules}, we argue that the implementation of the current WebDSL module system in Statix, approach does not scale to real world applications. We attempted to run the Statix specification on two open-source WebDSL applications.
 
     \begin{itemize}
-      \item \textbf{Reposearch\footnote{https://codefinder.org/, Source code: https://github.com/webdsl/reposearch/}:} A source code search engine that helps to find implementation details and example usages. Reposearch consists of 16 main files, 19 library files and 1 standard library file, totalling at 8,722 lines of code spread over 36 files.
-      \item \textbf{YellowGrass\footnote{https://yellowgrass.org/, Source code: https://github.com/webdsl/yellowgrass/}:} A tag based issue tracker similar to GitHub Issues, complete with access control and used daily by WebDSL developers. YellowGrass consists of 54 WebDSL files plus 20 WebDSL library files and 1 standard library file, coming to a total of 12,898 lines of code spread over 75 files.
+      \item \textbf{Reposearch\footnote{\url{https://codefinder.org/}, Source code: \url{https://github.com/webdsl/reposearch/}}:} A source code search engine that helps to find implementation details and example usages. Reposearch consists of 16 main files, 19 library files and 1 standard library file, totalling at 8,722 lines of code spread over 36 files.
+      \item \textbf{YellowGrass\footnote{\url{https://yellowgrass.org/}, Source code: \url{https://github.com/webdsl/yellowgrass/}}:} A tag based issue tracker similar to GitHub Issues, complete with access control and used daily by WebDSL developers. YellowGrass consists of 54 WebDSL files plus 20 WebDSL library files and 1 standard library file, coming to a total of 12,898 lines of code spread over 75 files.
     \end{itemize}
 
     Running the static analysis on Reposearch took roughly 25 minutes, and on YellowGrass it took more than 8 hours.
@@ -1956,10 +1956,79 @@ rules
 
       We designed a revised module system for WebDSL, in an attempt to improve the static analysis run time. In addition, the revised module system is designed to largely keep existing WebDSL applications as they are, such that no substantial effort is required to adhere to the revised module system. We considered three options for the revised module system.
       
-      \paragraph{Everything is Global} The first option boils down to getting rid of imports altogether and using one global scope. The upside of this approach is that existing WebDSL applications do not have to be changed at all, since the import statement will be deprecated and it does not change the behaviour of programs. The downside is that, since all declarations and resolving takes place in the global scope, it negates the possible performance boosts provided by the concurrent \autocite{AntwerpenV21} or incremental \autocite{ZwaanAV22} Statix solver.
+      \paragraph{Everything is Global} The first option boils down to getting rid of imports altogether and using one global scope. The upside of this approach is that existing WebDSL applications do not have to be changed at all, since the import statement will be deprecated and it does not change the behaviour of programs. The downside is that, since all declarations and resolving takes place in the global scope, it could negate the possible performance boosts provided by the concurrent \autocite{AntwerpenV21} or incremental \autocite{ZwaanAV22} Statix solver.
 
-      \paragraph{Strict Modules} The second option is to get rid of transitive and symmetric imports, 
-  
+      \paragraph{Strict Modules} The second option is to get rid of transitive and symmetric imports, making the WebDSL module system similar to that of simple toy languages such as LMR: Language with Modules and Records \autocite{Neron2015}. Existing WebDSL applications have to be extended with more import statements to correctly resolve all the references that are now transitively or symmetrically imported. This module system allows for more transparent behaviour; a reference to a definition from another module requires the importing of that module.
+
+      \paragraph{Strict Modules With Wildcard Imports} The third and last option we consider is similar to the strict module system from previous paragraph, but allowing wildcard imports for the convenience of the developer. Assuming that existing WebDSL applications are structured correctly in terms of nesting of modules, using concepts defined in other modules can be imported in one statement. The downside of using wildcard imports is a potential increase in import edges of which some are unused.
+
+      We implemented the changes required in Reposearch and YellowGrass to apply the latter two module systems. Reposearch required 92 extra import statements, spread over 16 files\footnote{\url{https://github.com/webdsl/reposearch/tree/experiment/strict-imports}} and YellowGrass required 328 extra imports spread over 54 files\footnote{\url{https://github.com/webdsl/yellowgrass/tree/experiment/strict-imports}}. In both systems, the strict import semantics required about 6 new imports per file. Using the wildcard import system, this was reduced to about 4 per file, requiring 75 instead of 92 for Reposearch\footnote{\url{https://github.com/webdsl/reposearch/tree/experiment/wildcard-imports}} and 193 instead of 328 for YellowGrass\footnote{\url{https://github.com/webdsl/yellowgrass/tree/experiment/wildcard-imports}}
+
+      \begin{figure}
+        \pgfplotstableread{
+          size  current global  strict  wildcard
+          0     1.25    1.81    0.86    0.88
+          1     1.39    1.81    0.90    0.86
+          2     1.72    1.81    0.96    0.84
+          3     3.17    1.81    0.96    0.86
+          4     4.13    1.82    0.96    0.89
+          5     7.81    1.82    1.10    1.05
+          6     28.92   1.82    1.35    1.30
+        }\parsingbenchmarkresults
+        \begin{tikzpicture}
+          \begin{axis} [ybar,
+              axis on top,
+              width=\textwidth,
+              title={Current Module System Run Time},
+              legend style={
+                legend columns=4,
+                at={(0.05,0.95)},
+                anchor=north west,
+                draw=none
+              },
+              ymin=0,
+              ylabel={Run time (s)},
+              xlabel={Amount of modules},
+              nodes near coords,
+              every node near coord/.append style={font=\tiny},
+              xtick=data,
+              xticklabels={1, 2, 5, 10, 20, 50, 100}
+              ]
+          
+            \addplot table[x=size, y=current] {\parsingbenchmarkresults};
+            \addplot table[x=size, y=global] {\parsingbenchmarkresults};
+            \addplot table[x=size, y=strict] {\parsingbenchmarkresults};
+            \addplot table[x=size, y=wildcard] {\parsingbenchmarkresults};
+            \legend{Current, Global, Strict, Wildcard}
+          \end{axis}
+        \end{tikzpicture}
+        \caption{\label{fig:statix-performance-other-modules}Run time of WebDSL Statix definition with revised module systems.}
+      \end{figure}
+
+      \Cref{fig:statix-performance-other-modules} shows the run time of the WebDSL Statix analysis with the different module systems described at the start of this subsection. The figure shows that all of the revised module systems greatly speed up the analysis time. The run time of the strict and wildcard system are similar, while the system where everything is part of the global scope takes slightly longer. We suspect that this is due to negated effects of the concurrent Statix solver that we used for the analysis.
+
+      \begin{table}[h]
+        \centering
+        \begin{tabular}{ | c || c | c | }
+          \hline
+          Module System & Reposearch & YellowGrass \\
+          \hline
+          Current & 1667s & >8 hours \\
+          \hline
+          Global & 91s & 84s \\
+          \hline
+          Strict & 92s & 187s \\
+          \hline
+          Wildcard & 84s & 164s \\
+          \hline
+        \end{tabular}
+        \caption{\label{tbl:statix-performance-other-modules-rs-yg}Run time of WebDSL Statix definition with revised module systems on Reposearch and YellowGrass.}
+      \end{table}
+
+      \cref{tbl:statix-performance-other-modules-rs-yg} lists the run time of the different module systems on Reposearch and YellowGrass. Similar to the test with the empty modules, there is a great performance boost from using any of the revised module systems. Surprisingly, the strict and wildcard module system take more than double the time of the global module system for YellowGrass. This is in contrast with \cref{fig:statix-performance-other-modules}, so we suspect that having populated modules instead of empty modules impacts the performance of the strict- and wildcard imports by having longer (and therefore more costly) query paths and shadowing rules in a module system with imports.
+
+      Although all revised module systems would massively boost the performance of the WebDSL Statix specification, taking longer than a minute for a real world application is not acceptable for a static analysis. To this end, we need to speed up the analysis time even more. For reasons explained in the next section, we chose to go forward with the module system with wildcard imports.
+
   \section{\label{sec:built-in-library}Pre-analyzed built-in library}
 
     \subsection{\label{subsec:built-in-extension}Built-in Type Extension}
