@@ -2015,19 +2015,19 @@ rules
           \hline
           Current & 1667s & >8 hours \\
           \hline
-          Global & 91s & 84s \\
+          Global & 39s & 40s \\
           \hline
-          Strict & 92s & 187s \\
+          Strict & 51s & 53s \\
           \hline
-          Wildcard & 84s & 164s \\
+          Wildcard & 51s & 51s \\
           \hline
         \end{tabular}
         \caption{\label{tbl:statix-performance-other-modules-rs-yg}Run time of WebDSL Statix definition with revised module systems on Reposearch and YellowGrass.}
       \end{table}
 
-      \cref{tbl:statix-performance-other-modules-rs-yg} lists the run time of the different module systems on Reposearch and YellowGrass. Similar to the test with the empty modules, there is a great performance boost from using any of the revised module systems. Surprisingly, the strict and wildcard module system take more than double the time of the global module system for YellowGrass. This is in contrast with \cref{fig:statix-performance-other-modules}, so we suspect that having populated modules instead of empty modules impacts the performance of the strict- and wildcard imports by having longer (and therefore more costly) query paths and shadowing rules in a module system with imports.
+      \cref{tbl:statix-performance-other-modules-rs-yg} lists the run time of the different module systems on Reposearch and YellowGrass. Similar to the test with the empty modules, there is a great performance boost from using any of the revised module systems. Surprisingly, the strict and wildcard module system take more time than global module system for YellowGrass. This is in contrast with \cref{fig:statix-performance-other-modules}, so we suspect that having populated modules instead of empty modules impacts the performance of the strict- and wildcard imports by having longer (and therefore more costly) query paths and shadowing rules in a module system with imports.
 
-      Although all revised module systems would massively boost the performance of the WebDSL Statix specification, taking longer than a minute for a real world application is not acceptable for a static analysis. To this end, we need to speed up the analysis time even more. For other performance boosts as we explain in the next section, a scope graph representation with split modules was required. Since the wildcard import system is more convenient for WebDSL developers, the WebDSL Statix specification is developped with the revised module system that uses wildcard imports.
+      Although all revised module systems would massively boost the performance of the WebDSL Statix specification, the run time of analyzing a real world application is still unfit for use in practice. To this end, we need to speed up the analysis time even more. For other performance boosts, as we explain in the next section, a scope graph representation with split modules was required. Since the wildcard import system is more convenient for WebDSL developers, the WebDSL Statix specification is developped with the revised module system that uses wildcard imports.
 
   \section{\label{sec:built-in-library}Pre-analyzed built-in library}
 
@@ -2037,7 +2037,41 @@ rules
 
     We investigated the approach of pre-computing the WebDSL \texttt{built-in.app} scope graph and statically loading it at the start of type checking. However, this requires the modules in WebDSL to be clearly separated and this impacted our choice for a revised module system as explained in the previous section (\cref{subsec:revised-module-system}).
 
-    \textbf{TO-DO: Show speedup, discuss results and discuss difference in timings with previous section due to the evaluation happening at a later stage}
+    \begin{figure}
+      \pgfplotstableread{
+      size  default stxlib
+      0     51.23   4.04
+      1     51.46   4.61
+      }\parsingbenchmarkresults
+      \begin{tikzpicture}
+        \begin{axis} [ybar,
+          axis on top,
+          width=\textwidth,
+          title={Effect of Pre-Analayzing on Run Time},
+          legend style={
+            legend columns=2,
+            at={(xticklabel cs:0.5)},
+            anchor=north,
+            draw=none
+          },
+          bar width=30,
+          ymin=0,
+          ylabel={Run time (ms)},
+          nodes near coords,
+          xtick=data,
+          xticklabels={Reposearch, YellowGrass},
+          enlarge x limits=0.3
+          ]
+       
+          \addplot table[x=size, y=default] {\parsingbenchmarkresults};
+          \addplot table[x=size, y=stxlib] {\parsingbenchmarkresults};
+          \legend{Default, Pre-analyzed Standard Library}
+        \end{axis}
+      \end{tikzpicture}
+      \caption{\label{fig:statix-performance-built-in-app}Run time of WebDSL Statix definition with and without pre-analyzed standard library \texttt{built-in.app}.}
+    \end{figure}
+
+    \Cref{fig:statix-performance-built-in-app} shows a major improvement in run time of the WebDSL Statix specification when the analysis result of the standard library (\texttt{built-in.app}) is pre-computed, and the resulting scope graph is statically loaded at the start of type-checking other projects.
 
     \subsection{\label{subsec:built-in-extension}Built-in Type Extension}
 
@@ -2064,3 +2098,56 @@ rules
       \end{figure}
 
   \section{\label{sec:statix-string-manipulation}String Manipulation in Statix}
+
+    String manipulation functions are the possibilities that a programming language provides to allow the developer to change or create new strings based on other data. In this section, we discuss the impact of the lack of string manipulation features in Statix.
+    
+    Statix provides built-in functionalities for integer arithmetic\footnote{\url{https://www.spoofax.dev/references/statix/basic-constraints/\#arithmetic-constraints}}. This feature is useful to, for example, choose the most specific function call to resolve in function or template overloading (\cref{sec:function-template-overloading}). Most other arithmetic such as boolean arithmetic can be encoded by the Statix developer, as we showed in \cref{subsec:boolean-logic}.
+
+    The lack of the string manipulation features in Statix disallows certain WebDSL features, such as generated definitions or static code template expansion, to be encoded in Statix. An example of generated definitions and static code template expansion is shown in \cref{fig:webdsl-generated-definitions-and-expansion}. Generated definitions such as the \texttt{find<Entity>By<Property>} require the Statix specification to build a declaration in the scope graph with a name that is not present in the AST. Because it is impossible to concatenate two strings together, or to capitalize strings, this cannot be encoded in Statix.
+
+    \begin{figure}
+      \begin{minted}[firstline=1]{\webdsl}
+application a
+
+  // generated definitions:
+  entity Person {
+    address : String
+  }
+
+  function f() {
+    // this function is generated by WebDSL:
+    var p : Person := findPersonByAddress("");
+  }
+
+  // template expansion:
+  expand
+      Success
+      Info
+      Warning
+      Error
+    to alert
+
+  expandtemplate alert to Type{
+    template alertType() {
+      alert[class="alert-type", all attributes]{
+        elements
+      }
+    }
+  }
+
+  template t {
+    // templates are defined through the expansion above
+    alertSuccess{}
+    alertWarning{}
+  }
+      \end{minted}
+      \caption{\label{fig:webdsl-generated-definitions-and-expansion}An example of generated definitions and static code template expansion in WebDSL}
+    \end{figure}
+
+    Even though it is not possible to encode this in pure statix, there is a workaround for the generated definitions. Because all information is present in the abstract syntax tree, the generation of the defintions can be seen as a desugaring of the syntax. Following this workaround, we extended the desugaring step of the WebDSL syntax with rules that generate the definitions. The result of the desugaring step is that the names of the generated functions are present in the analysis, and Statix is able to declare the functions.
+
+    The static code template expansion however, does not have such a workaround, because name-binding rules are required. \Cref{fig:webdsl-generated-definitions-and-expansion} shows the \texttt{expandtemplate ... to alert} definition to be declared in one definition, and then \texttt{alert} being referenced in the next definition. This name-binding logic is able to be encoded in Stratego, but it defeats the purpose of using the Statix definition as static analysis.
+
+    In addition to allowing new language concepts to be implemented, supporting string manipulation would also allow better error messages in Statix specifications. For example, the Statix specification could then pretty-print types, function signatures and template signatures to point developers to the error in their code with more accuracy.
+
+    In conclusion, the lack of string manipulation is preventing certain WebDSL language concepts from being encoded in Statix. Additionally, the introduction of string manipulation could increase the user-friendliness of error messages generated by Statix.
