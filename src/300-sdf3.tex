@@ -2,9 +2,108 @@
 
 \chapter{\label{chap:sdf3}WebDSL in SDF3}
 
-  Goal: New specification of WebDSL grammar. Stay compatible with all existing WebDSL code; as few breaking changes as possible.
-  \\\\Goal: Large case study for SDF3.
-  \\\\Outline of chapter
+  In computer science, parsing is the process of analyzing a piece of text according to a grammar, and converting the textual representation to a more structured represation that is convenient for other processes such as a compiler or interpreter.
+
+  In this chapter we discuss the definition of the WebDSL grammar in SDF3, a meta-DSL in Spoofax for syntax definition. Currently, the WebDSL grammar is defined in SDF2, the predecessor of SDF3. The goal of defining the WebDSL grammar in SDF3 instead of SDF2 is to serve as a large case study for SDF3, while allowing the WebDSL parser to benefit from the regular updates of SDF3, compared to the deprecated SDF2.
+
+  We start by giving a brief introduction to parsing in general and introducing the SDF3 language. Then, we discuss the migration of the WebDSL syntax from SDF2 to SDF3 and we end this chapter by elaborating on the disambiguation of the WebDSL SDF3 grammar without the use of post-parse filters.
+
+  \section{\label{sec:parsing}Introduction to LR Parsing}
+
+    Every programming language can be described by a grammar that specifies what a syntactically correct program looks like. Given a specific program, this grammar can be used to analyze whether the program belongs to the language described by the grammar. A parser is a piece of software that is able to recognize whether a program belongs to the grammar described by the parser. Additionally, parsers create a structured representation of the input program, derived from the textual representation.
+    
+    In this thesis, we will focus on \textit{LR parsers}. LR stands for Left-to-right Rightmost-derivation, meaning that an LR parser reads the input from left to right and produces a rightmost (bottom-up) derivation. Knuth \citeyear{knuth1965translation} presents an LR parsing algorithm which is able to parse most languages that can be described by a context-free grammar.
+
+    Before an LR parser can parse an input stream, it must also receive a parse table that describes a context-free grammar. In practice, the parse tables are usually generated from a syntax definition. \Cref{fig:example-cfg-with-parse-table} shows an example of a context-free grammar describing a small language that features addition and multiplication. The parse table describes a push-down automaton that represents the LR parser. Using this parse table, an LR parser can build a parse tree as shown in \cref{fig:example-parse-tree}. A parse tree, or an Abstract Syntax Tree (AST) that we will discuss in \cref{subsec:sdf3} is a more structured way of representing a program, that can be used by other components of a compilation chain to analyze and transform the program.
+
+    \begin{figure}[h]
+      \begin{subfigure}[b]{0.25\textwidth}
+        \centering
+        \begin{align*}
+        S &\longrightarrow E\\
+        E &\longrightarrow E + T\\
+        E &\longrightarrow T\\
+        T &\longrightarrow T * F\\
+        T &\longrightarrow F\\
+        F &\longrightarrow x
+        \end{align*}
+        \caption{\label{fig:example-cfg-with-parse-table-cfg}}
+      \end{subfigure}
+      \begin{subfigure}[b]{0.75\textwidth}
+        \centering
+        \begin{tabular}{ c || c | c | c | c || c | c | c | c }
+          State & \multicolumn{4}{c||}{Action} & \multicolumn{4}{c}{Goto} \\
+          \hline
+          & + & * & x & \$ & $S$ & $E$ & $T$ & $F$ \\
+          \hline
+          0 & & & $S(4)$ & & & 1 & 2 & 3 \\
+          \hline
+          1 & $S(5)$ & & & $Accept$ & & & & \\
+          \hline
+          2 & $R(E_T)$ & $S(6)$ & & $R(E_T)$ & & & & \\
+          \hline
+          3 & $R(T_F)$ & $R(T_F)$ & & $R(T_F)$ & & & & \\
+          \hline
+          4 & $R(F_x)$ & $R(F_x)$ & & $R(F_x)$ & & & & \\
+          \hline
+          5 & & & $S(4)$ & & & & 7 & 3 \\
+          \hline
+          6 & & & $S(4)$ & & & & & 8 \\
+          \hline
+          7 & $R(E_{E+T})$ & $S(6)$ & & $R(E_{E+T})$ & & & & \\
+          \hline
+          8 & $R(T_{T*F})$ & $R(T_{T*F})$ & & $R(T_{T*F})$ & & & & \\
+        \end{tabular}
+        \caption{\label{fig:example-cfg-with-parse-table-tbl}}
+      \end{subfigure}
+      \caption{\label{fig:example-cfg-with-parse-table}Example context-free grammar with its parse table}
+    \end{figure}
+
+    \begin{figure}
+      \centering
+      \begin{tikzpicture}
+        \node {$S$}
+          child {node {$E$}
+            child {node {$T$}
+              child {node {$T$}
+                child {node {$F$}
+                  child {node {$x$}}
+                }
+              }
+              child {node {$*$}}
+              child {node {$F$}
+                child {node {$x$}}
+              }
+            }
+          };
+      \end{tikzpicture}
+      \caption{\label{fig:example-parse-tree}An example of a parse tree for the input "$x * x$"}
+    \end{figure}
+
+    LR parsers cannot handle ambiguous context-free grammars. The parse tables of ambiguous context-free grammars contain multiple state transitions for certain states and input tokens. The Generalized LR (GLR) parsing algorithm by Rekers (\citeyear{Rekers1992}), is able to handle such parse tables and as a result is able to handle all context-free grammars. Visser \citeyear{Visser97SGLR} introduced Scannerless GLR (SGLR) parsing. As opposed to LR and GLR parsers, SGLR parsers do not have a separate lexing and parsing phase, but instead merge these through the use of grammars that are defined in terms of single characters.
+
+    \subsection{\label{subsec:sdf3}SDF3}
+
+      Syntax Definition Formalism 3 (SDF3) \autocite{VollebregtKV12,AmorimV20} is a meta-language in the Spoofax language workbench that makes use of the SGLR parsing algorithm.
+
+      \subsubsection{\label{subsubsec:sdf3-syntax}Syntax}
+
+        \begin{itemize}
+          \item Lexical sorts
+          \item Context-free sorts
+          \item Constructors
+          \item Injections
+          \item Optional sorts
+          \item Repitition
+        \end{itemize}
+
+      \subsubsection{\label{subsubsec:sdf3-disambiguation}Disambiguation}
+
+        Possibilities:
+        \\- Prefer/avoid annotations on constructors (deprecated)
+        \\- Declare priorities of nested constructors
+        \\- Reject keywords
+        \\- Reject nesting of certain constructors
 
   \section{\label{sec:webdsl-grammar}WebDSL Grammar Specification}
 
@@ -15,29 +114,6 @@
     \\\\Reason to switch to SDF3:
     \\- Modern spoofax does not support SDF2 anymore?
     \\- SDF3 more performant?
-
-  \section{\label{sec:sdf3}Introduction to SDF3}
-
-    Able to declaratively specify the complete syntax of a programming language in SDF3, and a parser, highlighter and pretty-printer gets generated from this specification.
-
-    \subsection{\label{subsec:sdf3-syntax}Syntax}
-
-      \begin{itemize}
-        \item Lexical sorts
-        \item Context-free sorts
-        \item Constructors
-        \item Injections
-        \item Optional sorts
-        \item Repitition
-      \end{itemize}
-
-    \subsection{\label{subsec:sdf3-disambiguation}Disambiguation}
-
-      Possibilities:
-      \\- Prefer/avoid annotations on constructors (deprecated)
-      \\- Declare priorities of nested constructors
-      \\- Reject keywords
-      \\- Reject nesting of certain constructors
 
   \section{\label{sec:sdf2-to-sdf3}Migration from SDF2 to SDF3}
 
@@ -139,5 +215,3 @@
       \item Optional separators: In SDF2 multiple productions could have the same constructor, in SDF3 multiple constructors make for an increase in reject and desugaring rules.
       \item Optional alias vs. cast expression: use non-transitive priority rule.
     \end{itemize}
-
-  \section{\label{sec:sdf3-reflection}Reflection on SDF3}
