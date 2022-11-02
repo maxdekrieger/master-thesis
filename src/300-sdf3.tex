@@ -84,36 +84,172 @@
 
     \subsection{\label{subsec:sdf3}SDF3}
 
-      Syntax Definition Formalism 3 (SDF3) \autocite{VollebregtKV12,AmorimV20} is a meta-language in the Spoofax language workbench that makes use of the SGLR parsing algorithm.
+      Syntax Definition Formalism 3 (SDF3) \autocite{VollebregtKV12,AmorimV20} is a meta-language in the Spoofax language workbench that makes use of the SGLR parsing algorithm. It is the latest version of the syntax definition formalism SDF \autocite{HeeringHKR89,Visser97}. Language engineers are able to define context-free grammars in SDF3, which are transformed into parse tables and used by the JSGLR2\footnote{\url{https://github.com/metaborg/jsglr}} parsing algorithm. JSGLR2 \autocite{Denkers2018} is the successor of the JSGLR algorithm; an implementation of the SGLR parsing algorithm in Java.
 
-      \subsubsection{\label{subsubsec:sdf3-syntax}Syntax}
+      SDF3 is the successor of SDF2, in which the WebDSL syntax is currently defined. Souza Amorim and Visser \citeyear{AmorimV20} argue that the SDF3 syntax is more similar to other grammar formalisms such as EBNF.
 
-        \begin{itemize}
-          \item Lexical sorts
-          \item Context-free sorts
-          \item Constructors
-          \item Injections
-          \item Optional sorts
-          \item Repitition
-        \end{itemize}
+      A syntax definition in SDF3 is a declarative specification of syntactic sorts and their productions. \Cref{fig:sdf3-sorts-and-productions-syntax} shows an example grammar features a language that supports multiplication and addition of integers. The SDF3 definition must define a start-symbol that specifies what a syntactically valid program looks like. In our example, every program that can be derived from the \texttt{Start} sort, is a valid program. \textbf{Line 11} contains the first production of the specification. It startes that the sort \texttt{Start} can be derived by deriving something of the sort \texttt{Expr}. The identifier behind the dot in the production (\texttt{Expr} in this case) declares the constructor in the AST. \Cref{fig:example-AST-1} shows the AST of an example input, according to the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax}. \textbf{Line 12-14} defines the productions of the expression sort. It defines that an expression is either two expressions with a plus or asterix in between, or it is something of the sort \texttt{Lit}. The production of literal sort on \textbf{line 16} references the lexical sort \texttt{INT}. Lexical sorts do not appear in the AST with constructors, but instead are parsed into a string. The lexical sort \texttt{INT} is defined on \textbf{line 22} with the regular expression \texttt{[0-9]+}, describing one or more characters in the range of 0 to 9. Finally, the production describing the built-in concept of \texttt{LAYOUT} on \textbf{line 23} states that a space, tab, carriage return and line feed character are layout (whitespace) characters and do not have to be parsed.
+
+      \Cref{fig:example-AST-1} shows the abstract syntax tree of an example input for the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax}. In the Spoofax Language Workbench, abstract syntax trees are described in the Annotated Terms Format (ATerm) \autocite{BrandJKO00}.
+
+      \begin{figure}
+        \begin{minted}[firstline=1]{\sdfthree}
+  module ThesisTest
+
+  context-free start-symbols
+    Start
+
+  context-free sorts
+    Start Expr Lit
+
+  context-free syntax
+    Start.Expr = <<Expr>>
+
+    Expr.Add = <<Expr> + <Expr>>
+    Expr.Mul = <<Expr> * <Expr>>
+    Expr.Lit = <<Lit>>
+
+    Lit.Int = <<INT>>
+
+  lexical sorts
+    INT
+
+  lexical syntax
+    INT    = [0-9]+
+    LAYOUT = [\ \t\n\r]
+        \end{minted}
+        \caption{\label{fig:sdf3-sorts-and-productions-syntax}An SDF3 specification of a language that allows addition and multiplication of integers.}
+      \end{figure}
+
+      \begin{figure}
+        \begin{subfigure}[b]{0.5\textwidth}
+          \centering
+          \begin{tikzpicture}
+            \node {$Expr$}
+              child {node {$Add$}
+                child {node {$Lit$}
+                  child {node {$Int$}
+                    child {node {\texttt{"0"}}}
+                  }
+                }
+                child {node {$Lit$}
+                  child {node {$Int$}
+                    child {node {\texttt{"1"}}}
+                  }
+                }
+              };
+          \end{tikzpicture}
+          \caption{\label{fig:example-AST-1-ast}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.5\textwidth}
+          \begin{minted}[firstline=1]{text}
+Expr(
+  Add(
+    Lit(Int("0")),
+    Lit(Int("1"))
+  )
+)
+          \end{minted}
+          \caption{\label{fig:example-AST-1-aterm}}
+        \end{subfigure}
+        \caption{\label{fig:example-AST-1}The AST and ATerm representation of the expression \texttt{0 + 1} according to the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax}}
+      \end{figure}
+
+      In addition to the basics as explained in the previous paragraph, SDF3 supports features such as injections, optional sorts and repetition to enhance the language engineers productivity. \cref{fig:sdf3-syntax-injection-repetition-optional} shows the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax}, but now enhanced with injections, repitition and optional sorts. \Cref{fig:example-aterm-injections-etc} shows the ATerm of the input \texttt{0 + 0; 1 * -1}. The repetition on \textbf{line x} of \cref{fig:sdf3-syntax-injection-repetition-optional} allows multiple expressions in a list, delimited by a semicolon. The injection on \textbf{line 14} allows a literal to be derived in the place of an expression, effectively omitting the \texttt{Lit(...)} constructor in the AST. Lastly, the optional minus sign of \textbf{line 16 and 18} allows negative integers to be parsed by this language. The AST contains \texttt{Some(...)} and \texttt{None()} constructors for the optional sorts.
+        
+      \begin{figure}
+        \begin{minted}[firstline=1]{\sdfthree}
+  module m
+
+  context-free start-symbols
+    Start
+  
+  context-free sorts
+    Start Expr Lit Minus
+  
+  context-free syntax
+    Start.Exprs = <<{Expr "; "}+>>
+  
+    Expr.Add = <<Expr> + <Expr>>
+    Expr.Mul = <<Expr> * <Expr>>
+    Expr     = Lit
+  
+    Lit.Int = <<Minus?> <INT>>
+  
+    Minus.Minus = <->
+  
+  lexical sorts
+    INT
+  
+  lexical syntax
+    INT    = [0-9]+
+    LAYOUT = [\ \t\n\r]
+        \end{minted}
+        \caption{\label{fig:sdf3-syntax-injection-repetition-optional}An SDF3 specification of a language that allows addition and multiplication of integers, showcasing injections, repetition and optional sorts.}
+      \end{figure}
+
+      \begin{figure}
+        \begin{minted}[firstline=1]{text}
+  Exprs([
+    Add(
+      Int(None(), "0"),
+      Int(None(), "0")
+    ),
+    Mult(
+      Int(None(), "1")
+      Int(Some(Minus()), "1")
+    )
+  ])
+        \end{minted}
+        \caption{\label{fig:example-aterm-injections-etc}The ATerm of input \texttt{0 + 0; 1 * -1} according to the SDF3 specification of \cref{fig:sdf3-syntax-injection-repetition-optional}}
+      \end{figure}
 
       \subsubsection{\label{subsubsec:sdf3-disambiguation}Disambiguation}
 
-        Possibilities:
-        \\- Prefer/avoid annotations on constructors (deprecated)
-        \\- Declare priorities of nested constructors
-        \\- Reject keywords
-        \\- Reject nesting of certain constructors
+        The simple grammar described by the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax} is functional, but is ambiguous. For example, the input \texttt{1 + 2 + 3} can be parsed as \texttt{(1 + 2) + 3} or as \texttt{1 + (2 + 3)}. The process of altering and annotating the grammar such that this there is only one way of parsing this, is called disambiguation. The example listed in the previous section (\cref{fig:example-cfg-with-parse-table}) contains a grammar with expressions, terms and factors that is inherently unambiguous. However, disambiguating a grammar by introducing new sorts and productions is tedious and time consuming. SDF3 provides multiple options for disambiguating a grammar.
+
+        First of all, SDF3 provides the \texttt{\{bracket\}} annotation, allowing the developer to disambiguate the program himself. To clarify, the input \texttt{1 + (2 + 3)} is not valid according to our grammar, because the "(" and ")" symbols are not part of the grammar. If we add the production \texttt{Expr = "(" Expr ")" \{bracket\}}, SDF3 allows brackets around arbitrary expressions without it introducing new AST nodes.
+
+        Reject rules allow language engineers to filter derivations. A reject rule is simple a regular production, followed by the \texttt{\{reject\}} annotation. For example, appending our grammar with the rule \texttt{Expr = <<Expr> + <Expr>> \{reject\}} makes the set of valid derivations of \texttt{Expr} smaller, namely by disallowing any construction described by the right-hand side of the reject rule.
+
+        Another possibility for disambiguating SDF3 grammars is by indicating the associatibity, either as annotation or using priority groups. If we add the annotation \texttt{\{left\}} to the production that specifies addition, \texttt{1 + 2 + 3} is no longer ambiguous but instead will always be parsed as \texttt{(1 + 2) + 3}. It is also possible to declare the associativity in groups. \Cref{fig:sdf3-syntax-disambiguation} contains such groups. \textbf{Line 8} shows that both addition and subtraction are left associative, and in the same group. The input \texttt{1 + 2 - 3 + 4} will now be parsed as \texttt{((1 + 2) - 3) + 4}, whereas declaring the associativity annotation on both rules instead of the group would still make this input ambiguous.
+
+        \begin{figure}
+          \begin{minted}[firstline=2]{\sdfthree}
+  module m
+  context-free syntax
+    Expr.Mul = <<Expr> * <Expr>>
+    Expr.Add = <<Expr> + <Expr>>
+    Expr.Sub = <<Expr> - <Expr>>
+
+  context-free priorities
+    {left: Expr.Mul} >
+    {left: Expr.Add Expr.Sub }
+          \end{minted}
+          \caption{\label{fig:sdf3-syntax-disambiguation}An SDF3 specification of a simple language with disambiguation rules.}
+        \end{figure}
+
+        \Cref{fig:sdf3-syntax-disambiguation} also shows the declaration of priorities. In the example, multiplication has priority (e.g. binds tighter) over addition and subtraction. This results in the input \texttt{1 + 2 - 3 * 4} being parsed as \texttt{(1 + 2) - (3 * 4)}.
+
+        SDF3 also provides the option of indexed priorities in the form of \texttt{p1 i .> p2}. This can be explained intuitively as the subterm with index \texttt{i} of production \texttt{p1} may not be derived by production \texttt{p2}. In our example, the rule \texttt{Expr.Add <0> .> Expr.Mul} would imply that the left-hand side of an addition may never be a multiplication.
+
+        Lastly, SDF3 provides the ability to disambiguate through the use of post-parse filters annotated by \texttt{\{prefer\}} and \texttt{\{avoid\}}. When the parser encounters an ambiguous input, it will continue parsing and store all possibilities. At the end of parsing, it will use the annotations to prune the multiple ASTs according to these annotations. The \texttt{\{prefer\}} and \texttt{\{avoid\}} annotations are working but deprecated in the current version of SDF3 and will be removed in the future. Using the post-parse filters makes the disambiguation less transparent than using the other methods described in this section.
 
   \section{\label{sec:webdsl-grammar}WebDSL Grammar Specification}
 
     The current grammar of WebDSL is specified in SDF2, the predecessor of SDF3.
-    \\\\The WebDSL grammar specification consists of <> files with <> productions in total.
-    \\\\Parts of the syntax are deprecated but still mainainted for backwards compatibility reasons.
-    \\\\Some productions added for the sake of autocompletion.
-    \\\\Reason to switch to SDF3:
-    \\- Modern spoofax does not support SDF2 anymore?
-    \\- SDF3 more performant?
+
+    The WebDSL grammar specification consists of <> files with <> productions in total.
+    
+    Parts of the syntax are deprecated but still mainainted for backwards compatibility reasons.
+
+    Some productions added for the sake of autocompletion.
+
+    Reason to switch to SDF3:
+    \\- Modern spoofax does not support SDF2 anymore
+    \\- Good case study for performance
+    \\- Good case study for prefer/avoid 
+    \\- Necessary to efficiently interact with Statix: signature generator
 
   \section{\label{sec:sdf2-to-sdf3}Migration from SDF2 to SDF3}
 
@@ -124,11 +260,11 @@
       The SDF2 to SDF3 migration tool does not accept "sorts" sections.
       \\\\Alternations must be removed from the SDF2 specification. Solution is to introduce a separate sort for the alternation:
       \\\\Before:
-      \\("B" | "C") -> A {cons("A")}
+      \\("B" | "C") -> A \{cons("A")\}
       \\\\After:
-      \\BorC -> A    {cons("A")}
-      \\"B"  -> BorC {cons("B")}
-      \\"C"  -> BorC {cons("C")}
+      \\BorC -> A    \{cons("A")\}
+      \\"B"  -> BorC \{cons("B")\}
+      \\"C"  -> BorC \{cons("C")\}
       \\\\Restrictions (both context-free and lexical) produce an error during transformation and must be manually copied.
       \\\\Mixed languages and parameterized imports are currently not supported in SDF3, so WebDSL code cannot be mixed with Stratego/Java code in the new SDF3 syntax definition.
       \\\\Mixed languages were only used in the compiler, except for HQL which is used in WebDSL code. Fortunately, the HQL syntax is not used elsewhere and could be transformed to be a part of the WebDSL syntax natively.
