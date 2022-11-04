@@ -8,7 +8,15 @@
 
   Next, we presented the static semantics of WebDSL modelled in Statix. Statix is a declarative constraint-based programming language using the concept of scope graphs to model program structures and types. Statix comes with a built-in constraint solver that schedules the constraints in a sounds way, builds and queries the scope graph and is able to show error messages for failing constraints.
 
-  The challenges of implementing the new front-end are documented in this thesis and we provided qualitative feedback on how to further improve the meta-DSLs SDF3 and Statix.
+  The challenges of implementing a modernized WebDSL front-end are documented in this thesis and we provided qualitative feedback on how to further improve the meta-DSLs SDF3 and Statix. The most notable challenges include but are not limited to:
+  
+  \begin{itemize}
+    \item Disambiguating the WebDSL grammar without the use of post-parse filters \texttt{\{prefer\}} and \texttt{\{avoid\}};
+    \item Modifying the grammar such that it adheres to the requirements of the Statix signature generator;
+    \item Expressing language constructs such as type extension, overloading, generated definitions and static code template expansion in Statix;
+    \item Expressing and the WebDSL module system in Statix and defining a revised module system;
+    \item Reducing the run time of the WebDSL static analysis from over 8 hours to 4 seconds on real world applications.
+  \end{itemize}
 
   Lastly, the resulting modernized front-end of WebDSL was evaluated in terms of correctness and run time performance using large test suites and WebDSL applications that are used in practice.
 

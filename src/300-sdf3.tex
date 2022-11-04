@@ -240,15 +240,13 @@ Expr(
     The current grammar of WebDSL is specified in SDF2, the predecessor of SDF3.
 
     The WebDSL grammar specification consists of <> files with <> productions in total.
-    
-    Parts of the syntax are deprecated but still mainainted for backwards compatibility reasons.
 
-    Some productions added for the sake of autocompletion.
+    List various constructs: file-level unit, top-level declarations that are re-used in other contexts, many injections, deprecated parts of the syntax but still mainainted for backwards compatibility reasons, some productions added for the sake of syntactic autocompletion.
 
     Reason to switch to SDF3:
-    \\- Modern spoofax does not support SDF2 anymore
-    \\- Good case study for performance
-    \\- Good case study for prefer/avoid 
+    \\- SDF2 is deprecated
+    \\- Good case study for performance of SDF3
+    \\- Good case study for disambiguation without prefer/avoid 
     \\- Necessary to efficiently interact with Statix: signature generator
 
   \section{\label{sec:sdf2-to-sdf3}Migration from SDF2 to SDF3}
@@ -337,13 +335,13 @@ Expr(
 
       \subsubsection{Disambiguation}
 
-        As mentioned in \cref{subsec:sdf3-syntax}, ambiguous code fragments lead to abstract syntax trees with the \texttt{amb(\_, \_)} term. Similar to optional sorts, this cannot be translated to Statix and therefore it is crucial that the syntax is disambiguated properly.
+        As mentioned in \cref{subsec:sdf3-syntax}, ambiguous code fragments lead to abstract syntax trees with the \texttt{amb([...])} term. Similar to optional sorts, this cannot be translated to Statix and therefore it is crucial that the syntax is disambiguated properly.
         \\\\Next to this, the \texttt{prefer} and \texttt{avoid} annotations for disambiguation were heavily used in the WebDSL SDF2 definition. The annotations are supported in SDF3, but the support is likely to be dropped in a future release.
         \\\\For the two reasons listed above, we reimplemented disambiguation through a combination of multiple SDF3 features. This process is explained in \cref{sec:webdsl-sdf3-disambiguation}.
 
   \section{\label{sec:webdsl-sdf3-disambiguation}Disambiguation}
   
-    Since the \texttt{amb(\_,\_)} constructor is not declarable in Statix, having an ambiguity in the AST leads to the analysis not executing. This increases the need for disambiguation.
+    Since the \texttt{amb([...]} constructor is not declarable in Statix, having an ambiguity in the AST leads to the analysis not executing. This increases the need for disambiguation.
     \\\\Challenges and solutions:
     \begin{itemize}
       \item Keywords in WebDSL: SDF3 template options not optimal.
