@@ -293,23 +293,32 @@ strategies
 
   \section{\label{sec:sdf2-to-sdf3}Migration from SDF2 to SDF3}
 
-    SDF2 is still supported by Spoofax, but no longer actively developed. SDF3 is the most recent member of the Syntax Definitions Formalisms. In a sense, SDF3 is a more high-level version of SDF2 and in the initial versions of SDF3, it compiled down to SDF2.
+    SDF2 is still supported by the Spoofax langauge workbench, but no longer actively developed. SDF3 is the most recent member of the Syntax Definitions Formalisms. In a sense, SDF3 is a high-level version of SDF2 with additional features. In the initial versions of SDF3, it compiled down to SDF2.
 
-    Spoofax contains tool to migrate SDF2 specifications to SDF3 specifications but not all constructs of the lower level SDF2 are expressible in SDF3. WebDSL SDF2 specification requires manual tweaking before this transformation tool can be utilized. Additionally, the generated SDF3 definition is sub-optimal, as not all features of SDF3 are utilized in the generated code.
+    Spoofax contains tool to migrate SDF2 specifications to SDF3 specifications but not all constructs of the lower level SDF2 are expressible in SDF3. The WebDSL SDF2 specification requires manual adjustment before this transformation tool can be utilized. Additionally, the generated SDF3 definition is sub-optimal, as not all features of SDF3 are utilized in the generated code.
 
     \subsection{\label{subsec:preparing-webdsl-sdf2}Preparing the WebDSL SDF2 definition for migration}
 
-      The SDF2 to SDF3 migration tool does not accept "sorts" sections.
-      \\\\Alternations must be removed from the SDF2 specification. Solution is to introduce a separate sort for the alternation:
-      \\\\Before:
-      \\("B" | "C") -> A \{cons("A")\}
-      \\\\After:
-      \\BorC -> A    \{cons("A")\}
-      \\"B"  -> BorC \{cons("B")\}
-      \\"C"  -> BorC \{cons("C")\}
-      \\\\Restrictions (both context-free and lexical) produce an error during transformation and must be manually copied.
-      \\\\Mixed languages and parameterized imports are currently not supported in SDF3, so WebDSL code cannot be mixed with Stratego/Java code in the new SDF3 syntax definition.
-      \\\\Mixed languages were only used in the compiler, except for HQL which is used in WebDSL code. Fortunately, the HQL syntax is not used elsewhere and could be transformed to be a part of the WebDSL syntax natively.
+      Not all SDF2 constructs can be expressed in SDF3. For this reason, the WebDSL SDF2 must be adjusted manually to be able to use the tool provided by Spoofax that transforms SDF2 specifications to SDF3 specifications.
+
+      \paragraph{Sorts} Non-terminals are named \textit{Sorts} in SDF2 and SDF3. A production in SDF2 reduces a sequence of terminals and non-terminals to a certain sort, as listed in the example of \cref{fig:sdf2-sections}. In SDF2 the sort does not have to be declared in a separate \texttt{sorts} section, while it does in SDF3. Additionally, SDF2 does not differentiate lexical sorts from context-free sorts. The result of this difference in design is that SDF2 sorts cannot be migrated to SDF2, since the transformation tool does not know if an SDF2 sort is used as lexical or context-free sort. To be able to translate the SDF2 specification to SDF3, we must remove the sort declarations.
+
+      \paragraph{Alternations} Another manual adjustment we must make to the SDF2 specification is removing alternations. An alternation is a production of the form \texttt{"a" | "b" -> S}. This construct is not supported anymore in SDF3 and therefore the transformation tool is not able to handle this construct. Fortunately, the alternation can easily be split in two production rules. However, the transformation tool does not automate this process because the original production may contain a constructor annotation (\texttt{"a" | "b" -> S \{cons("AorB")\}}) and the duplicate constructors for the same sort are not allowed in SDF3. For this reason must manually remove alternations in SDF2 productions.
+
+      \paragraph{Follow Restrictions} The transformation tool does also not include support for follow restrictions in the grammar. A follow restriction indicates what symbols are not allowed to be parsed after a production. A typical use case of this is ensuring the longest match for identifiers, or enforcing whitespace after a keyword. An example of follow restrictions are shown in \cref{fig:sdf2-follow-restrictions}. For the migration to SDF3, these sections have to be manually copied.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\sdftwo}
+module x
+exports
+  lexical syntax
+    [a-zA-Z\_][a-zA-Z0-9\_]* -> ID
+  lexical restrictions
+    ID -/- [a-zA-Z0-9\_]
+    "in" -/- [a-zA-Z0-9\_]
+        \end{minted}
+        \caption{\label{fig:sdf2-follow-restrictions}Follow restrictions are used to for example ensure the longest-match of an identifier and enforcing whitespace after keywords.}
+      \end{figure}
 
     \subsection{\label{subsec:manual-tweaking-sdf3}Manual Tweaking of Generated WebDSL SDF3}
 
