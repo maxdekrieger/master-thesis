@@ -320,37 +320,115 @@ exports
         \caption{\label{fig:sdf2-follow-restrictions}Follow restrictions are used to for example ensure the longest-match of an identifier and enforcing whitespace after keywords.}
       \end{figure}
 
-    \subsection{\label{subsec:manual-tweaking-sdf3}Manual Tweaking of Generated WebDSL SDF3}
+    \subsection{\label{subsec:manual-tweaking-sdf3}Manual Adjustment of Generated WebDSL SDF3}
 
-      \subsubsection{Missing and duplicate constructors}
+      The generated SDF3 specification of WebDSL according to the manually adjusted SDF2 is sub-optimal SDF3 code. SDF2 can be seen as a more low-level version of SDF3 and not all constructs of SDF2 transform into the most elegant SDF3 code. Parts of the generated SDF3 code do not even adhere to the static semantics of SDF3. For this reason, the generated SDF3 code has to be manually adjusted.
 
-        In SDF3, the constructors are a much more key part of the productions than in SDF2, where constructors are defined as a \texttt{cons("MyConstructor")} annotation on the production. In the WebDSL SDF2 definition, some constructors were missing and there were many duplicate constructors that denoted alternative syntax for the same construct, essentially providing syntactic sugar.
-        
-        In the newly generated SDF3, duplicate constructors had to be changed, in order for them to be unique. Additionally, missing constructors had to be added, preferably even for injections for a reason we will touch on later in \cref{sec:preparation-for-statix}.
+      \paragraph{Missing and duplicate constructors} In SDF2, constructors are defined as an annotation on a production. An example of the different production syntax of SDF2 and SDF3 is shown in \cref{fig:sdf2-sections}. The constructor annotation is not required in SDF2, but in SDF3 it is necessary to provide a constructor for every production. In the WebDSL SDF2 definition, some constructors are missing and there were are duplicate constructors that denoted alternative syntax for the same construct, essentially providing syntactic sugar. The SDF2 definition and generated SDF3 definition for the \texttt{ascending} and \texttt{descending} ordering is shown in \cref{fig:sdf2-sdf3-asc-desc}.
 
-      \subsubsection{Priority chains}
+      \begin{figure}
+        \begin{subfigure}[b]{1\textwidth}
+          \begin{minted}[firstline=3]{\sdftwo}
+module WebDSL-UI
+exports
+  context-free syntax
+    "asc"        -> AscendingOrDescending {cons("Ascending")}
+    "ascending"  -> AscendingOrDescending {cons("Ascending")}
+    
+    "desc"       -> AscendingOrDescending {cons("Descending")}
+    "descending" -> AscendingOrDescending {cons("Descending")}
+          \end{minted}
+          \caption{\label{fig:sdf2-sdf3-asc-desc-sdf2}}
+        \end{subfigure}
+        \begin{subfigure}[b]{1\textwidth}
+          \begin{minted}[firstline=2]{\sdfthree}
+module WebDSL-UI
+  context-free syntax
+    HQLAscOrDescOpt.HQLAscending = <ascending>
+    HQLAscOrDescOpt.HQLAscending = <asc>   // Error: duplicate constructor
 
-        To indicate priority amongst context-free productions, both SDF2 and SDF3 use the concept of priority chains, but the SDF2 variant requires a repitition of the production inside the chain, whereas SDF3 uses a reference to the sort with corresponding constructor. This causes the SDF2 priority chains to not be migrated to the SDF3 priority chains.
-        
-        The only way to tackle this issue is to manually re-enter the priority chains in SDF3.
+    HQLAscOrDescOpt.HQLDescending = <descending>
+    HQLAscOrDescOpt.HQLDescending = <desc> // Error: duplicate constructor
+          \end{minted}
+          \caption{\label{fig:sdf2-sdf3-asc-desc-sdf3}}
+        \end{subfigure}
+        \caption{\label{fig:sdf2-sdf3-asc-desc}SDF2 and generated SDF3 for the \texttt{ascending} and \texttt{descending} keyword in WebDSL. Duplicate constructors within the same sort are not allowed in SDF3.}
+      \end{figure}
+      
+      In the newly generated SDF3, duplicate constructors must to be changed, in order for them to be unique. Additionally, missing constructors must be added for the pretty-printer to function correctly. Injections do typically not require a constructor, but preferably constructors should be added there as well to reduce the length of the abstract syntax tree in Statix, as we will explain in \cref{sec:preparation-for-statix}.
 
-      \subsubsection{Transferring comments}
+      \paragraph{Priority chains} Priority chains are used to disambiguate grammars in SDF specifications. A typical example and an explanation is given in \cref{fig:sdf3-syntax-disambiguation}. Both SDF2 and SDF3 use the concept of priority chains, but the SDF2 variant requires a repitition of the production inside the chain, whereas SDF3 uses a reference to the production. This causes the SDF2 priority chains to not be migrated to the SDF3 priority chains and requires them to be manually rebuilt. An example of the difference between priority chains in SDF2 and SDF3 is shown in \cref{fig:sdf2-sdf3-asc-priority-chains}.
 
-        Of a lesser importance, but highly recommended for the readability of a syntax definition is the comments, that are parsed as layout and are therefore not tranfered to the generated SDF3 files. Again, there is no way around this and they have to be manually transferred.
+      \begin{figure}
+        \begin{subfigure}[b]{0.5\textwidth}
+          \begin{minted}[firstline=3]{\sdftwo}
+module WebDSL-UI
+exports
+  context-free priorities
+    {left:
+      Expr "*" Expr -> Expr
+    } >
+    {left:
+      Expr "+" Expr -> Expr
+      Expr "-" Expr -> Expr
+    }
+          \end{minted}
+          \caption{\label{fig:sdf2-sdf3-asc-priority-chains-sdf2}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.5\textwidth}
+          \begin{minted}[firstline=2]{\sdfthree}
+module WebDSL-UI
+context-free priorities
+  {left: Expr.Mul} >
+  {left: Expr.Add Expr.Sub }
+          \end{minted}
+          \caption{\label{fig:sdf2-sdf3-asc-priority-chains-sdf3}}
+        \end{subfigure}
+        \caption{\label{fig:sdf2-sdf3-asc-priority-chains}Difference between priority chains in SDF2 and SDF3. The transformation tool does not perform the analysis to properly transform this.}
+      \end{figure}
 
-      \subsubsection{Template productions}
+      \paragraph{Transferring comments} Comments are highly recommended and important for the readability and maintainability of large software projects. However, most grammars specified in SDF2 and SDF3 declare comments as part of the layout of a program and are not represented in the abstract syntax tree. For this reason, the transformation tool does not transfer comments from SDF2 grammars to the generated SDF3. Comments must be manually copied from the SDF3 and pasted in the correct parts of the SDF3 specification.
 
-        A major change in SDF3 compared to SDF2 are template productions, that allow for nice pretty printing and syntactic code completion. The productions in the generated SDF3 files are all template productions, but do not have the proper surrounding layout and indentation because there is no way to extract this information from the SDF2 source. This had to be manually added to the generated SDF3 productions where applicable.
+      \paragraph{Template productions} A major change in SDF3 compared to SDF2 are template productions, that allow for nice pretty printing and syntactic code completion. The productions in the generated SDF3 files are all template productions, but do not have the proper surrounding layout and indentation because there is no way to extract this information from the SDF2 source, as it it not present there. Adding the correct layout in template productions is tedious work but causes the pretty-printer to function properly. An example of SDF2, generated SDF3 and manually adjusted SDF3 is shown in \cref{fig:sdf2-sdf3-template-production}.
 
-      \subsubsection{Deeply embedding HQL}
+      \begin{figure}
+        \begin{subfigure}[b]{1\textwidth}
+          \begin{minted}[firstline=3]{\sdftwo}
+module WebDSL-UI
+exports
+  context-free syntax
+    "if" "(" Expr ")" "{" Expr* "}" -> Expr {cons("If")}
+          \end{minted}
+          \caption{\label{fig:sdf2-sdf3-template-production-sdf2}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.6\textwidth}
+          \begin{minted}[firstline=2]{\sdfthree}
+module WebDSL-UI
+  context-free syntax
+    Expr.If = <if ( <Expr> ) { <Expr*> }>
+          \end{minted}
+          \caption{\label{fig:sdf2-sdf3-template-production-sdf3-gen}}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.4\textwidth}
+          \begin{minted}[firstline=2]{\sdfthree}
+module WebDSL-UI
+  context-free syntax
+    Expr.If = <
+      if ( <Expr> ) {
+        <Expr*> 
+      }
+    >
+          \end{minted}
+          \caption{\label{fig:sdf2-sdf3-template-production-sdf3-adjusted}}
+        \end{subfigure}
+        \caption{\label{fig:sdf2-sdf3-template-production}An example of an SDF2 production, the generated SDF3 and the manually adjusted SDF3 for template productions.}
+      \end{figure}
 
-        Previously, the syntax definition of HQL was a standalone definition, and was used in the WebDSL SDF2 through parameterized imports. SDF3 has no support for this feature, so as discussed in \cref{subsec:preparing-webdsl-sdf2}, the language has to be transformed to be a part of the WebDSL syntax.
-        
-        Deeply embedding the HQL syntax in the WebDSL syntax causes some errors to arise on duplicate names of sorts and constructors, this had to be fixed manually.
+      \paragraph{Deeply Embedding HQL Grammar in WebDSL} The HQL syntax definition in SDF2 is a standalone definition, and is used in the WebDSL SDF2 using parameterized imports. SDF3 has no support for this feature, which means the syntax definition has to be transformed to be a part of the WebDSL grammar. Otherwise, WebDSL applications that use HQL syntax, which are all real world applications, would no longer parse correctly. Deeply embedding the HQL syntax in the WebDSL syntax causes sorts and constructors to overlap, and this must be adjusted manually.
 
   \section{\label{sec:preparation-for-statix}Preparation for Statix}
 
-    With the intention to use Statix for implementing the WebDSL static analyses, the grammar sorts and constructors have strict requirements. Statix is a strongly typed language and requires all input to adhere to the declared sorts and constructors.
+    Statix is a constraint-based meta-language in which we implement the modernized WebDSL static analysis. Even though the parsing and the static analysis are separate components of the compilation chain, the Spoofax language workbench contains a tool that extracts the sorts and constructors from an SDF3 definition, and generates these signatures in the Statix language to be able to use them while defining the static analysis. This tool is called the Statix signature generator. Using the Statix signature generator imposes additional constraints on the SDF3 definition.
 
     \subsection{\label{subsec:sorts-in-statix}Sorts and Constructors in Statix}
 
