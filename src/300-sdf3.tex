@@ -553,15 +553,199 @@ module WebDSL-UI
       \caption{\label{fig:sdf3-remove-optionals}An example of how to remove the optional sort to comply with the Statix signature generator.}
       \end{figure}
 
-      \paragraph{Disambiguation} SDF3 provides many features to disambiguate a grammar as listed in \cref{subsubsec:sdf3-disambiguation}. If an ambiguous code fragment is parsed, it will result in the \texttt{amb([...])} term in the AST, which contains a list of the possible interpretations. Similar to the \texttt{Some(\_)} and \texttt{None())} constructors from the optionals as discussed in the previous paragraph, the \texttt{amb([...])} can not be expressed in Statix. The result of this is that ambiguous code fragments can never be analyzed by Statix, increasing the need for proper disambiguation even more. In the next section we will discuss the disambiguation of the WebDSL SDF3 grammar.
+      \paragraph{Disambiguation} SDF3 provides many features to disambiguate a grammar as listed in \cref{subsubsec:sdf3-disambiguation}. If an ambiguous code fragment is parsed, it will result in the \texttt{amb([...])} term in the AST, which contains a list of the possible interpretations. Similar to the \texttt{Some(\_)} and \texttt{None())} constructors from the optionals as discussed in the previous paragraph, the \texttt{amb([...])} can not be expressed in Statix. The result of this is that ambiguous code fragments can not be used in Statix rules and therefore will never be analyzed, increasing the need for proper disambiguation even more. In the next section we will discuss the disambiguation of the WebDSL SDF3 grammar.
 
   \section{\label{sec:webdsl-sdf3-disambiguation}Disambiguation}
   
-    Since the \texttt{amb([...]} constructor is not declarable in Statix, having an ambiguity in the AST leads to the analysis not executing. This increases the need for disambiguation.
-    \\\\Challenges and solutions:
-    \begin{itemize}
-      \item Keywords in WebDSL: SDF3 template options not optimal.
-      \item String interpolation: Convert to one String constructor with a list of parts.
-      \item Optional separators: In SDF2 multiple productions could have the same constructor, in SDF3 multiple constructors make for an increase in reject and desugaring rules.
-      \item Optional alias vs. cast expression: use non-transitive priority rule.
-    \end{itemize}
+    When a program is ambiguous, it can be interpreted in multiple ways. Generally, ambiguous programs are undesired due to the undefined semantics. To prevent ambiguities in the syntax of a programming language, the syntax definition can be disambiguated.
+
+    SDF3 provides multiple language features to disambiguate a syntax, such as bracket rules, reject rules, associativity annotations, priority groups and indexed priorities. A complete list of ways to disambiguate is explained in \cref{subsubsec:sdf3-disambiguation}.
+
+    Post-parse filters \texttt{\{prefer\}} and \texttt{\{avoid\}} provide a unique way to disambiguate the syntax, namely it keeps all the possible parse trees in memory and after the whole input is parsed, the parser prunes the resulting parse forest according to the \texttt{\{prefer\}} and \texttt{\{avoid\}} annotations.
+    
+    The \texttt{\{prefer\}} and \texttt{\{avoid\}} post-parse filters are deprecated in the current version of SDF3. In this thesis we attempt to disambiguate the grammar of a WebDSL with the other disambiguation functionalities provided by SDF3.
+
+    \section{Disambiguating Keywords}
+
+      WebDSL template calls do not require parentheses or semicolons. This allows for clean code in templates, but makes the syntax ambiguous in the case of keywords that are able to parse as a template name.
+      
+      \Cref{fig:sdf3-keywords-ambiguous} shows an example of a WebDSL program where a template starts with a variable initialisation with an HQL query that fetches all names of users from the database. In HQL, the from-clause is optional, meaning that a statement such as \texttt{select user.name} syntactically correct as an HQL expression. For this reason, the words after the select clause can also be parsed as template calls.
+
+      \begin{figure}
+        \begin{minted}[firstline=2]{\webdsl}
+module x
+  template t() {
+    // from-clause is optional in this HQL expression
+    // meaning that "select u.name" is a complete expression
+    // and "from", "User", "as", and "u" can also be parsed
+    // as template calls
+    var names := select u.name from User as u
+
+    // parentheses are optional in template calls
+    callToOtherTemplate
+  }
+        \end{minted}
+        \caption{\label{fig:sdf3-keywords-ambiguous}An example of an ambiguous construct in WebDSL with an HQL query.}
+      \end{figure}
+
+      A simple yet effective solution is to disallow all keywords such as \texttt{from} and \texttt{as} from being valid template names. SDF3 automatically detects keywords from context-free productions, and all keywords can be rejected as identifiers at once using template options\footnote{\url{https://www.spoofax.dev/references/syntax/templates/\#reject}}. An example of how keyword rejection in template options is configured, is shown in \cref{fig:sdf3-template-options-reject}.
+
+      \begin{figure}
+        \begin{minted}[firstline=2]{\sdfthree}
+module x
+  lexical syntax
+    ID = [a-zA-Z]*
+
+  context-free syntax
+    Start.Hello = <hello <Name>>
+
+    Name.World = <world>
+    Name.Name = <<ID>>
+
+  template options
+    // "hello" and "world" are now no longer valid IDs
+    ID = keyword {reject}
+        \end{minted}
+        \caption{\label{fig:sdf3-template-options-reject}An example of rejecting keywords in template options.}
+      \end{figure}
+
+      Rejecting all keywords in the WebDSL language using the template options of SDF3 would be effective, but too rigorous. For example, the WebDSL grammar contains productions such as the following. Rejecting all keywords would imply also rejecting \texttt{Int} as identifier, meaning that it is now allowed as type anymore.
+      
+      \texttt{Statement.ForCountStmt = <for ( <VarId> : Int from <Exp> to <Exp> ) <Block>>}
+
+      Another option is to add all the reject rules for keywords individually. This is tedious work, but allows for better precision. In the new WebDSL SDF3, all keywords are rejected indivudually.
+
+    \section{Disambiguating Strings}
+
+      WebDSL strings are defined in SDF2 using kernel syntax. Kernel syntax does not allow implicit layout (whitespace) between the different elements of a production. The SDF2 productions for a WebDSL string are shown in \cref{fig:sdf2-webdsl-string}. A string can be either a "simple" string or a string containing one or more expressions that have to be evaluated. These expressions must be prefixed by a tilde (\texttt{~}) to be parsed as interpolation.
+
+      \begin{figure}
+        \begin{minted}[firstline=3]{\sdftwo}
+module x
+exports
+  %% Kernel syntax is required here since we do not want LAYOUT to be parsed
+  %% between the first QMLex and StringLex
+  syntax
+    %% string literal as expression
+    <QMLex-LEX> <StringLex-LEX> <QMLex-LEX>
+      -> <String-CF> {ast("String(<2>)")}
+
+    <QMLex-LEX> StringPart* <QMLex-LEX>
+      -> <String-CF> {ast("StringInterp(<2>)"), avoid}
+
+    SimpleStringPart       -> StringPart
+    <StringLexInterp-LEX>  -> StringPart
+
+    "~" <SimpleExp-CF>    -> SimpleStringPart {cons("InterpExp")}
+    "~" "(" <Exp-CF> ")"  -> StringPart {cons("InterpExp")}
+        \end{minted}
+        \caption{\label{fig:sdf2-webdsl-string}SDF2 definitions of a WebDSL string.}
+      \end{figure}
+
+      To prevent a simple string from being parsed as a \texttt{StringInterp} with only one part, the SDF2 definition used a post-parse filter to avoid this construct in case of amgiguities.
+      
+      \Cref{fig:sdf3-webdsl-string} shows the SDF3 definition of a WebDSL string. The "simple" string constructor was dropped, to ensure no ambiguity would arise. A simple string is now a string consisting of only one part.
+
+      \begin{figure}
+        \begin{minted}[firstline=2]{\sdfthree}
+module x
+  // Kernel syntax is required here since we do not want LAYOUT to be parsed
+  // between the first quote and StringLex
+  syntax
+
+    String-CF.String = "\"" StringPart-CF* "\""
+
+    StringPart-CF.StringValue = StringLex-LEX
+    StringPart-CF.InterpValue = "~" StringInterpExp-CF
+    StringPart-CF.InterpExp = "~" "(" Exp-CF ")"
+
+    StringInterpExp-CF.InterpSimpleExp = SimpleExp-CF
+        \end{minted}
+        \caption{\label{fig:sdf3-webdsl-string}SDF3 definitions of a WebDSL string.}
+      \end{figure}
+
+    \section{Non-transitive Priority Rules}
+
+      Another ambiguity in the WebDSL language is the overlap between passing template elements and the untyped set creation. \Cref{fig:sdf3-webdsl-untyped-set} demonstrates the ambiguity. The curly brackets are used for an untyped set creation, as shorthand for \texttt{Set<Int>(...)}. On the other hand, curly brackets are also used to pass template elements as argument to another template.
+
+      \begin{figure}
+        \begin{minted}[firstline=2]{\webdsl}
+module x
+  page p() {
+    var mySet := { 1, 2, 3 } // untyped set creation
+
+    t({ "Hello World" }) // pass template elements as argument
+  }
+
+  template t(elems : TemplateElements) {
+    elems // this will render the content of elems
+  }
+        \end{minted}
+        \caption{\label{fig:sdf3-webdsl-untyped-set}Ambiguous WebDSL code using curly brackets for untyped set creation and passing template elements as argument.}
+      \end{figure}
+
+      In SDF3, indexed non-transitive priorities are able to disambiguate this case. An indexed non-transitive priority rule is of the form \texttt{SortA.ConsA <n> .> SortB.ConsB}. Intuitively, the rule indicates that \texttt{SortB.ConsB} may never be the $n$-th subterm of \texttt{SortA.ConsA}. \Cref{fig:sdf3-non-transitive-priorities} shows how the WebDSL syntax can be disambiguated using these priorities.
+
+      \begin{figure}
+        \begin{minted}[firstline=2]{\sdfthree}
+module x
+  context-free syntax
+    Exp.UntypedSetCreation = <{ <{Exp ","}+> }>
+
+    TemplateArg.TemplateArgExp = <<Exp>>
+    TemplateArg.TemplateArgElements = <{ <TemplateElements*> }>
+
+  context-free priorities
+    TemplateArg.TemplateArgExp <0> .> Exp.UntypedSetCreation
+        \end{minted}
+        \caption{\label{fig:sdf3-non-transitive-priorities}Using non-transitive indexed priorities to disambiguate WebDSL syntax in SDF3.}
+      \end{figure}
+
+      Another instance of an ambiguity that is corrected with indexed non-transitive priority rules is optional type aliasses versus a cast expression. WebDSL knows a switch-case statement on the type of an expression. \Cref{fig:sdf3-webdsl-typecase} shows an example of how it is used in WebDSL code. The typecase takes an expression as subterm, and an optional type alias. The type alias automatically is the expression cast to whatever case is relevant. However, the expression given to the typecase can also be a cast expression, making \texttt{typecase(e as t)} ambiguous.
+
+      \begin{figure}
+        \begin{minted}[firstline=2]{\webdsl}
+module x
+  template t(e : Entity) {
+    // example of a cast expression
+    var x := e as User
+
+    // switch-case statement on the type of a variable
+    typecase(e) {
+      User    { "e is a User"     showUser(e as User)      }
+      Student { "e is a Student"  showStudent(e as Student)}
+      default { }
+    }
+
+    // switch-case statement on the type of a variable using an alias
+    // the alias automatically casts the expression based on the case
+    typecase(e as t) {
+      User    { "e is a User"     showUser(t)   } // t := e as User
+      Student { "e is a Student"  showStudent(t)} // t := e as Student
+      default { }
+    }
+  }
+        \end{minted}
+        \caption{\label{fig:sdf3-webdsl-typecase}Ambiguous WebDSL code using an optional typecase alias or a cast expression.}
+      \end{figure}
+
+      \Cref{fig:sdf3-typecase-disambiguation} shows how the optional type alias versus a cast expression is ambiguated in the modernized WebDSL SDF3 definition. The index of the \texttt{<Exp>} subterm is 2 and not 0 because the index counts literals as well, \texttt{typecase} and \texttt{(} in this case.
+
+      \begin{figure}
+        \begin{minted}[firstline=2]{\sdfthree}
+module x
+  context-free syntax
+    Exp.Cast = <<Exp> as <Sort>>
+    Statement.TypeCaseStmt = <
+      typecase ( <Exp> <OptTypeAlias> ) {
+        <TypeCaseAlt*>
+      }
+    >
+    OptTypeAlias.TypeAlias = <as <Id>>
+    OptTypeAlias.OptTypeAliasNone = <>
+
+  context-free priorities
+    Statement.TypeCaseStmt <2> .> Exp.Cast
+        \end{minted}
+        \caption{\label{fig:sdf3-typecase-disambiguation}Using non-transitive indexed priorities to disambiguate WebDSL casts versus type aliases.}
+      \end{figure}
