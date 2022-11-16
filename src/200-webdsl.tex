@@ -2,52 +2,208 @@
 
 \chapter{\label{chap:webdsl}WebDSL}
 
-  In this chapter, we describe WebDSL. WebDSL is a domain-specific language for developing web applications. The language incorporates ideas from various web programming frameworks and produces code for all tiers in a web application \autocite{Groenewegen2020}. Ever since its introduction over 10 years ago \autocite{Visser2007}, WebDSL has been the subject of many published papers (cite some papers here) and on top of that, is the programming language underpinning several applications used daily by thousands of users. Examples of WebDSL applications include but are not limited to:
+  In this chapter we describe WebDSL. WebDSL is a domain-specific language for developing web applications. The language incorporates ideas from various web programming frameworks and produces code for all tiers in a web application \autocite{Groenewegen2020}. Ever since its introduction over 15 years ago \autocite{Visser2007}, WebDSL has been a vehicle for research (cite some papers here) and on top of that, it is the programming language underpinning several applications used daily by thousands of users. Examples of WebDSL applications include but are not limited to:
+
   \begin{itemize}
     \item \textbf{WebLab}: An online learning management system, used by the Delft University of Technology.
     \item \textbf{conf.researchr.org}: A domain-specific content management system for conferences, used by all ACM SIGPLAN and SIGSOFT conferences.
     \item \textbf{researchr.org}: A platform for finding, collecting, sharing, and reviewing scientific computer science related publications.
   \end{itemize}
 
-  \begin{itemize}
-    \item [\textbf{TO-DO:}]
-    \item Paragraph with key aspects of WebDSL
-  \end{itemize}
+  In WebDSL, all aspects of web programming are defined in the same language which creates an opportunity for strong static consistency checking \autocite{Hemel2011}. The data model is defined using entities, which are automatically translated to a database representation. These entities can be passed as arguments of pages without the need to explicitly fetch data from the database. Large amounts of boilerplate code are abstracted over by WebDSL, by providing built-in but customizable functionality for access control, relations between entities and data validation. This combination of features allows WebDSL developers to efficiently create functioning prototypes while providing the functionality to make it scale and customizable.
 
   The rest of this chapter showcases the different aspects of WebDSL and zooms in on its non-trivial features. First, in \cref{sec:ui} we will describe how WebDSL offers functionality for creating web user interfaces. Next, in \cref{sec:data-model} we illustrate how the langauge manages data models. Thirdly, \cref{sec:access-control} contains information about WebDSL's solution for access control and in \cref{sec:functions} we highlight interesting aspects of its general-purpose object oriented function code. We conclude this chapter by elaborating on the current implementation of the WebDSL compilation chain in \cref{sec:current-implementation}.
 
   \section{\label{sec:ui}User Interfaces}
 
-    Introduction
+    The user interface of a WebDSL application is the part of the system that the user interacts with. Through the user interface, users are able to create, view, update or delete data.
 
-    \subsection{\label{subsec:building-blocks}Building blocks and Syntax}
+    \subsection{\label{subsec:building-blocks}Building Blocks: Pages, Templates and Template Elements}
 
-      Domain specific language for web applications -> the UI is how the user interacts with the application.
-      \\\\Page is the entry point, arguments are clean URL parameters. \\\\Templates are reusable components that can be inserted on pages or in other templates.
-      \\\\Short example with three boxes next to each other (WebDSL code left, resulting HTML right, resulting UI bottom):
-      \\\\Functionalities for in example:
-      \\- Pages
-      \\- Templates
-      \\- Navigate
-      \\- Text
-      \\- Divs
-      \\- HTML elements
+      A WebDSL application is exposed to the user via pages that are accessible from the browser. In WebDSL, pages have a name and can optionally take arguments that directly correspond with the path of the webpage.
+
+      Templates are reusable definitions of user interface code that are not accessible directly by users. Templates can be included on pages and can be nested in other templates. \Cref{fig:webdsl-pages-and-templates} shows an example of an application with two pages, the root page and the \texttt{recipe} page, with navigation between them and a reusable template called \texttt{linkToRecipe} that creates a link to the recipe page with an argument of type string. The recipe page also takes one argument of type string which is visible in the URL path.
+
+      \begin{figure}
+        \begin{subfigure}[t]{0.45\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+application app
+  page root() {
+    title { "Cookbook" }
+
+    header { "Recipes" }
+
+    linkToRecipe("Lasagne")
+    linkToRecipe("Pancakes")
+    linkToRecipe("Tomato Soup")
+  }
+
+  page recipe(s : String) {
+    title { "Cookbook: ~s" }
+
+    navigate root() {
+      "Back to homepage"
+    }
+
+    header { "~s" }
+
+    "Welcome to the recipe page for ~s!"
+  }
+
+  template linkToRecipe(s : String) {
+    par {
+      navigate recipe(s) {
+        "View recipe for ~s"
+      }
+    }
+  }
+          \end{minted}
+          \caption{\label{fig:webdsl-pages-and-templates-webdsl}WebDSL code}
+        \end{subfigure}
+        \begin{subfigure}[t]{0.55\textwidth}
+          \begin{subfigure}[t]{1\textwidth}
+            \capstart
+            \includegraphics[width=\textwidth]{../img/webdsl-pages-templates-root}
+            \caption{\label{fig:webdsl-pages-and-templates-root-page}Root page}
+          \end{subfigure}
+          \begin{subfigure}[t]{1\textwidth}
+            \capstart
+            \includegraphics[width=\textwidth]{../img/webdsl-pages-templates-recipe}
+            \caption{\label{fig:webdsl-pages-and-templates-recipe-page}Recipe page}
+          \end{subfigure}
+        \end{subfigure}
+      \caption{\label{fig:webdsl-pages-and-templates}An example of a simple WebDSL application with two pages, navigation and reusable templates.}
+      \end{figure}
+
+      The \texttt{navigate} calls are references to other pages in the application. Because all pages are known at compile time, WebDSL ensures that all navigation within an application refers to existing pages, and that the passed types are correct. Referring to a non-existing page or passing the wrong argument types would show an error in the WebDSL development environment and while compiling the application.
+      
+      Other than pages and templates and navigation between pages, the application uses various calls to built-in template such as \texttt{title}, \texttt{header} and \texttt{par}. These built-in templates are translated their respective HTML elements \texttt{<title></title>}, \texttt{<h1></h1>} and \texttt{<p></p>}. WebDSL also supports directly listing all HTML elements with its usual syntax such as \texttt{<div>"text"</div>}, but generally using template-style code such as \texttt{div \{ "text" \}} is the convention in WebDSL.
+
+      Outputting text on a webpage in WebDSL can be done by typing the text between code in a template or page, as is shown in the example cookbook application of \cref{fig:webdsl-pages-and-templates}.
+
+      Using the concepts described in this subsection, developers are able to create static websites with WebDSL. However, a powerful aspect of WebDSL is its ability to create dynamic pages without requiring much boilerplate code.
 
     \subsection{\label{subsec:request-processing}Request processing and Action Code}
 
-      With the building blocks of the previous subsection, only static pages can be made.
-      \\\\Need HTML forms and submits to manipulate data.
-      \\\\WebDSL abstracts over the usual manual request processing by using forms, inputs and action code.
-      \\\\Functionalities for in example:
-      \\- Form
-      \\- Multiple input sorts (boolean, string, text)
-      \\- Action with different redirects based on boolean, pass string to new page
+      HTML has a notion of forms and inputs that can be submitted to a webserver, after which it returns a result. WebDSL code compiles to HTML forms and takes away the responsibility of manually linking the input data to variables. \Cref{fig:webdsl-forms} shows an example of the cookbook application where the user is able to enter a name in an input field and browse to that recipe.
 
-    \subsection{\label{subsec:template-overriding}Template Overriding and Overloading}
+      \begin{figure}
+        \begin{subfigure}[t]{0.45\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+application app
+  page root() {
+    var s : String
 
-    \subsection{\label{subsec:redefines}Dynamically scoped redefines}
+    title { "Cookbook" }
+
+    header { "Recipes" }
+
+    form {
+      par {
+        "Enter a recipe name:"
+        input(s)
+      }
+      submit toRecipe() { "Go!" }
+    }
+
+    action toRecipe() {
+      return recipe(s);
+    }
+  }
+
+  page recipe(s : String) {
+    title { "Cookbook: ~s" }
+
+    navigate root() { "Back to homepage" }
+
+    header { "~s" }
+
+    "Welcome to the recipe page for ~s!"
+  }
+          \end{minted}
+          \caption{\label{fig:webdsl-forms-webdsl}WebDSL code}
+        \end{subfigure}
+        \begin{subfigure}[t]{0.55\textwidth}
+          \begin{subfigure}[t]{1\textwidth}
+            \capstart
+            \includegraphics[width=\textwidth]{../img/webdsl-forms-root}
+            \caption{\label{fig:webdsl-forms-root-page}Root page}
+          \end{subfigure}
+          \begin{subfigure}[t]{1\textwidth}
+            \capstart
+            \includegraphics[width=\textwidth]{../img/webdsl-forms-recipe}
+            \caption{\label{fig:webdsl-forms-recipe-page}Recipe page}
+          \end{subfigure}
+        \end{subfigure}
+      \caption{\label{fig:webdsl-forms}An example of a WebDSL application that uses a form for navigation.}
+      \end{figure}
+
+      \Cref{fig:webdsl-forms} no longer contains a fixed list with links to all possible recipes as in \cref{fig:webdsl-pages-and-templates} but now uses a form with an input and submits an action when the user presses a button. The root page contains a variable declaration as the first line, which defaults to an empty string. In the form later on the page, this variable is passed to an input element. After the input, the form has a button that send a request to the webserver to execute the action \texttt{toRecipe} when it is pressed. When this request is sent to the server, the data entered in the input field is linked to variable \texttt{s} by WebDSL, and the action code is able to use this in its body. The return value of an action is the page that should be shown as response. In the example of \cref{fig:webdsl-forms}, the result of executing the action is to show the \texttt{recipe} page with the input that the user has entered in the form.
+
+      WebDSL also sanitizes the input that the user submits using the form. If the user was to submit the form with input \texttt{another/path/}, this input would be sanitized and rendered correctly on the recipe page, instead of navigation to an unknown path.
+
+    \subsection{\label{subsec:template-overloading}Template Overloading}
+
+      Templates in WebDSL must have a unique combination of name and argument types. This means that similar to functions in Java, WebDSL templates support overloading the same template with different arguments. The built-in \texttt{input} template that we used in previous subsection is an example of this. In \cref{fig:webdsl-forms} of previous subsection, a string argument is passed to the \texttt{input} template which rendered a text field on the resulting web page.
+
+      \Cref{fig:webdsl-template-overloading} shows an example of template overloading. The \texttt{describe} template is defined multiple times for different argument types. The \texttt{input} template is provided by the WebDSL standard library and also shows different input elements for different types.
+
+      \begin{figure}
+        \begin{subfigure}[t]{0.45\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+application app
+  page root() {
+    var s : String
+    var b : Bool
+    var t : Text
+    var d : Date
+
+    title { "Input Examples" }
+
+    header { "Input Examples" }
+
+    form {
+      par {
+        describe(s)
+        input(s)
+      }
+      par {
+        describe(b)
+        input(b)
+      }
+      par {
+        describe(t)
+        input(t)
+      }
+      par {
+        describe(d)
+        input(d)
+      }
+    }
+  }
+
+  template describe(s : String) { "String input:" }
+  template describe(b : Bool)   { "Bool input:"   }
+  template describe(t : Text)   { "Text input:"   }
+  template describe(d : Date)   { "Date input:"   }
+          \end{minted}
+          \caption{\label{fig:webdsl-template-overloading-webdsl}WebDSL code}
+        \end{subfigure}
+        \begin{subfigure}[t]{0.55\textwidth}
+          \capstart
+          \includegraphics[width=\textwidth]{../img/webdsl-template-overloading}
+          \caption{\label{fig:webdsl-template-overloading-page}Resulting page}
+        \end{subfigure}
+      \caption{\label{fig:webdsl-template-overloading}An example of template overloading in WebDSL with inputs and descriptions.}
+      \end{figure}
+
+      In WebDSL, multiple text-based types such as \texttt{String}, \texttt{Text}, \texttt{WikiText} and \texttt{Secret} are all compatible with the base type \texttt{String}. When the arguments are passed to a template, it resolves the most specific template. An example of this is that \texttt{describe(t)} in \cref{fig:webdsl-template-overloading} is compatible with \texttt{String} and \texttt{Text}, but it resolves to the definition with a \texttt{Text} argument.
+      
+      When a template call has multiple arguments, it resolves to the template where all arguments are the most specific. If there is one template definition where the first argument is more specific, and another definition where the second argument is more specific, this is incorrect code and the WebDSL development environment shows an error to the developer.
 
     \subsection{\label{subsec:ajax}Ajax}
+
+    \subsection{\label{subsec:redefines}Dynamically Scoped Redefines}
 
   \section{\label{sec:data-model}Data Model}
 
