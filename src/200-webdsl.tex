@@ -28,7 +28,7 @@
         \begin{subfigure}[t]{0.45\textwidth}
           \begin{minted}[firstline=1]{\webdsl}
 application app
-  page root() {
+  page root {
     title { "Cookbook" }
 
     header { "Recipes" }
@@ -91,7 +91,7 @@ application app
         \begin{subfigure}[t]{0.45\textwidth}
           \begin{minted}[firstline=1]{\webdsl}
 application app
-  page root() {
+  page root {
     var s : String
 
     title { "Cookbook" }
@@ -142,6 +142,8 @@ application app
 
       WebDSL also sanitizes the input that the user submits using the form. If the user was to submit the form with input \texttt{another/path/}, this input would be sanitized and rendered correctly on the recipe page, instead of navigation to an unknown path.
 
+      Note that WebDSL usually has declare-before-use semantics inside in page, templates or function bodies, but actions can be declared and resolved anywhere in a page or template definition.
+
     \subsection{\label{subsec:template-overloading}Template Overloading}
 
       Templates in WebDSL must have a unique combination of name and argument types. This means that similar to functions in Java, WebDSL templates support overloading the same template with different arguments. The built-in \texttt{input} template that we used in previous subsection is an example of this. In \cref{fig:webdsl-forms} of previous subsection, a string argument is passed to the \texttt{input} template which rendered a text field on the resulting web page.
@@ -152,7 +154,7 @@ application app
         \begin{subfigure}[t]{0.45\textwidth}
           \begin{minted}[firstline=1]{\webdsl}
 application app
-  page root() {
+  page root {
     var s : String
     var b : Bool
     var t : Text
@@ -198,12 +200,109 @@ application app
       \end{figure}
 
       In WebDSL, multiple text-based types such as \texttt{String}, \texttt{Text}, \texttt{WikiText} and \texttt{Secret} are all compatible with the base type \texttt{String}. When the arguments are passed to a template, it resolves the most specific template. An example of this is that \texttt{describe(t)} in \cref{fig:webdsl-template-overloading} is compatible with \texttt{String} and \texttt{Text}, but it resolves to the definition with a \texttt{Text} argument.
-      
+
       When a template call has multiple arguments, it resolves to the template where all arguments are the most specific. If there is one template definition where the first argument is more specific, and another definition where the second argument is more specific, this is incorrect code and the WebDSL development environment shows an error to the developer.
 
     \subsection{\label{subsec:ajax}Ajax}
 
+      To enable refreshing or replacing parts of a page with new content that is fetched from the server, WebDSL has support for placeholders that can be populated with content using \textit{asynchronous JavaScript and XML} (ajax). Without ajax functionalities, refreshing data on a page would require a full page refresh.
+
+      \Cref{fig:webdsl-ajax} shows an example of a WebDSL application that defines a placeholder named \texttt{ph} which is empty initially. On the bottom of the page, a clickable link with an inline action is defined. When the action is executed, it will replace the contents of the placeholder with the content of the ajax-enabled template \texttt{hello()}. The calling of the action does not incur a full page refresh, but instead fires an asynchronous request that returns the content of the ajax template, after which it is replaced using JavaScript.
+
+      \begin{figure}
+        \begin{subfigure}[t]{0.45\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+application app
+  page root {
+    title { "Ajax Example" }
+
+    header { "Ajax Example" }
+
+    par {
+      placeholder ph {}
+    }
+
+    submitlink action {
+      replace(ph, hello());
+    } { "Replace" }
+  }
+
+  ajax template hello {
+    "Hello!"
+  }
+          \end{minted}
+          \caption{\label{fig:webdsl-ajax-webdsl}WebDSL code}
+        \end{subfigure}
+        \begin{subfigure}[t]{0.55\textwidth}
+        \begin{subfigure}[t]{1\textwidth}
+          \capstart
+          \includegraphics[width=\textwidth]{../img/webdsl-ajax-1}
+          \caption{\label{fig:webdsl-ajax-page-1}Resulting page}
+        \end{subfigure}
+        \begin{subfigure}[t]{1\textwidth}
+          \capstart
+          \includegraphics[width=\textwidth]{../img/webdsl-ajax-2}
+          \caption{\label{fig:webdsl-ajax-page-2}After clicking the link}
+        \end{subfigure}
+      \end{subfigure}[t]
+      \caption{\label{fig:webdsl-ajax}An example of placeholders and ajax actions in WebDSL.}
+      \end{figure}
+
+      WebDSL automatically takes care of the necessary structure to enable this functionality, such as identifiers of DOM elements, JavaScript code to query the server and JavaScript code to replace the correct elements.
+
+      As opposed to regular templates, ajax-enabled template are able to be requested on the server using a specific endpoint. The exact details of how this endpoint looks is only relevant for generated code of the WebDSL compiler, but WebDSL developers should pay attention to the fact that ajax-enabled content must be projected with proper access control rules (see \cref{sec:access-control}) to prevent exposing sensitive content.
+
     \subsection{\label{subsec:redefines}Dynamically Scoped Redefines}
+
+      As last part of the user interface section, we give an example of dynamically scoped redefines in WebDSL. WebDSL templates are able to be redefined (i.e. overridden) in the context of another template.
+
+      \Cref{fig:webdsl-template-overriding} shows an example of a dynamically scoped redefinition of a template. In the figure, \texttt{templateB} redefines \texttt{templateA}, resulting in the overridden template being rendered when it is called within \texttt{templateB}. To prove that this is scoped, \texttt{templateA} is called before and after \texttt{templateB} and it renders the same (original) text. In the example of \cref{fig:webdsl-template-overriding}, the redefined template is called directly from the template where it is redefined but it has the same effect when it would be called in nested templates.
+
+      \begin{figure}
+        \begin{subfigure}[t]{0.45\textwidth}
+          \begin{minted}[firstline=1]{\webdsl}
+application app
+  page root {
+    title { "Override Template" }
+
+    header { "Override Template" }
+
+    templateA
+    templateB
+    templateA
+  }
+
+  template templateA {
+    par {
+      "I'm Template A!"
+    }
+  }
+
+  template templateB {
+    // override template A
+    template templateA {
+      par {
+        "I'm Template A inside template B!"
+      }
+    }
+
+    par {
+      "I'm Template B!"
+    }
+    templateA
+  }
+          \end{minted}
+          \caption{\label{fig:webdsl-template-overriding-webdsl}WebDSL code}
+        \end{subfigure}
+        \begin{subfigure}[t]{0.55\textwidth}
+          \capstart
+          \includegraphics[width=\textwidth]{../img/webdsl-template-overriding}
+          \caption{\label{fig:webdsl-template-overriding-page}Resulting page}
+        \end{subfigure}
+      \caption{\label{fig:webdsl-template-overriding}An example of template overriding in WebDSL.}
+      \end{figure}
+
+      Apart from this redefinition of templates inside the context of other templates, WebDSL also has a notion of a one-time global redefinition. This is done using the keyword \texttt{override} on a template in the global scope. The WebDSL standard library contains many definitions that are able to be used by developers, such as an access-denied page, a login template or the input templates that are used in \cref{fig:webdsl-template-overloading}. Using the \texttt{override} keyword, developers are able to customize the style and behaviour of these definitions.
 
   \section{\label{sec:data-model}Data Model}
 
