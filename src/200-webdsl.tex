@@ -236,12 +236,12 @@ application app
         \begin{subfigure}[t]{0.55\textwidth}
         \begin{subfigure}[t]{1\textwidth}
           \capstart
-          \includegraphics[width=\textwidth]{../img/webdsl-ajax-1}
+          \includegraphics[width=0.75\textwidth]{../img/webdsl-ajax-1}
           \caption{\label{fig:webdsl-ajax-page-1}Resulting page}
         \end{subfigure}
         \begin{subfigure}[t]{1\textwidth}
           \capstart
-          \includegraphics[width=\textwidth]{../img/webdsl-ajax-2}
+          \includegraphics[width=0.75\textwidth]{../img/webdsl-ajax-2}
           \caption{\label{fig:webdsl-ajax-page-2}After clicking the link}
         \end{subfigure}
       \end{subfigure}[t]
@@ -306,8 +306,79 @@ application app
 
   \section{\label{sec:data-model}Data Model}
 
+    The data model of a WebDSL application is defined using entities. Entities can have properties and relations with other entities. WebDSL translates the entities to database tables and columns such that any data stored in entities is persisted. The communication with the database is abstracted by WebDSL, allowing WebDSL developers to directly access, manipulate and pass around entity values.
+
+    \Cref{fig:webdsl-data-model-simple} shows an example of an application with stored recipes. A \texttt{Recipe} has two properties: a name and a duration. The application is similar to the earlier representation from \cref{fig:webdsl-pages-and-templates} where a recipe was simply defined by its name, encoded as a String. The representation using entities now defines the \texttt{recipe} page which takes a Recipe as argument, demonstrating how entities are represented in the WebDSL type system.
+
+    \begin{figure}
+      \begin{subfigure}[t]{0.45\textwidth}
+        \begin{minted}[firstline=1]{\webdsl}
+application cookbook
+
+section data model
+  entity Recipe {
+    name            : String
+    minutesRequired : Int
+  }
+
+  init {
+    var r1 := Recipe {
+      name := "Lasagne",
+      minutesRequired := 60
+    };
+    var r2 := Recipe {
+      name := "Pancakes",
+      minutesRequired := 20
+    };
+    var r3 := Recipe {
+      name := "Tomato Soup",
+      minutesRequired := 40
+    };
+  }
+
+section user interface
+  page root {
+    title { "Cookbook" }
+    header { "Recipes" }
+    for (r : Recipe) {
+      par {
+        navigate recipe(r) { "View recipe for ~r.name" }
+      }
+    }
+  }
+
+  page recipe(r : Recipe) {
+    title { "Cookbook: ~r.name" }
+    navigate root() { "Back to homepage" }
+    header { "~r.name" }
+    par {
+      "Welcome to the recipe page for ~r.name!"
+    }
+    par {
+      "Minutes required: ~r.minutesRequired"
+    }
+  }
+        \end{minted}
+        \caption{\label{fig:webdsl-data-model-simple-webdsl}WebDSL code}
+      \end{subfigure}
+      \begin{subfigure}[t]{0.55\textwidth}
+        \capstart
+        \includegraphics[width=\textwidth]{../img/webdsl-data-model-simple-root}
+        \caption{\label{fig:webdsl-data-model-simple-root}Root page}
+      \end{subfigure}
+      \begin{subfigure}[t]{1\textwidth}
+        \capstart
+        \includegraphics[width=\textwidth]{../img/webdsl-data-model-simple-recipe}
+        \caption{\label{fig:webdsl-data-model-simple-recipe}Recipe page}
+      \end{subfigure}
+    \caption{\label{fig:webdsl-data-model-simple}An example of template overriding in WebDSL.}
+    \end{figure}
+
+    The \texttt{init\{\}} block in the global scope of \cref{fig:webdsl-data-model-simple} is executed only once, and often used to seed the database.
+
+    Furthermore, the root page of \cref{fig:webdsl-data-model-simple} uses a for-loop to iterate over all existing instances of an entity; Recipes in our case. It is uncommon to loop over \textit{all} entities, thus WebDSL supports a filter in the for-loop similar to SQL syntax.
+
     \begin{itemize}
-      \item Syntax
       \item Inheritance
       \item Extending entities
     \end{itemize}
