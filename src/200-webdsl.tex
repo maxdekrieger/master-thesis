@@ -378,27 +378,136 @@ section user interface
 
     Furthermore, the root page of \cref{fig:webdsl-data-model-simple} uses a for-loop to iterate over all existing instances of an entity; Recipes in our case. It is uncommon to loop over \textit{all} entities, thus WebDSL supports a filter in the for-loop similar to SQL syntax.
 
-    \begin{itemize}
-      \item Inheritance
-      \item Extending entities
-    \end{itemize}
+    \subsection{\label{subsec:webdsl-inheritance}Entity Inheritance}
+
+      WebDSL allows entity inheritance, meaning that an entity can be a sub-entity of another entity. Similar to subclasses in Java, sub-entities inherit all properties from their parent and are able to define properties of their own.
+
+    \subsection{\label{subsec:webdsl-entity-extension}Entity Extension}
+
+      In the process of developing applications with WebDSL, entities tend to grow in size. For new features in an application, additional properties and functions are added to existing entities. To prevent having a single large entity declaration, WebDSL supports extending existing entities in multiple declarations, similar to partial classes in C\#. Entity extensions are able to use all properties from other extensions and are not self-contained.
+
+      During compilation all entity extensions are merged, resulting in a large entity definition that is represented in the database in a single table.
 
   \section{\label{sec:access-control}Access Control}
 
-    \begin{itemize}
-      \item Syntax
-      \item Inferred visibility
-      \item Nested rules
-      \item Pointcuts
-    \end{itemize}
+    \begin{wrapfigure}{r}{0.5\linewidth}
+      \capstart
+      \begin{minted}[firstline=1]{\webdsl}
+application accesscontrol
+
+section data model
+  entity User {
+    username : String
+    password : Secret
+    role : String
+  }
+
+section user interface
+  page root {
+    welcome
+    secureContent
+  }
+
+  template welcome {
+    if (loggedIn) { "Hello ~principal.username" }
+    else          { "Hello unknown user" }
+  }
+
+  template secureContent {
+    "This is only visible while logged in "
+    "due to access control"
+
+    submit a() { "Click!" }
+    action a() {
+      adminOnlyFunction();
+    }
+  }
+
+access control rules
+  principal is User 
+    with credentials username, password
+
+  // pages are hidden by default
+  rule page root() { true }
+
+  // templates are visible by default
+  rule template secureContent() {
+    loggedIn
+    rule action a() {
+      principal.role == "admin"
+    }
+  }
+      \end{minted}
+      \caption{\label{fig:webdsl-access-control}Access control in WebDSL}
+    \end{wrapfigure}
+
+    Almost all web applications use a form of access control. Examples of access control are using a log-in system, allowing users to only edit content of which they are the author, or the assigning of roles to groups of users in a large organisation.
+
+    WebDSL recognizes the need for secure access control and provides a functionality where an entity is appointed as the "user" entity with some credentials. A policy can be assigned to all pages, templates and actions in WebDSL in a declarative way and separated from the implementation. Using the built-in access control functionality, WebDSL developers do not have to deal with communication and security details such as cookies and hashing.
+
+    \Cref{fig:webdsl-access-control} shows an example of a WebDSL application with access control rules. The entity \texttt{User} is declared as the entity for access control using its properties \texttt{username} and \texttt{password}. Declaring the principal causes some properties to be exposed for handling access control such as \texttt{loggedIn} of boolean type and \texttt{principal} of type \texttt{User}. Multiple rules are declared for the root page, the templates and the action within a template.
+
+    In addition to these individual rules, WebDSL allows reuse of access control rules through predicates that can be called from individual rules or pointcuts to which multiple pages and templates are assigned. Furthermore, the matching of access control rules may contain wildcards in the name or arguments to prevent specifying the same rule multiple times for an overloaded template.
 
   \section{\label{sec:functions}Functions}
 
+    Most WebDSL constructs in previous sections are specified declaratively. However, WebDSL also supports imperative code using functions. Similar to Java functions, WebDSL functions can be scoped globally, or belong to a certain entity. These functions are able to take arguments and return a value of a certain type. Additionally, WebDSL generates many functions based on the declared entities and properties, some of which serve as hook and can be extended.
+
+    \Cref{fig:webdsl-functions} showcases some function behaviour of WebDSL. It demonstrates extending a generated setter-function of the entity \texttt{Recipe}. The \texttt{setAuthor} function, including its extension, will be called when the author of a recipe is changed. Next, the entity \texttt{User} has an entity function \texttt{appendUsername}, of which the behaviour is overridden in the \texttt{Admin} sub-entity. Lastly, a global function is defined and a template demonstrates how the template body and function code can interact.
+
+    \begin{wrapfigure}{r}{0.5\linewidth}
+      \capstart
+      \begin{minted}[firstline=1]{\webdsl}
+application cookbook
+  entity Recipe {
+    name : String
+    minutesRequired : Int
+    author : User
+
+    // extend generated setter
+    extend function setAuthor(u : User) {
+      log("Set the author to ~u.username");
+    }
+  }
+
+  entity User {
+    username : String
+    password : Secret
+
+    function appendUsername(s : String) {
+      this.username := this.username + s;
+    }
+  }
+
+  // sub-entity Admin of with parent User
+  entity Admin : User {
+    // override behaviour
+    function appendUsername(s : String) {
+      this.username := this.username + "admin" + s;
+    }
+  }
+
+  function globalFunction() : Int {
+    var x := 40;
+    return x + 2;
+  }
+
+  template outputFortyTwo {
+    var i := globalFunction();
+
+    "~i"
+  }
+      \end{minted}
+      \caption{\label{fig:webdsl-functions}Functions in WebDSL}
+    \end{wrapfigure}
+  
+  \section{\label{sec:advanced-webdsl-features}Advanced WebDSL Features}
+
     \begin{itemize}
-      \item Syntax
-      \item Entities as classes
-      \item Hooks for entity setters
-      \item Extending functions
+      \item Native Java code
+      \item Built-in type extension
+      \item Search
+      \item Routing
     \end{itemize}
 
   \section{\label{sec:current-implementation}Current Implementation}
