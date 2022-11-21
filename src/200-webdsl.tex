@@ -449,91 +449,94 @@ access control rules
 
     In addition to these individual rules, WebDSL allows reuse of access control rules through predicates that can be called from individual rules or pointcuts to which multiple pages and templates are assigned. Furthermore, the matching of access control rules may contain wildcards in the name or arguments to prevent specifying the same rule multiple times for an overloaded template.
 
+    WebDSL infers the visibility of pages and elements on a page from the access control rules. For example, in case a page features a link to another page and the user does not have access to the other page according to the access control rules, the link will not be shown. If a user explicitly browses to the other page, it will show an access denied page that is provided by WebDSL by default but is customizable.
+
   \section{\label{sec:functions}Functions}
+
+  \begin{wrapfigure}{r}{0.5\linewidth}
+    \capstart
+    \begin{minted}[firstline=1]{\webdsl}
+application cookbook
+entity Recipe {
+  name : String
+  minutesRequired : Int
+  author : User
+
+  // extend generated setter
+  extend function setAuthor(u : User) {
+    log("Set the author to ~u.username");
+  }
+}
+
+entity User {
+  username : String
+  password : Secret
+
+  function appendUsername(s : String) {
+    this.username := this.username + s;
+  }
+}
+
+// sub-entity Admin of with parent User
+entity Admin : User {
+  // override behaviour
+  function appendUsername(s : String) {
+    this.username := this.username + "admin" + s;
+  }
+}
+
+function globalFunction() : Int {
+  var x := 40;
+  return x + 2;
+}
+
+template outputFortyTwo {
+  var i := globalFunction();
+
+  "~i"
+}
+    \end{minted}
+    \caption{\label{fig:webdsl-functions}Functions in WebDSL}
+  \end{wrapfigure}
 
     Most WebDSL constructs in previous sections are specified declaratively. However, WebDSL also supports imperative code using functions. Similar to Java functions, WebDSL functions can be scoped globally, or belong to a certain entity. These functions are able to take arguments and return a value of a certain type. Additionally, WebDSL generates many functions based on the declared entities and properties, some of which serve as hook and can be extended.
 
     \Cref{fig:webdsl-functions} showcases some function behaviour of WebDSL. It demonstrates extending a generated setter-function of the entity \texttt{Recipe}. The \texttt{setAuthor} function, including its extension, will be called when the author of a recipe is changed. Next, the entity \texttt{User} has an entity function \texttt{appendUsername}, of which the behaviour is overridden in the \texttt{Admin} sub-entity. Lastly, a global function is defined and a template demonstrates how the template body and function code can interact.
-
-    \begin{wrapfigure}{r}{0.5\linewidth}
-      \capstart
-      \begin{minted}[firstline=1]{\webdsl}
-application cookbook
-  entity Recipe {
-    name : String
-    minutesRequired : Int
-    author : User
-
-    // extend generated setter
-    extend function setAuthor(u : User) {
-      log("Set the author to ~u.username");
-    }
-  }
-
-  entity User {
-    username : String
-    password : Secret
-
-    function appendUsername(s : String) {
-      this.username := this.username + s;
-    }
-  }
-
-  // sub-entity Admin of with parent User
-  entity Admin : User {
-    // override behaviour
-    function appendUsername(s : String) {
-      this.username := this.username + "admin" + s;
-    }
-  }
-
-  function globalFunction() : Int {
-    var x := 40;
-    return x + 2;
-  }
-
-  template outputFortyTwo {
-    var i := globalFunction();
-
-    "~i"
-  }
-      \end{minted}
-      \caption{\label{fig:webdsl-functions}Functions in WebDSL}
-    \end{wrapfigure}
   
   \section{\label{sec:advanced-webdsl-features}Advanced WebDSL Features}
 
-    \begin{itemize}
-      \item Native Java code
-      \item Built-in type extension
-      \item Search
-      \item Routing
-    \end{itemize}
+    In the previous sections we listed the fundamental concepts of WebDSL that are necessary to create every day systems. However, WebDSL enjoys more features which give the developer even more customization options.
 
-  \section{\label{sec:current-implementation}Current Implementation}
+    \paragraph{Native Java Code} WebDSL compiles to Java and abstracts over necessary boilerplate code to make a functioning web application with Java. However, these abstractions prevent some concepts from being expressible in WebDSL code. For this reason, it is possible to create Java files in a WebDSL project and provide an interface in the WebDSL code such that the definitions in the Java code are able to be typed and usable in WebDSL code. Such a definition of an interface in WebDSL is called a Native Java Class.
 
-    \subsection{\label{subsec:spoofax}Spoofax Language Workbench}
+    \paragraph{Built-in Type Extension} In \cref{subsec:webdsl-entity-extension} we described the possibility of extending entities in WebDSL across multiple files. This same feature is available for extending built-in types such as \texttt{String}, \texttt{Bool} and the root of the type hierarchy \texttt{Object}. The built-in types translate to their respective Java types, and with type extension it is possible to expose additional functions of the Java type to the WebDSL code, that are not exposed by default.
 
-      \begin{itemize}
-        \item History
-        \item Goal
-        \item Achievements
-      \end{itemize}
+    \paragraph{Search} Van Chastelet (\citeyear{VanChastelet2013}) extended WebDSL with a search-feature based on Lucene\footnote{\url{https://lucene.apache.org/}}. For applications with a large quantity of data such as researchr.org\footnote{\url{https://researchr.org/}} it is useful to make the data discoverable through search. As the amount data increases, implementing a search feature through querying the database becomes infeasible. The WebDSL search features allows entity properties to be annotated with a \texttt{searchable} annotation, declaring that they should be indexed. Through these annotations and advanced search mappings, it is possible to for example use fuzzy search on enormous amounts of data and search on multiple entity properties at the same time.
 
-    \subsection{\label{subsec:current-implementation}Current Implementation of WebDSL}
+    \paragraph{Routing} By default, WebDSL translates pages to URLs as follows.
+    $$
+    https://<domainname>/<pagename>/<arg\_1>/<arg\_2>/.../<arg\_n> 
+    $$
+    For most cases this suffices, but it is possible to declare a \texttt{routing} block in WebDSL where the developer is able to intercept the requested URL, extract the page name and arguments, apply logic based on those and return the desired page in WebDSL.
 
-      \begin{itemize}
-        \item Large Stratego specification where desugaring, static analysis, optimization and code-generation are interleaved (exaggeration?)
-        \item Side effects using dynamic rules.
-        \item Unexpected consequences of changes due to limited static analysis in untyped setting.
-      \end{itemize}
 
-      Go over some interesting WebDSL features and how they are implemented:
-      \begin{itemize}
-        \item Access control
-        \item Template overloading and overriding
-        \item Entity extension
-      \end{itemize}
+  \section{\label{sec:current-implementation}Current Implementation of WebDSL}
+
+    In the paper where Visser first introduced WebDSL (\citeyear{Visser2007}), it is presented as a large case study in domain-specific language engineering. Visser describes the implementation of the language with its syntax definition in SDF2 and the code generation by term transformation in Stratego. The core of the current implementation is still the same, 15 years later. While the language has matured and is extended in many useful ways, the syntax is still defined in SDF2 and the rest of the compilation chain is implemented in Stratego. SDF2 is the successor of the first version of the Syntax Definition Formalism SDF \autocite{HeeringHKR89,Visser97}.
+    
+    An application in WebDSL is compiled to a Java code and a persisted data model. Before the correct target code can be generated, the WebDSL code has to pass the compilation chain that exists of components such as the parser, desugaring, typechecking. We describe the parser generated from the WebDSL SDF2 definition next chapter (\cref{chap:sdf3}) and in the rest of this section we discuss the implementation of the WebDSL compiler in Stratego.
+
+    \subsection{WebDSL in Stratego}
+
+      Stratego \autocite{BravenboerDOV06,VisserBT98} is a transformation language based on term rewriting. Stratego enables the definition of strategies that traverse an abstract syntax tree and applies rewrite rules. These rewrite rules may be conditional and are of the form $r : t_1 -> t_2 \texttt{where} c$ with r being the name, $t_1$ and $t_2$ are terms and $c$ is the condition.
+
+      Paragraph about Stratego/XT, modern Spoofax with different meta languages, boast about Spoofax.
+
+      Describe phases of compilation
+
+      Describe dependency between phases using dynamic rules
+
+      Describe one or two WebDSL features implemented in Stratego: entities and variable declaration.
 
   \section{\label{sec:modernization}Modernization goal}
 
