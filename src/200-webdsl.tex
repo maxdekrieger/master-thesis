@@ -519,29 +519,40 @@ template outputFortyTwo {
     $$
     For most cases this suffices, but it is possible to declare a \texttt{routing} block in WebDSL where the developer is able to intercept the requested URL, extract the page name and arguments, apply logic based on those and return the desired page in WebDSL.
 
-
   \section{\label{sec:current-implementation}Current Implementation of WebDSL}
 
-    In the paper where Visser first introduced WebDSL (\citeyear{Visser2007}), it is presented as a large case study in domain-specific language engineering. Visser describes the implementation of the language with its syntax definition in SDF2 and the code generation by term transformation in Stratego. The core of the current implementation is still the same, 15 years later. While the language has matured and is extended in many useful ways, the syntax is still defined in SDF2 and the rest of the compilation chain is implemented in Stratego. SDF2 is the successor of the first version of the Syntax Definition Formalism SDF \autocite{HeeringHKR89,Visser97}.
+    In the paper where Visser first introduced WebDSL (\citeyear{Visser2007}), it is presented as a large case study in domain-specific language engineering. Visser describes the implementation of the language with its syntax definition and code generation by term transformation using the Stratego/XT toolset.
+
+    The Stratego/XT toolset \autocite{BravenboerKVV08} offers a set of features for syntax definition (with SDF2), program transformation (with Stratego)  and various tools such as parser and pretty-printer generators. Stratego/XT is the predecessor of modern Spoofax \autocite{KatsV10}, which offers an IDE using an Eclipse plugin and features more meta-languages, each specialized for different components of a language definition.
     
-    An application in WebDSL is compiled to a Java code and a persisted data model. Before the correct target code can be generated, the WebDSL code has to pass the compilation chain that exists of components such as the parser, desugaring, typechecking. We describe the parser generated from the WebDSL SDF2 definition next chapter (\cref{chap:sdf3}) and in the rest of this section we discuss the implementation of the WebDSL compiler in Stratego.
+    The core of the current WebDSL implementation is still the same, 15 years later. While the language has matured and is extended in many useful ways, the syntax is still defined in SDF2 and the rest of the compilation chain is implemented in Stratego, using the Stratego/XT toolset which is not actively developed anymore.
+    
+    An application in WebDSL is compiled to a Java code and a persisted data model. Before the correct target code can be generated, the WebDSL code has to pass the compilation chain that exists of components such as the parser, desugaring, typechecking. In the rest of this section we discuss the implementation of the WebDSL compiler in Stratego. In the next chapter (\cref{chap:sdf3}), we describe the parser generated from the WebDSL SDF2 definition.
 
     \subsection{WebDSL in Stratego}
 
       Stratego \autocite{BravenboerDOV06,VisserBT98} is a transformation language based on term rewriting. Stratego enables the definition of strategies that traverse an abstract syntax tree and applies rewrite rules. These rewrite rules may be conditional and are of the form $r : t_1 -> t_2 \texttt{where} c$ with r being the name, $t_1$ and $t_2$ are terms and $c$ is the condition.
 
-      Paragraph about Stratego/XT, modern Spoofax with different meta languages, boast about Spoofax.
+      Show example of stratego rule for WebDSL code generation
 
-      Describe phases of compilation
+      Before code generation it has to be analyzed
+
+      Show example of how a "transformation rule" is used to show an error
 
       Describe dependency between phases using dynamic rules
 
       Describe one or two WebDSL features implemented in Stratego: entities and variable declaration.
 
-  \section{\label{sec:modernization}Modernization goal}
+  \section{\label{sec:modernization}Modernization Goal}
 
-    \begin{itemize}
-      \item A complete and maintainable SDF3 and Statix specification of WebDSL.
-      \item Gather insight into the capabilities, elegance and performance of SDF3 and Statix.
-      \item Profit from performance boosts of SDF3 and Statix, as opposed to deprecated SDF2 and handcrafted static analysis in Stratego.
-    \end{itemize}
+    As discussed in the previous section, WebDSL is implemented in the Stratego/XT toolset which is not actively maintained anymore. Spoofax is the successor of the deprecated Stratego/XT toolset and features an extensive meta-languages, each specialized for defining different components of a language in a declarative way.
+
+    SDF3 \autocite{VollebregtKV12,AmorimV20} is the meta-language in Spoofax for syntax definition in a declarative way. From an SDF3 grammar, Spoofax generates a parser, a pretty-printer and syntactic code completions. Statix \autocite{VanAntwerpen2018} is a constraint-based declarative language for the specification of type systems in Spoofax, using the concept of scope graphs \autocite{Neron2015} to model programs.
+
+    Modernizing the WebDSL grammar definition and type system specification serves multiple purposes.
+
+    \paragraph{Increase Maintainability and Performance of WebDSL Implementation} A complete specification of WebDSL in SDF3 and Statix, from which a parser and static analysis implementation is generated, that will be used daily by WebDSL developers.
+
+    \paragraph{Evaluate Expressiveness and Performance of SDF3 and Statix}
+
+    \paragraph{Provide Evaluation Material for SDF3 and Statix}
