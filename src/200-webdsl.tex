@@ -531,17 +531,57 @@ template outputFortyTwo {
 
     \subsection{WebDSL in Stratego}
 
-      Stratego \autocite{BravenboerDOV06,VisserBT98} is a transformation language based on term rewriting. Stratego enables the definition of strategies that traverse an abstract syntax tree and applies rewrite rules. These rewrite rules may be conditional and are of the form $r : t_1 -> t_2 \texttt{where} c$ with r being the name, $t_1$ and $t_2$ are terms and $c$ is the condition.
+      Apart from the syntax definition, every component of the WebDSL compiler is implemented in Stratego. For the scope of this thesis, we will focus on the implementation of the WebDSL static analysis in Stratego and we will not discuss the implementation of code generation.
 
-      Show example of stratego rule for WebDSL code generation
+      Stratego \autocite{BravenboerDOV06,VisserBT98} is a transformation language based on term rewriting. Stratego enables the definition of strategies that traverse an abstract syntax tree and applies rewrite rules. These rewrite rules may be conditional and are of the form $r : t_1 -> t_2 \texttt{where} c$ with r being the name, $t_1$ and $t_2$ are terms and $c$ is the condition. For a complete overview of the capabilities of Stratego, we refer to its documentation\footnote{\url{https://www.spoofax.dev/references/stratego/}}.
 
-      Before code generation it has to be analyzed
+      The Stratego code for the WebDSL analysis is done by traversing the AST and applying the rule \texttt{constraint-error} in a bottom-up fashion. The bottom-up traversal strategy means that the rule will first be applied to subterms, and then to the term itself. The \texttt{constraint-error} rule is composed of many different rules for specific WebDSL features. The implementation and usage of \texttt{constraint-error} is shown in \cref{fig:webdsl-stratego-constraint-error}
 
-      Show example of how a "transformation rule" is used to show an error
+      \begin{figure}
+        \begin{minted}[firstline=2]{\stratego}
+module org/webdsl/dsl/languages/composition
+  strategies
+    constraint-error-all = bottomup(try(constraint-error))
 
-      Describe dependency between phases using dynamic rules
+    constraint-error = constraint-error-ac
+    constraint-error = constraint-error-data
+    constraint-error = constraint-error-action
+    constraint-error = constraint-error-ui
+    constraint-error = constraint-error-search
+    // ...
+        \end{minted}
+        \caption{\label{fig:webdsl-stratego-constraint-error}Definition of the WebDSL typechecking framework in Stratego. Some rules are ommitted for brevity.}
+      \end{figure}
 
-      Describe one or two WebDSL features implemented in Stratego: entities and variable declaration.
+      Stratego aggregates all definitions of the same rule from multiple files and combines them into one rule. The same approach is taken for the individual constraints on terms. An example of a WebDSL rule in Stratego is shown in \cref{fig:webdsl-stratego-typecheck}.
+
+      \begin{figure}
+        \begin{minted}[firstline=2]{\stratego}
+module org/webdsl/dsl/languages/composition
+  rules
+    constraint-error-ac =
+      ?AccessControlPrincipal(_,_)
+    ; where(principals := <bagof-PrincipalDecl; uniq; length>)
+    ; where(<gt> (principals, 1))
+    ; add-error(|["Only one access control principal can be defined."])
+
+    add-error(|msgs) =
+      rules(
+        FoundErrors := <inc> <FoundErrors <+ !0>
+      )
+      ; try(AddError(|msgs))
+
+    AddError(|msgs): node -> node
+      where rules(
+        AllErrors :+= (node, <error-to-string> msgs)
+      )
+        \end{minted}
+        \caption{\label{fig:webdsl-stratego-typecheck}Definition of Stratego rule that shows an error message when two principals are declared in the access control rules of WebDSL.}
+      \end{figure}
+
+      The \texttt{add-error} and \texttt{AddError} in \cref{fig:webdsl-stratego-typecheck} utilize dynamic rules in Stratego using the \texttt{rules(...)} block. Dynamic rules are added to the Stratego definition during the execution of the program. In the case of the WebDSL implementation, dynamic rules are (ab)used to store data, possibly limited to a certain scope, about the WebDSL program that is being compiled.
+
+      In the implementation, scoped dynamic rules are heavily utilized to store the internal state of the compiler. We argue that the extensive use of (scoped) dynamic rules obstructs the elegancy, readability and maintainability of the WebDSL implementation in Stratego.
 
   \section{\label{sec:modernization}Modernization Goal}
 
@@ -551,8 +591,10 @@ template outputFortyTwo {
 
     Modernizing the WebDSL grammar definition and type system specification serves multiple purposes.
 
+    \textbf{TO-DO: rewrite this part after revising the contributions and explicitly stating research questions}
+
     \paragraph{Increase Maintainability and Performance of WebDSL Implementation} A complete specification of WebDSL in SDF3 and Statix, from which a parser and static analysis implementation is generated, that will be used daily by WebDSL developers.
 
     \paragraph{Evaluate Expressiveness and Performance of SDF3 and Statix}
 
-    \paragraph{Provide Evaluation Material for SDF3 and Statix}
+    \paragraph{Provide Language Engineers of SDF3 and Statix with Real World Evaluation Material}
