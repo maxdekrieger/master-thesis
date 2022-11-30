@@ -1033,11 +1033,6 @@ module m
 
       Apart from globally declared functions, functions may also be part of an entity. In this case, functions can be called similar to how entity properties are referenced. Lastly, entity functions may have the \texttt{static} annotation, which is similar to static class functions in the Java programming language. Static functions may be called without having an instantiated entity.
 
-      \textbf{Possible TO-DO:}
-      \begin{itemize}
-        \item List/explain interesting action code type checking
-      \end{itemize}
-
     \subsection{\label{subsec:access-control}Access Control}
 
       When developing any application that will be used in practice, access control is an important part of the system. It controls which user is allowed to see what data, what actions can be executed. Generally, this is implemented through a log-in system where different user accounts are given different rights. In all popular programming languages, developing a system access control is the responsibility of the developer, either through manual coding or using frameworks and libraries. In WebDSL however, access control is embedded in the language and all pages are protected by default.
@@ -1124,13 +1119,6 @@ rules
         \end{minted}
         \caption{\label{fig:webdsl-principal-statix}Statix rules for declaring the access control principal}
       \end{figure}
-
-      \textbf{Possible TO-DO:}
-      \begin{itemize}
-        \item References to pages and templates
-        \item Wildcards
-        \item Pointcuts?
-      \end{itemize}
 
   \section{\label{sec:advanced-entity-features}Advanced Entity Features}
   
@@ -1572,11 +1560,6 @@ rules
       \end{minted}
       \caption{\label{fig:statix-overloaded-function-calls}Statix rules for resolving overloaded function calls}
     \end{figure}
-
-    \textbf{Possible TO-DO:}
-    \begin{itemize}
-      \item Change implementation to throw an error when an overloaded function is not "strictly better" than another (e.g. another one has a more specific argument type for at least one of the arguments).
-    \end{itemize}
 
   \section{\label{sec:actions-and-submitting-forms}Placeholders, Actions and Submitting Forms}
 

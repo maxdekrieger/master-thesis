@@ -4,9 +4,9 @@
 
   Computer programming is an essential skill that is increasingly important in diverse disciplines \autocite{Rafalski2019}. To this end, many different programming languages exist, each with different properties and advantages. Over time, the popularity of programming languages changes and developers tend to have preferences for one language over the other. In addition to preference, the implementation of a language and the tools that come with it can greatly boost the productivity of developers, if done well.
 
-  Another key to boost the productivity of software engineers is abstractions. Abstractions allow developers to think in terms closer to the domain rather than the implementation. In other words, the ideal level of abstraction increases the focus on the what, and steers away from the how. In this thesis, we will focus on a \textit{domain-specific language} (DSL). In contrast to a general-purpose language such as Java, C, or Python, a domain-specific language does not intend to provide solutions for problems from all domains, but instead focus on a single domain. This restriction allows for a high level of abstraction in the language itself, in an attempt to boost developer productivity. Examples of popular domain-specific languages are CSS for styling web pages and SQL for efficient database querying.
+  Another key to boost the productivity of software engineers is abstractions. Abstractions allow developers to think in terms closer to the domain rather than the implementation. In other words, the ideal level of abstraction increases the focus on the what, and steers away from the how. In this thesis, we will conduct a case study using \textit{domain-specific languages} (DSLs). In contrast to a general-purpose language such as Java, C, or Python, a domain-specific language does not intend to provide solutions for problems from all domains, but instead focus on a single domain. This restriction allows for a high level of abstraction in the language itself, in an attempt to boost developer productivity. Examples of popular domain-specific languages are CSS for styling web pages and SQL for efficient database querying.
 
-  In this thesis, we use the domain-specific language \textit{WebDSL} as a large case study for the languages \textit{SDF3} and \textit{Statix}. WebDSL is a domain-specific language for developing web applications, developed and maintained by the Programming Languages research group of the Delft University of Technology.
+  In this thesis, we use the domain-specific language \textit{WebDSL} as a large case study for the domain-specific languages \textit{SDF3} and \textit{Statix}. WebDSL is a domain-specific language for developing web applications, developed and maintained by the Programming Languages research group of the Delft University of Technology.
 
   When inspecting the implementation of a programming language, the process is split up in multiple parts such as parsing, static analysis, code generation and optimization. The parsing, desugaring and static analysis is often called the front-end of a programming language, and this is the part developers face directly. The code generation and code optimization is called the back-end, and is required to make the programming language operational. While the back-end of a programming langauge makes it work, the front-end plays a large role in how developers experience a programming language. Early feedback in the form of good error messages and hints are required to make the interaction with a programming language efficient \autocite{Becker2019}.
 
@@ -16,19 +16,30 @@
 
   Continuous improvement of the Spoofax language workbench has introduced more meta-languages specialized in different parts of the language development chain. In this thesis, we will be modernizing the WebDSL front-end, by using the Spoofax meta-languages SDF3 to specify and disambiguate the syntax from which a parser is generated, and Statix to declare the static semantics from which a typechecker is automatically generated.
 
-  \section{\label{sec:why-webdsl}Why WebDSL as a case study?}
+  \section{\label{sec:methodology}Case Study Description}
 
-    WebDSL is an interesting case study for SDF3 and Statix because of two main reasons. Firstly, WebDSL has a large amount of language features inspired by multiple paradigms of programming languages. As a consequence, the resulting SDF3 and Statix specifications are arguably the largest specifications to date. Accompanied by the large amount of publicly available source code for evaluation purposes, we aim to make observations about the elegancy of the resulting specifications and the scalability of their performance. Since this thesis is a case study, we cannot make general claims about the performance of SDF3 and Statix, but only reveal and analyse results of the WebDSL specification.
+    In this section we describe the design of the case study conducted in this thesis, according to the framework described by Runeson and H\"{o}st (\citeyear{RunesonH09}).
 
-    Secondly, WebDSL contains language features that have never been modelled in Statix before. Specifically, those features are:
+    \paragraph{Objective} The objective of the case study is of exploratory nature, namely to gain insight into the meta-languages SDF3 and Statix. Specifically, we aim to gain insight into their expressiveness, performance and maintainability. With these insights, we hope to generate suggestions for improvements of the meta-languages.
+
+    \paragraph{The Case} WebDSL is used as the case in this case study. Through implementing the WebDSL syntax in SDF3 and its static semantics in Statix we aim to gain insights as described in the objective.
+
+    \paragraph{Background} Both WebDSL and the meta-languages of the Spoofax language workbench are created and maintained by the Programming Languages research group of the TU Delft. WebDSL is used in practice to make web applications with thousands of daily users, and its current front-end implementation is one of the largest projects in SDF2 and Stratego.
+
+    \paragraph{Research Questions} In this thesis, we aim to answer the following research questions.
 
     \begin{itemize}
-      \item Extension of built-in types
-      \item Generated functions and classes
-      \item An unconventional module and scoping system
+      \item \textbf{RQ1} Is it possible to encode the static semantics of WebDSL in Statix?
+      \item \textbf{RQ2} How does the run time efficiency of the WebDSL static semantics in Statix compare to the current WebDSL implementation?
+      \item \textbf{RQ3} How does the maintainability of the WebDSL static semantics in Statix compare to the current implementation?
+      \item \textbf{RQ4} Is it possible to define the WebDSL syntax in SDF3, without the use of post-parse filters?
+      \item \textbf{RQ5} How does the run time efficiency of the parser generated from WebDSL in SDF3 compare to the current WebDSL parser generated from SDF2?
+      \item \textbf{RQ6} How does the maintainability of WebDSL in Statix compare to the WebDSL syntax definition in SDF2?
     \end{itemize}
 
-    With the implementation of the above features in Statix, we aim to contribute to assessing whether Statix is capable of modelling the static semantics of all reasonable programming languages.
+    \paragraph{Methods} To answer the research questions, we implement a modernized WebDSL front-end using SDF3 and Statix. We evaluate the generated parser and type-checker on multiple targets. The current WebDSL compiler contains large test suites that contain hundreds of test programs for the parser and static analysis. Most of these test programs stem from real life production bugs of the compiler. We use the test suites to evaluate the completeness and run time performance of the parser generated from SDF3, and the static analysis generated from Statix.
+
+    \paragraph{Why WebDSL?} WebDSL is an interesting case study for SDF3 and Statix because of two main reasons. Firstly, WebDSL has a large amount of language features inspired by multiple paradigms of programming languages. As a consequence, the resulting SDF3 and Statix specifications are arguably the largest specifications to date. Accompanied by the large amount of publicly available source code for evaluation purposes, we aim to make observations about the elegancy of the resulting specifications and the scalability of their performance. Since this thesis is a case study, we cannot make general claims about the performance of SDF3 and Statix, but only reveal and analyse results of the WebDSL specification. Secondly, WebDSL contains language features that have never been modelled in Statix before such as extension of built-in types, generated functions and classes and an unconventional module and scoping system.
 
   % Contributions
   \section{\label{sec:contributions}Contributions}
@@ -36,9 +47,10 @@
     In this thesis, the following contributions are made.
 
     \begin{itemize}
-      \item We present a modernized WebDSL front-end through an implementation of its grammar in SDF3 and its analysis in Statix and document the challenges of this process.
-      \item We assess the coverage of Statix and SDF3 by attempting to model all language features of WebDSL, evaluating the result on existing test suites, and give qualitative feedback on how to further improve the coverage and increase the elegancy of definitions.
-      \item We assess the run time performance of Statix and SDF3 by benchmarking the new WebDSL front-end using test suites and large codebases of existing applications.
+      \item We present a modernized WebDSL front-end through an implementation of its grammar in SDF3 and its static analysis in Statix and document the challenges of this process.
+      \item We assess the coverage of SDF3 and Statix by attempting to model all language features of WebDSL, evaluating the result on existing test suites.
+      \item We give qualitative feedback on the meta-languages SDF3 and Statix and give suggestions for how to further improve their expressiveness and elegancy.
+      \item We assess the run time performance of SDF3 and Statix by benchmarking the new WebDSL front-end using test suites and large codebases of existing applications.
     \end{itemize}
 
   % Outline
