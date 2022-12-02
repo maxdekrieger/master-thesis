@@ -518,7 +518,7 @@ signature
         \caption{\label{fig:sdf3-statix-explication}An example of how SDF3 injections are handled by the Statix signature generator.}
       \end{figure}
 
-      \paragraph{Optional Sorts} As mentioned in \cref{fig:sdf3-syntax-injection-repetition-optional} as part of \cref{subsec:sdf3}, SDF3 has built-in support for optional sorts, resulting in \texttt{Some(\_)} and \texttt{None()} terms. These terms cannot be  translated to Statix signatures, since it is not possible to overload the constructor for many different sorts. To work around this limitation, the SDF3 definition must be altered make the \texttt{Some} and \texttt{None} constructors unique per sort. This leads to a much more verbose syntax definition. \Cref{fig:sdf3-remove-optionals} shows how the optional constructs can be altered to be unique per sort.
+      \paragraph{\label{par:optional-sorts}Optional Sorts} As mentioned in \cref{fig:sdf3-syntax-injection-repetition-optional} as part of \cref{subsec:sdf3}, SDF3 has built-in support for optional sorts, resulting in \texttt{Some(\_)} and \texttt{None()} terms. These terms cannot be  translated to Statix signatures, since it is not possible to overload the constructor for many different sorts. To work around this limitation, the SDF3 definition must be altered make the \texttt{Some} and \texttt{None} constructors unique per sort. This leads to a much more verbose syntax definition. \Cref{fig:sdf3-remove-optionals} shows how the optional constructs can be altered to be unique per sort.
 
       \begin{figure}
         \begin{subfigure}[b]{1\textwidth}
@@ -565,7 +565,7 @@ module WebDSL-UI
     
     The \texttt{\{prefer\}} and \texttt{\{avoid\}} post-parse filters are deprecated in the current version of SDF3. In this thesis we attempt to disambiguate the grammar of a WebDSL with the other disambiguation functionalities provided by SDF3.
 
-    \section{Disambiguating Keywords}
+    \subsection{Disambiguating Keywords}
 
       WebDSL template calls do not require parentheses or semicolons. This allows for clean code in templates, but makes the syntax ambiguous in the case of keywords that are able to parse as a template name.
       
@@ -615,7 +615,7 @@ module x
 
       Another option is to add all the reject rules for keywords individually. This is tedious work, but allows for better precision. In the new WebDSL SDF3, all keywords are rejected indivudually.
 
-    \section{Disambiguating Strings}
+    \subsection{Disambiguating Strings}
 
       WebDSL strings are defined in SDF2 using kernel syntax. Kernel syntax does not allow implicit layout (whitespace) between the different elements of a production. The SDF2 productions for a WebDSL string are shown in \cref{fig:sdf2-webdsl-string}. A string can be either a "simple" string or a string containing one or more expressions that have to be evaluated. These expressions must be prefixed by a tilde (\texttt{~}) to be parsed as interpolation.
 
@@ -664,7 +664,7 @@ module x
         \caption{\label{fig:sdf3-webdsl-string}SDF3 definitions of a WebDSL string.}
       \end{figure}
 
-    \section{Non-transitive Priority Rules}
+    \subsection{Non-transitive Priority Rules}
 
       Another ambiguity in the WebDSL language is the overlap between passing template elements and the untyped set creation. \Cref{fig:sdf3-webdsl-untyped-set} demonstrates the ambiguity. The curly brackets are used for an untyped set creation, as shorthand for \texttt{Set<Int>(...)}. On the other hand, curly brackets are also used to pass template elements as argument to another template.
 
