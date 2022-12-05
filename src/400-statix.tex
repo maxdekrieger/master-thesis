@@ -2,7 +2,7 @@
 
 \chapter{\label{chap:statix}WebDSL in Statix}
 
-  In this chapter, we elaborate on the implementation of the WebDSL static semantics in Statix, using the examples from \cref{chap:webdsl} as a basis. We start this chapter by introducing the meta-DSL Statix. Once the goal and basics of Statix are stated, we describe the implementation of the type system that is the core of WebDSL. Next, we address and discuss the challenges faced while implementing non-trivial WebDSL features in Statix and lastly we reflect on the developer experience of using Statix to implement static analyses.
+  In this chapter, we elaborate on the implementation of the WebDSL static semantics in Statix, using the examples from \cref{chap:webdsl} as a basis. We start this chapter by introducing the meta-DSL Statix. Once the goal and basics of Statix are stated, we describe the implementation of the type system that is the core of WebDSL. Next, we address and discuss the challenges faced while implementing non-trivial WebDSL features in Statix, and lastly we reflect on the developer experience of using Statix to implement static analyses.
 
   \section{\label{sec:statix}Introduction to Statix}
 
@@ -49,7 +49,7 @@
 
     \subsection{Semantic Types}
 
-      Not all of the valid input terms according to our signature are well-typed. For example, the last term shown in \cref{fig:statix-valid-input} features an addition of the integer literal \texttt{40} and the Boolean value \texttt{False}. Using Statix' constraint solving capabilities, we would like to give feedback to the programmer that the input is ill-typed.
+      Not all the valid input terms according to our signature are well-typed. For example, the last term shown in \cref{fig:statix-valid-input} features an addition of the integer literal \texttt{40} and the Boolean value \texttt{False}. Using Statix' constraint solving capabilities, we would like to give feedback to the programmer that the input is ill-typed.
 
       Given the code in \cref{fig:statix-signatures}, our Statix specification does not yet generate any constraints. Constraints that we would like to generate using Statix rules are firstly that a program must be well-typed and secondly, in order for an addition expression to be well-typed, its two subterms must be of integer type.
 
@@ -281,7 +281,7 @@
           \end{tikzpicture}
           \caption{\label{fig:statix-let-binding-example-sg}}
         \end{subfigure}
-        \caption{\label{fig:statix-let-binding-example}Constructed scope graph after the example specification solved its contraints}
+        \caption{\label{fig:statix-let-binding-example}Constructed scope graph after the example specification solved its constraints}
       \end{figure}
 
   \section{\label{sec:simple-type-systems}Encoding the WebDSL Basics}
@@ -310,7 +310,7 @@
 
       Constant expressions such as strings, integers and booleans form the building blocks of more complication constructs. For reasons explained later (see \cref{sec:type-extension}), a built-in type such as string is not declared as \texttt{STRING : TYPE} but instead as \texttt{BUILTINTYPE : scope * string -> TYPE}, where the instantiation of the string type is as follows: \texttt{BUILTINTYPE(s, "String")}.
 
-      These built-in types are declared in a scope that is reachable from almost every location, the project scope, once per analysis. All WebDSL type declarations are made under the \texttt{type} relation, which associates the human readable type name with a \texttt{TYPE} term: \texttt{type : string * TYPE}. The part of the Statix specification to achieve this, and the resulting scope graph are shown in \cref{fig:webdsl-basics-built-in-types-decl}.
+      These built-in types are declared in a scope that is reachable from almost every location, the project scope, once per analysis. All WebDSL type declarations are made under the \texttt{type} relation, which associates the human-readable type name with a \texttt{TYPE} term: \texttt{type : string * TYPE}. The part of the Statix specification to achieve this, and the resulting scope graph are shown in \cref{fig:webdsl-basics-built-in-types-decl}.
 
       \begin{figure}[h]
         \begin{subfigure}[b]{0.5\textwidth}
@@ -508,7 +508,7 @@ application test
         \caption{\label{fig:webdsl-simple-variable-well-formedness}Well-formedness predicate for variable paths}
       \end{wrapfigure}
 
-      The edge label \texttt{P} as introduced in \cref{fig:webdsl-simple-variable-declaration-scope} is the edge label used for linking consecutive statements together. The other edge labels such as complicate this regular expression, and will be will be explained in more details in later sections when their use is discussed.
+      The edge label \texttt{P} as introduced in \cref{fig:webdsl-simple-variable-declaration-scope} is the edge label used for linking consecutive statements together. The other edge labels such as complicate this regular expression, and will be explained in more details in later sections when their use is discussed.
 
       \Cref{fig:webdsl-simple-variable-well-formedness} defines what data is reachable from any point in the scope graph, but we also want some restrictions of declarations. The same environment such as function body or an entity definition may never declare the same variable twice. To achieve this, \textbf{line 4} of \cref{fig:webdsl-simple-variable-declaration-and-resolving} uses the helper predicate \texttt{noDuplicateVarDefs}. The implementation of this predicate is straight-forward and shown in \cref{fig:webdsl-simple-variable-no-duplicates}. The predicate queries the current scope and checks whether all scopes reachable using only \texttt{P} edge labels, results in a list containing only one entry.
 
@@ -527,7 +527,7 @@ rules
 
     \subsection{\label{subsec:type-compatibility}Type Compatibility}
 
-      WebDSL has a notion of type compatiblity. For example, the WebDSL superclass of all entities is conveniently called \texttt{Entity}. When assigning a value to a variable that requires type \texttt{Entity}, passing an instance of a user-defined entity such as \texttt{Person} or \texttt{Project} also suffices. In this case, type \texttt{Person} is compatible with type \texttt{Entity}, but not the other way around. Type compatibility is not limited to entities. For instance, all WebDSL date types (\texttt{Date}, \texttt{Time}, \texttt{DateTime}) are compatible with each other. As a last example, null is compatible with many types. The examples given above are shown in \cref{fig:webdsl-basics-type-compatibility-example}.
+      WebDSL has a notion of type compatibility. For example, the WebDSL superclass of all entities is conveniently called \texttt{Entity}. When assigning a value to a variable that requires type \texttt{Entity}, passing an instance of a user-defined entity such as \texttt{Person} or \texttt{Project} also suffices. In this case, type \texttt{Person} is compatible with type \texttt{Entity}, but not the other way around. Type compatibility is not limited to entities. For instance, all WebDSL date types (\texttt{Date}, \texttt{Time}, \texttt{DateTime}) are compatible with each other. As a last example, null is compatible with many types. The examples given above are shown in \cref{fig:webdsl-basics-type-compatibility-example}.
 
       \begin{figure}
         \begin{minted}[firstline=2]{\webdsl}
@@ -543,7 +543,7 @@ function f() {
         \caption{\label{fig:webdsl-basics-type-compatibility-example}Examples of type compatibility in WebDSL}
       \end{figure}
 
-      To encode the type compatibility as shown in \cref{fig:webdsl-basics-type-compatibility-example} in Statix, we need a predicate that tells us, given two types \textit{A} and \textit{B}, if type \textit{A} is compatible with with \textit{B}. The signature and its general rules are shown in \cref{fig:type-compatibility-statix-basic}.
+      To encode the type compatibility as shown in \cref{fig:webdsl-basics-type-compatibility-example} in Statix, we need a predicate that tells us, given two types \textit{A} and \textit{B}, if type \textit{A} is compatible with \textit{B}. The signature and its general rules are shown in \cref{fig:type-compatibility-statix-basic}.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\statix}
@@ -614,7 +614,7 @@ rules
 
     \subsection{\label{subsec:boolean-logic}Boolean Logic in Statix}
 
-      So far, most of the WebDSL's static semantics are expressible in Statix. However, the elegance of the Statix definition is sometimes lost due to code duplication. For example, logical negation and disjunction of predicates are not natively expressible in Statix, and require boilerplate code to function. To tackle this challenge, we introduced a notion of explicit boolean results for predicates that are reusable. The implementation in Statix is shown in \cref{fig:boolean-computation-results-in-statix}. The figure shows a predicate from before (\texttt{typeCompatible : TYPE * TYPE}) now changed to return an explicit result: \texttt{typeCompatibleB : TYPE * TYPE -> BOOL}. Additionally, we scope this boolean result in a predicate \texttt{typeCompatible(T1, T2) :- typeCompatibleB(T1, T2) == TRUE().} such that existing references can be left unchanged.
+      So far, most of the WebDSL's static semantics are expressible in Statix. However, the elegance of the Statix definition is sometimes lost due to code duplication. For example, logical negation and disjunction of predicates are not natively expressible in Statix, and require boilerplate code to function. To tackle this challenge, we introduced a notion of explicit boolean results for predicates that are reusable. The implementation in Statix is shown in \cref{fig:boolean-computation-results-in-statix}. The figure shows a predicate from before (\texttt{typeCompatible : TYPE * TYPE}) now changed to return an explicit result: \texttt{typeCompatibleB : TYPE * TYPE -> BOOL}. Additionally, we scope this boolean result in a predicate \texttt{typeCompatible(T1, T2) :- typeCompatibleB(T1, T2) == TRUE().}, such that existing references can be left unchanged.
 
       \begin{figure}
         \begin{minted}[firstline=2]{\statix}
@@ -639,7 +639,7 @@ module m
         \caption{\label{fig:boolean-computation-results-in-statix}Boolean computation results in Statix}
       \end{figure}
 
-      As hinted before, the explicit return values of functional rules open up new possibilities for expressing constraints. One instance of where this is necessary, is expressing the semantics of an equality check in WebDSL. For the expression \texttt{A == B} to type check, the types have to be compatible. The naive implementation would be to define the constraint \texttt{typeCompatible(T\_A, T\_B)}. However, type compatibilty is not symmetrical while the equality check should be: \texttt{A == B $\iff$ B == A}. An example of type compatibilty not being symmetrical is when dealing with entity inheritance (see \cref{subsec:inheritance}). To properly define the static semantics for the equality expression in Statix, we need the newly defined boolean computation rules. The result is shown in \cref{fig:boolean-computation-for-equality-expression}.
+      As hinted before, the explicit return values of functional rules open up new possibilities for expressing constraints. One instance of where this is necessary, is expressing the semantics of an equality check in WebDSL. For the expression \texttt{A == B} to type check, the types have to be compatible. The naive implementation would be to define the constraint \texttt{typeCompatible(T\_A, T\_B)}. However, type compatibility is not symmetrical while the equality check should be: \texttt{A == B $\iff$ B == A}. An example of type compatibility not being symmetrical is when dealing with entity inheritance (see \cref{subsec:inheritance}). To properly define the static semantics for the equality expression in Statix, we need the newly defined boolean computation rules. The result is shown in \cref{fig:boolean-computation-for-equality-expression}.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\statix}
@@ -748,7 +748,7 @@ module x
         \caption{\label{fig:webdsl-entity-new-type-declare-and-resolve}\texttt{declareType} now shows an error when two types with the same name are declared and \texttt{resolveType} may optinally follow a \texttt{DEF} edge label}
       \end{figure}
 
-      In addition to the added constraint to the \texttt{declareType} rule, we added an optional \texttt{DEF} edge label that may be followed when querying the scope graph for a type (\textbf{{line 9}} of \cref{fig:webdsl-entity-new-type-declare-and-resolve}). The \texttt{DEF} (short for defintion) is used to link the scope of top-level elements, such as entities and functions, to the module scope. This can be seen in \textbf{line 13} of \cref{fig:webdsl-entity-declaration-statix}.
+      In addition to the added constraint to the \texttt{declareType} rule, we added an optional \texttt{DEF} edge label that may be followed when querying the scope graph for a type (\textbf{{line 9}} of \cref{fig:webdsl-entity-new-type-declare-and-resolve}). The \texttt{DEF} (short for definition) is used to link the scope of top-level elements, such as entities and functions, to the module scope. This can be seen in \textbf{line 13} of \cref{fig:webdsl-entity-declaration-statix}.
 
       So far, there has been no reason to query for types inside the entity body because we have always worked with empty entities. In practice, entities are filled with properties and functions. \textbf{Line 20} of \cref{fig:webdsl-entity-declaration-statix} calls the \texttt{declEntityBody} predicate, of which the implementation is shown in \cref{fig:webdsl-entity-body-declaration} and an example of an entity definition with two properties is shown in \cref{fig:webdsl-entity-body-example}.
       
@@ -844,7 +844,7 @@ module x
 
     \subsection{\label{subsec:simple-pages}Pages and Templates}
 
-      The user-inferface of a WebDSL application is built out of \textit{pages} and \textit{templates}. A page defines a path that is able to be requested by the browser while a template is a reusable component that can be part of a page or nested in other templates.
+      The user-inferface of a WebDSL application is built out of \textit{pages} and \textit{templates}. A page defines a path that can be requested by the browser while a template is a reusable component that can be part of a page or nested in other templates.
 
       \begin{figure}
         \begin{minted}[firstline=2]{\statix}
@@ -861,7 +861,7 @@ module x
         \caption{\label{fig:statix-page-and-template-constructors}Statix signature for pages and templates}
       \end{figure}
 
-      The name of a page must be unique, while a template can be defined multiple times for different argument types (\textit{overloading}), but never multiple times for the same argument types. The statix rules to implement these checks can be found in \cref{fig:webdsl-page-and-template-definition} and an example of a module with a page and a template definition is shown in \cref{fig:webdsl-page-and-template-decl}. In the latter image, the argument type of template \texttt{t} is shortened to \texttt{String}, instead of its full version \texttt{BUILTINTYPE(s\_string, "String")}.
+      The name of a page must be unique, while a template can be defined multiple times for different argument types (\textit{overloading}), but never multiple times for the same argument types. The Statix rules to implement these checks can be found in \cref{fig:webdsl-page-and-template-definition} and an example of a module with a page and a template definition is shown in \cref{fig:webdsl-page-and-template-decl}. In the latter image, the argument type of template \texttt{t} is shortened to \texttt{String}, instead of its full version \texttt{BUILTINTYPE(s\_string, "String")}.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\statix}
@@ -940,7 +940,7 @@ rules
         \caption{\label{fig:webdsl-page-type-checking}Statix rules for type-checking a page reference}
       \end{figure}
 
-      The body of templates and pages consist of so called \textit{Template elements}. The simplest template element is simply a text to be printed on the page. Next to plain text, hyperlinks to other pages can be created using the \texttt{navigate} element. If we take \cref{fig:webdsl-page-and-template-decl} as basis, an example of a valid navigate call would be \texttt{navigate p() \{ "Go to p" \}}. To type-check this, the code from \cref{fig:webdsl-page-type-checking} can be used. Other examples of template elements are forms, nested template calls, and at the top of a template, variables can be initialized, followed by a block of computational statements that get executed when the template is being loaded.
+      The body of templates and pages consist of so-called \textit{Template elements}. The simplest template element is simply a text to be printed on the page. Next to plain text, hyperlinks to other pages can be created using the \texttt{navigate} element. If we take \cref{fig:webdsl-page-and-template-decl} as basis, an example of a valid navigate call would be \texttt{navigate p() \{ "Go to p" \}}. To type-check this, the code from \cref{fig:webdsl-page-type-checking} can be used. Other examples of template elements are forms, nested template calls, and at the top of a template, variables can be initialized, followed by a block of computational statements that get executed when the template is being loaded.
 
       Apart from regular templates, WebDSL also has a notion of Ajax templates. Ajax templates can be used as building blocks of the user interface, just like regular templates. Additionally, Ajax templates also have a possibility of being replaced on a rendered page without reloading the whole page, for example to refresh the results of a poll on a page. This addition makes Ajax templates useful for more interactive and modern web applications.
 
@@ -1037,7 +1037,7 @@ module m
 
       When developing any application that will be used in practice, access control is an important part of the system. It controls which user is allowed to see what data, what actions can be executed. Generally, this is implemented through a log-in system where different user accounts are given different rights. In all popular programming languages, developing a system access control is the responsibility of the developer, either through manual coding or using frameworks and libraries. In WebDSL however, access control is embedded in the language and all pages are protected by default.
 
-      Concretely, the developer is able to declare what entity represents a user in the system, and what data the user needs to show to log in. In the rest of the WebDSL code, the globally available security context is extended with the properties \texttt{principal} which references the logged in user, and \texttt{loggedIn} which is true if the user has logged in. If the developer has not specified what entity represents a user, the security context is available but does not have these properties. An example of WebDSL code with resulting scope graph is shown in \cref{fig:webdsl-access-control-example} and the Statix rules used to achieve this are shown in \cref{fig:webdsl-principal-statix}. In the code for extending the security context with two additional properties, the same mechanics are used as for entity and built-in type extension. An explanation can be found later in \cref{sec:type-extension}.
+      Concretely, the developer is able to declare what entity represents a user in the system, and what data the user needs to show to log in. In the rest of the WebDSL code, the globally available security context is extended with the properties \texttt{principal} which references the logged-in user, and \texttt{loggedIn} which is true if the user has logged in. If the developer has not specified what entity represents a user, the security context is available but does not have these properties. An example of WebDSL code with resulting scope graph is shown in \cref{fig:webdsl-access-control-example} and the Statix rules used to achieve this are shown in \cref{fig:webdsl-principal-statix}. In the code for extending the security context with two additional properties, the same mechanics are used as for entity and built-in type extension. An explanation can be found later in \cref{sec:type-extension}.
 
       \begin{figure}
         \begin{subfigure}[b]{0.4\textwidth}
@@ -1182,9 +1182,9 @@ rules
         \caption{\label{fig:webdsl-entity-inheritance-example}An example of entity definition in WebDSL}
       \end{figure}
 
-      First of all, the super-entity refered to in the declaration must refer to an existing entity in the scope graph. Secondly, the new scope belonging to the sub-entity \texttt{s\_entity} is linked to the scope of the super class \texttt{s\_super} via an \texttt{INHERIT} edge. Finally, some additional constraints are generated to make sure no circular inheritance exists and constraints for the entity body declarations of the sub-entity are generated.
+      First, the super-entity referred to in the declaration must refer to an existing entity in the scope graph. Secondly, the new scope belonging to the sub-entity \texttt{s\_entity} is linked to the scope of the super class \texttt{s\_super} via an \texttt{INHERIT} edge. Finally, some additional constraints are generated to make sure no circular inheritance exists and constraints for the entity body declarations of the sub-entity are generated.
 
-      The variable resolving query as listed in \cref{fig:var-resolve-query-inheritance} reflects the addition of the \texttt{INHERIT} label. The addition of \texttt{INHERIT*} in the query filter makes all variables declared in ancestors reachable, but the shadowing rule as declared after the \texttt{min} keyword ensures correct shadowing behaviour, namely that local variables are preferred over variables defined in ancestors.
+      The variable resolving query as listed in \cref{fig:var-resolve-query-inheritance} reflects the addition of the \texttt{INHERIT} label. The addition of \texttt{INHERIT*} in the query filter makes all variables declared in ancestors reachable, but the shadowing rule as declared after the \texttt{min} keyword ensures correct shadowing behavior, namely that local variables are preferred over variables defined in ancestors.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\statix}
@@ -1279,7 +1279,7 @@ rules
 
     \subsection{Property Annotations}
 
-      So far, the Statix specification can validate entities, their properties and their functions. Since the goal is to never manually touch the database specification, we would like to entity properties to be more expressive by for example specifiying default values, or put a constraint on the possible values of a property. WebDSL uses \textit{property annotations} for this. \Cref{fig:webdsl-properties-example} shows an WebDSL code of an entity with properties that have annotations.
+      So far, the Statix specification can validate entities, their properties and their functions. Since the goal is to never manually touch the database specification, we would like entity properties to be more expressive by for example specifying default values, or put a constraint on the possible values of a property. WebDSL uses \textit{property annotations} for this. \Cref{fig:webdsl-properties-example} shows an WebDSL code of an entity with properties that have annotations.
 
       \begin{figure}
         \begin{minted}[firstline=1]{\webdsl}
@@ -1308,7 +1308,7 @@ module m
 
       Many property annotations do not influence the scope graph. An example of this is the \texttt{default = <exp>} annotation, where Statix only needs to check whether the given expression is compatible with the property type. For the \texttt{length = <exp>} annotation, the same holds, except that the expression must now have type \texttt{Int}.
 
-      An interesting property to point out is the derived property, as shown in for property \texttt{fullname} of the \texttt{Teacher} entity in \cref{fig:webdsl-properties-example}. While this is not strictly an annotation, it does change something in the scope graph. A derived value can be calculated from other properties of the entity and does not have to be stored. It's value can also not be changed directly. The latter property is something we need to store in the scope graph, such that we can give an error when the developers attempts to assign a value directly to a derived property. For this, a new relation is introduced in Statix, which allows us to declare annotations on properties in the scope of an entity. An example of this is shown in \cref{fig:derived-annotation-example}. When assigning a variable, the left-hand side of the assignment can now be checked for mutability. The implementation of this checks whether the entity property that is referenced on the left-hand side has the \texttt{DERIVED()} annotation. To prevent code duplication, we chose to re-use the \texttt{DERIVED()} property for function parameters, which can only be referenced but never changed in the function body.
+      An interesting property to point out is the derived property, as shown in for property \texttt{fullname} of the \texttt{Teacher} entity in \cref{fig:webdsl-properties-example}. While this is not strictly an annotation, it does change something in the scope graph. A derived value can be calculated from other properties of the entity and does not have to be stored. Its value can also not be changed directly. The latter property is something we need to store in the scope graph, such that we can give an error when developers attempt to assign a value directly to a derived property. For this, a new relation is introduced in Statix, which allows us to declare annotations on properties in the scope of an entity. An example of this is shown in \cref{fig:derived-annotation-example}. When assigning a variable, the left-hand side of the assignment can now be checked for mutability. The implementation of these checks whether the entity property that is referenced on the left-hand side has the \texttt{DERIVED()} annotation. To prevent code duplication, we chose to re-use the \texttt{DERIVED()} property for function parameters, which can only be referenced but never changed in the function body.
 
       \begin{figure}
         \begin{subfigure}[b]{0.3\textwidth}
@@ -1350,7 +1350,7 @@ module m
 
     \subsection{Entity Hierarchy and the Name Property}
 
-      Similar to \texttt{Object} in the Java programming language, WebDSL also has a root of the entity hierarchy, namely \texttt{Entity}. If a defined entity does not explicitly inherit from another entity, it will automatically inherit from \texttt{Entity}. This built-in superclass is convenient to store properties that all entites will have out of the box, such as the property \texttt{id} of type \texttt{UUID} and the property \texttt{created} of type \texttt{DateTime}. User-defined entities are not allowed redefine such properties, but they may to edit the values. An exception to this rule is the property \texttt{name} of type \texttt{String} that all entities have by default, but may be overridden once by sub-entities.
+      Similar to \texttt{Object} in the Java programming language, WebDSL also has a root of the entity hierarchy, namely \texttt{Entity}. If a defined entity does not explicitly inherit from another entity, it will automatically inherit from \texttt{Entity}. This built-in superclass is convenient to store properties that all entities will have out of the box, such as the property \texttt{id} of type \texttt{UUID} and the property \texttt{created} of type \texttt{DateTime}. User-defined entities are not allowed redefine such properties, but they may to edit the values. An exception to this rule is the property \texttt{name} of type \texttt{String} that all entities have by default, but may be overridden once by sub-entities.
 
       To achieve the overridability, we can re-use the property annotations in the scope graph as explained in previous section. The \texttt{name} property of the built-in entity \texttt{Entity} gets a \texttt{OVERRIDABLE()} annotation declared in the scope of \texttt{Entity}, and when attempting to catch duplicate property definitions, we must discard properties from parents that have the \texttt{OVERRIDABLE()} property. An example of the overriding is shown in \cref{fig:name-property-overriding-example} and the Statix code to discard overridable properties is shown in \cref{fig:overridable-properties-statix}. In the Statix rules, there are now two predicates to prevent duplicates: one for within the entity, and another one to check inherited properties. The difference is rules allows for better error messages, but most importantly allows us to only discard properties with the \texttt{OVERRIDABLE()} annotation from inherited properties. At the point of writing this thesis, the built-in name property is the only use case for the \texttt{OVERRIDABLE()} annotation and it is not possible to mark a property as overridable by code.
 
@@ -1420,7 +1420,7 @@ module m
 
   \section{\label{sec:function-template-overloading}Function and Template Overloading}
 
-    Function overloading is the practice of defining multiple functions with the same name, that differ in argument types or in the amount of arguments. Before running the WebDSL program, the compiler determines what instance of the function will be run, based on the types of the function call arguments. WebDSL supports overloading for both functions and templates, and their implementation in the static analysis is the same. The concepts and solutions explained in this section are therefore applicable for both. An example of template overloading is shown in \cref{fig:template-overloading-example}. In the rest of this section we will talk about functions but the concept is exactly the same for templates.
+    Function overloading is the practice of defining multiple functions with the same name, that differ in argument types or in the amount of arguments. Before running the WebDSL program, the compiler determines what instance of the function will be run, based on the types of the function call arguments. WebDSL supports overloading for both functions and templates, and their implementation in the static analysis is the same. The concepts and solutions explained in this section are therefore applicable for both. An example of template overloading is shown in \cref{fig:template-overloading-example}. In the rest of this section we will talk about functions, but the concept is exactly the same for templates.
 
     \begin{figure}
       \begin{minted}[firstline=1]{\webdsl}
@@ -1468,7 +1468,7 @@ rules
       \caption{\label{fig:statix-overloaded-function-definitions}Statix rules for allowing overloaded function definitions}
     \end{figure}
 
-    Now that the static analysis allows for overloaded functions and templates to be defined, the code that typechecks function calls and template calls should be updated to reflect the new changes. The semantics of resolving the correct overloaded function or template are listed below. A practical example of how these rules work is shown in \cref{fig:template-overloading-referencing-example}.
+    Now that the static analysis allows for overloaded functions and templates to be defined, the code that type checks function calls and template calls should be updated to reflect the new changes. The semantics of resolving the correct overloaded function or template are listed below. A practical example of how these rules work is shown in \cref{fig:template-overloading-referencing-example}.
 
     \begin{enumerate}
       \item Retrieve all function signatures with the matching name from the scope graph
@@ -1510,7 +1510,7 @@ module m
       \caption{\label{fig:template-overloading-referencing-example}An example of referencing overloaded templates in WebDSL}
     \end{figure}
 
-    The implementation of resolving the correctly overloaded function according to the listed semantics is shown in \cref{fig:statix-overloaded-function-calls}. The essence of the semantics is encoded in the Statix rules, but the brevity and elegancy is lost due to many helper predicates being required to transform the data into the correct forms to perform the queries that calculate the inheritance edges, and filter the function signatures accordingly. Note that the \texttt{typeOfFunctionCall} predicate is not specific to functions, because the signature requires a string and a list of expressions, which causes the predicate to be re-usable for resolving template calls.
+    The implementation of resolving the correctly overloaded function according to the listed semantics is shown in \cref{fig:statix-overloaded-function-calls}. The essence of the semantics is encoded in the Statix rules, but the brevity and elegance is lost due to many helper predicates being required to transform the data into the correct forms to perform the queries that calculate the inheritance edges, and filter the function signatures accordingly. Note that the \texttt{typeOfFunctionCall} predicate is not specific to functions, because the signature requires a string and a list of expressions, which causes the predicate to be re-usable for resolving template calls.
 
     \begin{figure}
       \begin{minted}[firstline=3]{\statix}
@@ -1563,7 +1563,7 @@ rules
 
   \section{\label{sec:actions-and-submitting-forms}Placeholders, Actions and Submitting Forms}
 
-    Forms are the basis of most information systems on the web. WebDSL has linguistically integrated forms through inputs and actions. The static analysis of referencing actions and placeholders is unlike variable referencing, due to their scoping semantics. Actions abd placeholders are defined in pages or templates and may be referred to in the rest of the page or function body. Unlike variables, actions and placeholders do not follow the declare-before-use principle (explained in \cref{subsec:simple-variables}). Actions and placeholders may be defined anywhere in the body, and referenced from anywhere in the body, but there is a twist. Inside the action body, the statements and expressions may reference variables defined in the template or page body, and thus the scope of the action must be linked to the scope of the template of page in some way.
+    Forms are the basis of most information systems on the web. WebDSL has linguistically integrated forms through inputs and actions. The static analysis of referencing actions and placeholders is unlike variable referencing, due to their scoping semantics. Actions and placeholders are defined in pages or templates and may be referred to in the rest of the page or function body. Unlike variables, actions and placeholders do not follow the declare-before-use principle (explained in \cref{subsec:simple-variables}). Actions and placeholders may be defined anywhere in the body, and referenced from anywhere in the body, but there is a twist. Inside the action body, the statements and expressions may reference variables defined in the template or page body, and thus the scope of the action must be linked to the scope of the template of page in some way.
     
     Summarized, actions and placeholders cannot be declared in the scope they are defined in, because that scope follows a declare-before-use regime, but the body of an action must have access to the scope it was declared in. As a solution to this challenge, the Statix rules for declaring a page or template were altered to not only create a scope for its body, but create an additional scope where placeholders and actions will be declared. This scope is passed along such that variables are queryable using the regular function body scope, and querying placeholders and actions is available using the additional scope. An example of an action and its representation in the scope graph is shown in \cref{fig:actions-example}.
 
@@ -1625,7 +1625,7 @@ template t {
       \caption{\label{fig:actions-example}An example of defining and referencing actions}
     \end{figure}
 
-    The updated Statix rules for typechecking a page or template definition, and defining actions in shown in \cref{fig:actions-placeholders-statix}. The Statix rules contain a separate predicate \texttt{templateActionOk} where the last boolean parameter indicates whether the action should be declared or not, and this is passed to \texttt{optionallyDeclareTemplate}. The declaration is optional because it is possible to create a form with a submit button that defines an action inline; an anonymous action in some sense. The anonymous inline action definition can now be type-checked by re-using the \texttt{templateActionOk} predicate.
+    The updated Statix rules for type checking a page or template definition, and defining actions in shown in \cref{fig:actions-placeholders-statix}. The Statix rules contain a separate predicate \texttt{templateActionOk} where the last boolean parameter indicates whether the action should be declared or not, and this is passed to \texttt{optionallyDeclareTemplate}. The declaration is optional because it is possible to create a form with a submit button that defines an action inline; an anonymous action in some sense. The anonymous inline action definition can now be type-checked by re-using the \texttt{templateActionOk} predicate.
 
     The Statix rules which implement the placeholders and actions code behave correctly because of Statix' constraint scheduling algorithm as first described by in the original Statix paper \autocite{VanAntwerpen2018} and further improved by Rouvoet et al. \autocite{RouvoetAPKV20}.
 
@@ -1775,7 +1775,7 @@ rules
 
   \section{\label{sec:module-system}Module system}
 
-    The paper that introduced WebDSL \autocite{Visser2007} contains the following description of the its module system: {``a very simple module system has been chosen that supports distributing functionality over files, without separate compilation''}. We describe the current WebDSL module system as having transitive and symmetric imports. The implementation of the module system in the current compiler maintains a list of modules of which an application consists. When a module is imported by the main application file or transitively imported, the module is added to the list and its definitions are visible to all other modules in the list. An example application with these semantics and its scope graph is visualized in \cref{fig:current-module-system}. The implementation of these semantics are listed in \cref{fig:current-module-system-statix}.
+    The paper that introduced WebDSL \autocite{Visser2007} contains the following description of its module system: {``a very simple module system has been chosen that supports distributing functionality over files, without separate compilation''}. We describe the current WebDSL module system as having transitive and symmetric imports. The implementation of the module system in the current compiler maintains a list of modules of which an application consists. When a module is imported by the main application file or transitively imported, the module is added to the list and its definitions are visible to all other modules in the list. An example application with these semantics and its scope graph is visualized in \cref{fig:current-module-system}. The implementation of these semantics are listed in \cref{fig:current-module-system-statix}.
 
     The modelling of this system causes an explosion in this amount of import edges between module scopes, as it is a fully connected graph for all modules that are (transitively) imported by the application root. The amount of import edges would scale quadratically with the number of imported modules:
 
@@ -1892,7 +1892,7 @@ rules
 
     This representation of the WebDSL module system in scope graphs is functional, however, we found this to be extremely taxing on the run time performance of an analysis. To gather information about the performance of the current module system semantics in the WebDSL Statix specification, we conducted an experiment where the same program was analyzed multiple times, but with the addition of extra empty modules. The result as shown in \cref{fig:statix-performance-current-modules} confirms our suspicion.
 
-    To run the experiment, we used a 2019 MacBook Pro running macOS Montery 12.2. The machine has a 2,3 GHz 8-core Intel Core i9 with 64 GB RAM available, of which 8 GB was dedicated to the evaluation scripts. The evaluation scripts\footnote{https://github.com/metaborg/statix-benchmark/} were configured to analyze the same application with different amounts of empty modules. Using the Java Microbenchmark Harness\footnote{https://github.com/openjdk/jmh}, we timed the run time of the Statix specification using 5 warmup iterations and 20 regular iterations.
+    To run the experiment, we used a 2019 MacBook Pro running macOS Montery 12.2. The machine has a 2,3 GHz 8-core Intel Core i9 with 64 GB RAM available, of which 8 GB was dedicated to the evaluation scripts. The evaluation scripts\footnote{https://github.com/metaborg/statix-benchmark/} were configured to analyze the same application with different amounts of empty modules. Using the Java Microbenchmark Harness\footnote{https://github.com/openjdk/jmh}, we timed the run time of the Statix specification using 5 warm-up iterations and 20 regular iterations.
 
     \begin{figure}
       \pgfplotstableread{
@@ -1929,7 +1929,7 @@ rules
     From the results shown in \cref{fig:statix-performance-current-modules}, we argue that the implementation of the current WebDSL module system in Statix, approach does not scale to real world applications. We attempted to run the Statix specification on two open-source WebDSL applications.
 
     \begin{itemize}
-      \item \textbf{Reposearch\footnote{\url{https://codefinder.org/}, Source code: \url{https://github.com/webdsl/reposearch/}}:} A source code search engine that helps to find implementation details and example usages. Reposearch consists of 16 main files, 19 library files and 1 standard library file, totalling at 8,722 lines of code spread over 36 files.
+      \item \textbf{Reposearch\footnote{\url{https://codefinder.org/}, Source code: \url{https://github.com/webdsl/reposearch/}}:} A source code search engine that helps to find implementation details and example usages. Reposearch consists of 16 main files, 19 library files and 1 standard library file, totaling at 8,722 lines of code spread over 36 files.
       \item \textbf{YellowGrass\footnote{\url{https://yellowgrass.org/}, Source code: \url{https://github.com/webdsl/yellowgrass/}}:} A tag based issue tracker similar to GitHub Issues, complete with access control and used daily by WebDSL developers. YellowGrass consists of 54 WebDSL files plus 20 WebDSL library files and 1 standard library file, coming to a total of 12,898 lines of code spread over 75 files.
     \end{itemize}
 
@@ -1939,9 +1939,9 @@ rules
 
       We designed a revised module system for WebDSL, in an attempt to improve the static analysis run time. In addition, the revised module system is designed to largely keep existing WebDSL applications as they are, such that no substantial effort is required to adhere to the revised module system. We considered three options for the revised module system.
       
-      \paragraph{Everything is Global} The first option boils down to getting rid of imports altogether and using one global scope. The upside of this approach is that existing WebDSL applications do not have to be changed at all, since the import statement will be deprecated and it does not change the behaviour of programs. The downside is that, since all declarations and resolving takes place in the global scope, it could negate the possible performance boosts provided by the concurrent \autocite{AntwerpenV21} or incremental \autocite{ZwaanAV22} Statix solver.
+      \paragraph{Everything is Global} The first option boils down to getting rid of imports altogether and using one global scope. The upside of this approach is that existing WebDSL applications do not have to be changed at all, since the import statement will be deprecated and it does not change the behavior of programs. The downside is that, since all declarations and resolving takes place in the global scope, it could negate the possible performance boosts provided by the concurrent \autocite{AntwerpenV21} or incremental \autocite{ZwaanAV22} Statix solver.
 
-      \paragraph{Strict Modules} The second option is to get rid of transitive and symmetric imports, making the WebDSL module system similar to that of simple toy languages such as LMR: Language with Modules and Records \autocite{Neron2015}. Existing WebDSL applications have to be extended with more import statements to correctly resolve all the references that are now transitively or symmetrically imported. This module system allows for more transparent behaviour; a reference to a definition from another module requires the importing of that module.
+      \paragraph{Strict Modules} The second option is to get rid of transitive and symmetric imports, making the WebDSL module system similar to that of simple toy languages such as LMR: Language with Modules and Records \autocite{Neron2015}. Existing WebDSL applications have to be extended with more import statements to correctly resolve all the references that are now transitively or symmetrically imported. This module system allows for more transparent behavior; a reference to a definition from another module requires the importing of that module.
 
       \paragraph{Strict Modules With Wildcard Imports} The third and last option we consider is similar to the strict module system from previous paragraph, but allowing wildcard imports for the convenience of the developer. Assuming that existing WebDSL applications are structured correctly in terms of nesting of modules, using concepts defined in other modules can be imported in one statement. The downside of using wildcard imports is a potential increase in import edges of which some are unused.
 
@@ -1988,7 +1988,7 @@ rules
         \caption{\label{fig:statix-performance-other-modules}Run time of WebDSL Statix definition with revised module systems.}
       \end{figure}
 
-      \Cref{fig:statix-performance-other-modules} shows the run time of the WebDSL Statix analysis with the different module systems described at the start of this subsection. The figure shows that all of the revised module systems greatly speed up the analysis time. The run time of the strict and wildcard system are similar, while the system where everything is part of the global scope takes slightly longer. We suspect that this is due to negated effects of the concurrent Statix solver that we used for the analysis.
+      \Cref{fig:statix-performance-other-modules} shows the run time of the WebDSL Statix analysis with the different module systems described at the start of this subsection. The figure shows that all the revised module systems greatly speed up the analysis time. The run time of the strict and wildcard system are similar, while the system where everything is part of the global scope takes slightly longer. We suspect that this is due to negated effects of the concurrent Statix solver that we used for the analysis.
 
       \begin{table}[h]
         \centering
@@ -2010,7 +2010,7 @@ rules
 
       \cref{tbl:statix-performance-other-modules-rs-yg} lists the run time of the different module systems on Reposearch and YellowGrass. Similar to the test with the empty modules, there is a great performance boost from using any of the revised module systems. Surprisingly, the strict and wildcard module system take more time than global module system for YellowGrass. This is in contrast with \cref{fig:statix-performance-other-modules}, so we suspect that having populated modules instead of empty modules impacts the performance of the strict- and wildcard imports by having longer (and therefore more costly) query paths and shadowing rules in a module system with imports.
 
-      Although all revised module systems would massively boost the performance of the WebDSL Statix specification, the run time of analyzing a real world application is still unfit for use in practice. To this end, we need to speed up the analysis time even more. For other performance boosts, as we explain in the next section, a scope graph representation with split modules was required. Since the wildcard import system is more convenient for WebDSL developers, the WebDSL Statix specification is developped with the revised module system that uses wildcard imports.
+      Although all revised module systems would massively boost the performance of the WebDSL Statix specification, the run time of analyzing a real world application is still unfit for use in practice. To this end, we need to speed up the analysis time even more. For other performance boosts, as we explain in the next section, a scope graph representation with split modules was required. Since the wildcard import system is more convenient for WebDSL developers, the WebDSL Statix specification is developed with the revised module system that uses wildcard imports.
 
   \section{\label{sec:built-in-library}Pre-analyzed built-in library}
 
@@ -2127,9 +2127,9 @@ application a
       \caption{\label{fig:webdsl-generated-definitions-and-expansion}An example of generated definitions and static code template expansion in WebDSL}
     \end{figure}
 
-    Even though it is not possible to encode this in pure statix, there is a workaround for the generated definitions. Because all information is present in the abstract syntax tree, the generation of the defintions can be seen as a desugaring of the syntax. Following this workaround, we extended the desugaring step of the WebDSL syntax with rules that generate the definitions. The result of the desugaring step is that the names of the generated functions are present in the analysis, and Statix is able to declare the functions.
+    Even though it is not possible to encode this in pure Statix, there is a workaround for the generated definitions. Because all information is present in the abstract syntax tree, the generation of the definitions can be seen as a desugaring of the syntax. Following this workaround, we extended the desugaring step of the WebDSL syntax with rules that generate the definitions. The result of the desugaring step is that the names of the generated functions are present in the analysis, and Statix is able to declare the functions.
 
-    The static code template expansion however, does not have such a workaround, because name-binding rules are required. \Cref{fig:webdsl-generated-definitions-and-expansion} shows the \texttt{expandtemplate ... to alert} definition to be declared in one definition, and then \texttt{alert} being referenced in the next definition. This name-binding logic is able to be encoded in Stratego, but it defeats the purpose of using the Statix definition as static analysis.
+    The static code template expansion however, does not have such a workaround, because name-binding rules are required. \Cref{fig:webdsl-generated-definitions-and-expansion} shows the \texttt{expandtemplate ... to alert} definition to be declared in one definition, and then \texttt{alert} being referenced in the next definition. This name-binding logic can be encoded in Stratego, but it defeats the purpose of using the Statix definition as static analysis.
 
     In addition to allowing new language concepts to be implemented, supporting string manipulation would also allow better error messages in Statix specifications. For example, the Statix specification could then pretty-print types, function signatures and template signatures to point developers to the error in their code with more accuracy.
 

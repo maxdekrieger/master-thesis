@@ -2,11 +2,11 @@
 
 \chapter{\label{chap:sdf3}WebDSL in SDF3}
 
-  In computer science, parsing is the process of analyzing a piece of text according to a grammar, and converting the textual representation to a more structured represation that is convenient for other processes such as a compiler or interpreter.
+  In computer science, parsing is the process of analyzing a piece of text according to a grammar, and converting the textual representation to a more structured representation that is convenient for other processes such as a compiler or interpreter.
 
   In this chapter we discuss the definition of the WebDSL grammar in SDF3, a meta-DSL in Spoofax for syntax definition. Currently, the WebDSL grammar is defined in SDF2, the predecessor of SDF3. The goal of defining the WebDSL grammar in SDF3 instead of SDF2 is to serve as a large case study for SDF3, while allowing the WebDSL parser to benefit from the regular updates of SDF3, compared to the deprecated SDF2.
 
-  We start by giving a brief introduction to parsing in general and introducing the SDF3 language. Then, we discuss the migration of the WebDSL syntax from SDF2 to SDF3 and we end this chapter by elaborating on the disambiguation of the WebDSL SDF3 grammar without the use of post-parse filters.
+  We start by giving a brief introduction to parsing in general and introducing the SDF3 language. Then, we discuss the migration of the WebDSL syntax from SDF2 to SDF3, and we end this chapter by elaborating on the disambiguation of the WebDSL SDF3 grammar without the use of post-parse filters.
 
   \section{\label{sec:parsing}Introduction to LR Parsing}
 
@@ -88,7 +88,7 @@
 
       SDF3 is the successor of SDF2, in which the WebDSL syntax is currently defined. Souza Amorim and Visser \citeyear{AmorimV20} argue that the SDF3 syntax is more similar to other grammar formalisms such as EBNF.
 
-      A syntax definition in SDF3 is a declarative specification of syntactic sorts and their productions. \Cref{fig:sdf3-sorts-and-productions-syntax} shows an example grammar features a language that supports multiplication and addition of integers. The SDF3 definition must define a start-symbol that specifies what a syntactically valid program looks like. In our example, every program that can be derived from the \texttt{Start} sort, is a valid program. \textbf{Line 11} contains the first production of the specification. It startes that the sort \texttt{Start} can be derived by deriving something of the sort \texttt{Expr}. The identifier behind the dot in the production (\texttt{Expr} in this case) declares the constructor in the AST. \Cref{fig:example-AST-1} shows the AST of an example input, according to the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax}. \textbf{Line 12-14} defines the productions of the expression sort. It defines that an expression is either two expressions with a plus or asterix in between, or it is something of the sort \texttt{Lit}. The production of literal sort on \textbf{line 16} references the lexical sort \texttt{INT}. Lexical sorts do not appear in the AST with constructors, but instead are parsed into a string. The lexical sort \texttt{INT} is defined on \textbf{line 22} with the regular expression \texttt{[0-9]+}, describing one or more characters in the range of 0 to 9. Finally, the production describing the built-in concept of \texttt{LAYOUT} on \textbf{line 23} states that a space, tab, carriage return and line feed character are layout (whitespace) characters and do not have to be parsed.
+      A syntax definition in SDF3 is a declarative specification of syntactic sorts and their productions. \Cref{fig:sdf3-sorts-and-productions-syntax} shows an example grammar features a language that supports multiplication and addition of integers. The SDF3 definition must define a start-symbol that specifies what a syntactically valid program looks like. In our example, every program that can be derived from the \texttt{Start} sort, is a valid program. \textbf{Line 11} contains the first production of the specification. It states that the sort \texttt{Start} can be derived by deriving something of the sort \texttt{Expr}. The identifier behind the dot in the production (\texttt{Expr} in this case) declares the constructor in the AST. \Cref{fig:example-AST-1} shows the AST of an example input, according to the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax}. \textbf{Line 12-14} defines the productions of the expression sort. It defines that an expression is either two expressions with a plus or asterisk in between, or it is something of the sort \texttt{Lit}. The production of literal sort on \textbf{line 16} references the lexical sort \texttt{INT}. Lexical sorts do not appear in the AST with constructors, but instead are parsed into a string. The lexical sort \texttt{INT} is defined on \textbf{line 22} with the regular expression \texttt{[0-9]+}, describing one or more characters in the range of 0 to 9. Finally, the production describing the built-in concept of \texttt{LAYOUT} on \textbf{line 23} states that a space, tab, carriage return and line feed character are layout (whitespace) characters and do not have to be parsed.
 
       \Cref{fig:example-AST-1} shows the abstract syntax tree of an example input for the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax}. In the Spoofax Language Workbench, abstract syntax trees are described in the Annotated Terms Format (ATerm) \autocite{BrandJKO00}.
 
@@ -155,7 +155,7 @@ Expr(
         \caption{\label{fig:example-AST-1}The AST and ATerm representation of the expression \texttt{0 + 1} according to the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax}}
       \end{figure}
 
-      In addition to the basics as explained in the previous paragraph, SDF3 supports features such as injections, optional sorts and repetition to enhance the language engineers productivity. \cref{fig:sdf3-syntax-injection-repetition-optional} shows the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax}, but now enhanced with injections, repitition and optional sorts. \Cref{fig:example-aterm-injections-etc} shows the ATerm of the input \texttt{0 + 0; 1 * -1}. The repetition on \textbf{line x} of \cref{fig:sdf3-syntax-injection-repetition-optional} allows multiple expressions in a list, delimited by a semicolon. The injection on \textbf{line 14} allows a literal to be derived in the place of an expression, effectively omitting the \texttt{Lit(...)} constructor in the AST. Lastly, the optional minus sign of \textbf{line 16 and 18} allows negative integers to be parsed by this language. The AST contains \texttt{Some(...)} and \texttt{None()} constructors for the optional sorts.
+      In addition to the basics as explained in the previous paragraph, SDF3 supports features such as injections, optional sorts and repetition to enhance the language engineers productivity. \cref{fig:sdf3-syntax-injection-repetition-optional} shows the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax}, but now enhanced with injections, repetition and optional sorts. \Cref{fig:example-aterm-injections-etc} shows the ATerm of the input \texttt{0 + 0; 1 * -1}. The repetition on \textbf{line x} of \cref{fig:sdf3-syntax-injection-repetition-optional} allows multiple expressions in a list, delimited by a semicolon. The injection on \textbf{line 14} allows a literal to be derived in the place of an expression, effectively omitting the \texttt{Lit(...)} constructor in the AST. Lastly, the optional minus sign of \textbf{line 16 and 18} allows negative integers to be parsed by this language. The AST contains \texttt{Some(...)} and \texttt{None()} constructors for the optional sorts.
         
       \begin{figure}
         \begin{minted}[firstline=1]{\sdfthree}
@@ -206,13 +206,13 @@ Expr(
 
       \subsubsection{\label{subsubsec:sdf3-disambiguation}Disambiguation}
 
-        The simple grammar described by the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax} is functional, but is ambiguous. For example, the input \texttt{1 + 2 + 3} can be parsed as \texttt{(1 + 2) + 3} or as \texttt{1 + (2 + 3)}. The process of altering and annotating the grammar such that this there is only one way of parsing this, is called disambiguation. The example listed in the previous section (\cref{fig:example-cfg-with-parse-table}) contains a grammar with expressions, terms and factors that is inherently unambiguous. However, disambiguating a grammar by introducing new sorts and productions is tedious and time consuming. SDF3 provides multiple options for disambiguating a grammar.
+        The simple grammar described by the SDF3 specification of \cref{fig:sdf3-sorts-and-productions-syntax} is functional, but is ambiguous. For example, the input \texttt{1 + 2 + 3} can be parsed as \texttt{(1 + 2) + 3} or as \texttt{1 + (2 + 3)}. The process of altering and annotating the grammar such that this there is only one way of parsing this, is called disambiguation. The example listed in the previous section (\cref{fig:example-cfg-with-parse-table}) contains a grammar with expressions, terms and factors that is inherently unambiguous. However, disambiguating a grammar by introducing new sorts and productions is tedious and time-consuming. SDF3 provides multiple options for disambiguating a grammar.
 
-        First of all, SDF3 provides the \texttt{\{bracket\}} annotation, allowing the developer to disambiguate the program himself. To clarify, the input \texttt{1 + (2 + 3)} is not valid according to our grammar, because the "(" and ")" symbols are not part of the grammar. If we add the production \texttt{Expr = "(" Expr ")" \{bracket\}}, SDF3 allows brackets around arbitrary expressions without it introducing new AST nodes.
+        First, SDF3 provides the \texttt{\{bracket\}} annotation, allowing the developer to disambiguate the program himself. To clarify, the input \texttt{1 + (2 + 3)} is not valid according to our grammar, because the "(" and ")" symbols are not part of the grammar. If we add the production \texttt{Expr = "(" Expr ")" \{bracket\}}, SDF3 allows brackets around arbitrary expressions without it introducing new AST nodes.
 
         Reject rules allow language engineers to filter derivations. A reject rule is simple a regular production, followed by the \texttt{\{reject\}} annotation. For example, appending our grammar with the rule \texttt{Expr = <<Expr> + <Expr>> \{reject\}} makes the set of valid derivations of \texttt{Expr} smaller, namely by disallowing any construction described by the right-hand side of the reject rule.
 
-        Another possibility for disambiguating SDF3 grammars is by indicating the associatibity, either as annotation or using priority groups. If we add the annotation \texttt{\{left\}} to the production that specifies addition, \texttt{1 + 2 + 3} is no longer ambiguous but instead will always be parsed as \texttt{(1 + 2) + 3}. It is also possible to declare the associativity in groups. \Cref{fig:sdf3-syntax-disambiguation} contains such groups. \textbf{Line 8} shows that both addition and subtraction are left associative, and in the same group. The input \texttt{1 + 2 - 3 + 4} will now be parsed as \texttt{((1 + 2) - 3) + 4}, whereas declaring the associativity annotation on both rules instead of the group would still make this input ambiguous.
+        Another possibility for disambiguating SDF3 grammars is by indicating the associativity, either as annotation or using priority groups. If we add the annotation \texttt{\{left\}} to the production that specifies addition, \texttt{1 + 2 + 3} is no longer ambiguous but instead will always be parsed as \texttt{(1 + 2) + 3}. It is also possible to declare the associativity in groups. \Cref{fig:sdf3-syntax-disambiguation} contains such groups. \textbf{Line 8} shows that both addition and subtraction are left associative, and in the same group. The input \texttt{1 + 2 - 3 + 4} will now be parsed as \texttt{((1 + 2) - 3) + 4}, whereas declaring the associativity annotation on both rules instead of the group would still make this input ambiguous.
 
         \begin{figure}
           \begin{minted}[firstline=2]{\sdfthree}
@@ -251,7 +251,7 @@ context-free syntax
       \caption{\label{fig:sdf2-example}An example of productions in SDF2. This example specifies the syntax of variable declaration in WebDSL.}
     \end{figure}
 
-    The WebDSL language SDF2 specification consists of 26 files that each describe a different part of the WebDSL syntax, ranging from the data model with entities to user interfaces with HTML and JavaScript. Additionally, the WebDSL syntax incorporates stand-alone grammars of other languages, such as HQL, Java and Stratego using mix syntax. Out of these mixed syntaxes, only the WebDSL and HQL syntax are able to be written by developers. The Java and Stratego syntax are used in other components of the WebDSL compiler, such as writing concrete WebDSL and Java syntax during desugaring, optimization and code generation.
+    The WebDSL language SDF2 specification consists of 26 files that each describe a different part of the WebDSL syntax, ranging from the data model with entities to user interfaces with HTML and JavaScript. Additionally, the WebDSL syntax incorporates stand-alone grammars of other languages, such as HQL, Java and Stratego using mix syntax. Out of these mixed syntaxes, only the WebDSL and HQL syntax can be written by developers. The Java and Stratego syntax are used in other components of the WebDSL compiler, such as writing concrete WebDSL and Java syntax during desugaring, optimization and code generation.
 
     \subsection{Desugaring WebDSL Syntax}
 
@@ -293,9 +293,9 @@ strategies
 
   \section{\label{sec:sdf2-to-sdf3}Migration from SDF2 to SDF3}
 
-    SDF2 is still supported by the Spoofax langauge workbench, but no longer actively developed. SDF3 is the most recent member of the Syntax Definitions Formalisms. In a sense, SDF3 is a high-level version of SDF2 with additional features. In the initial versions of SDF3, it compiled down to SDF2.
+    SDF2 is still supported by the Spoofax language workbench, but no longer actively developed. SDF3 is the most recent member of the Syntax Definitions Formalisms. In a sense, SDF3 is a high-level version of SDF2 with additional features. In the initial versions of SDF3, it compiled down to SDF2.
 
-    Spoofax contains tool to migrate SDF2 specifications to SDF3 specifications but not all constructs of the lower level SDF2 are expressible in SDF3. The WebDSL SDF2 specification requires manual adjustment before this transformation tool can be utilized. Additionally, the generated SDF3 definition is sub-optimal, as not all features of SDF3 are utilized in the generated code.
+    Spoofax contains tool to migrate SDF2 specifications to SDF3 specifications but not all constructs of the lower level SDF2 are expressible in SDF3. The WebDSL SDF2 specification requires manual adjustment before this transformation tool can be utilized. Additionally, the generated SDF3 definition is suboptimal, as not all features of SDF3 are utilized in the generated code.
 
     \subsection{\label{subsec:preparing-webdsl-sdf2}Preparing the WebDSL SDF2 definition for migration}
 
@@ -322,7 +322,7 @@ exports
 
     \subsection{\label{subsec:manual-tweaking-sdf3}Manual Adjustment of Generated WebDSL SDF3}
 
-      The generated SDF3 specification of WebDSL according to the manually adjusted SDF2 is sub-optimal SDF3 code. SDF2 can be seen as a more low-level version of SDF3 and not all constructs of SDF2 transform into the most elegant SDF3 code. Parts of the generated SDF3 code do not even adhere to the static semantics of SDF3. For this reason, the generated SDF3 code has to be manually adjusted.
+      The generated SDF3 specification of WebDSL according to the manually adjusted SDF2 is suboptimal SDF3 code. SDF2 can be seen as a more low-level version of SDF3 and not all constructs of SDF2 transform into the most elegant SDF3 code. Parts of the generated SDF3 code do not even adhere to the static semantics of SDF3. For this reason, the generated SDF3 code has to be manually adjusted.
 
       \paragraph{Missing and duplicate constructors} In SDF2, constructors are defined as an annotation on a production. An example of the different production syntax of SDF2 and SDF3 is shown in \cref{fig:sdf2-sections}. The constructor annotation is not required in SDF2, but in SDF3 it is necessary to provide a constructor for every production. In the WebDSL SDF2 definition, some constructors are missing and there were are duplicate constructors that denoted alternative syntax for the same construct, essentially providing syntactic sugar. The SDF2 definition and generated SDF3 definition for the \texttt{ascending} and \texttt{descending} ordering is shown in \cref{fig:sdf2-sdf3-asc-desc}.
 
@@ -355,9 +355,9 @@ module WebDSL-UI
         \caption{\label{fig:sdf2-sdf3-asc-desc}SDF2 and generated SDF3 for the \texttt{ascending} and \texttt{descending} keyword in WebDSL. Duplicate constructors within the same sort are not allowed in SDF3.}
       \end{figure}
       
-      In the newly generated SDF3, duplicate constructors must to be changed, in order for them to be unique. Additionally, missing constructors must be added for the pretty-printer to function correctly. Injections do typically not require a constructor, but preferably constructors should be added there as well to reduce the length of the abstract syntax tree in Statix, as we will explain in \cref{sec:preparation-for-statix}.
+      In the newly generated SDF3, duplicate constructors must be changed, in order for them to be unique. Additionally, missing constructors must be added for the pretty-printer to function correctly. Injections do typically not require a constructor, but preferably constructors should be added there as well to reduce the length of the abstract syntax tree in Statix, as we will explain in \cref{sec:preparation-for-statix}.
 
-      \paragraph{Priority chains} Priority chains are used to disambiguate grammars in SDF specifications. A typical example and an explanation is given in \cref{fig:sdf3-syntax-disambiguation}. Both SDF2 and SDF3 use the concept of priority chains, but the SDF2 variant requires a repitition of the production inside the chain, whereas SDF3 uses a reference to the production. This causes the SDF2 priority chains to not be migrated to the SDF3 priority chains and requires them to be manually rebuilt. An example of the difference between priority chains in SDF2 and SDF3 is shown in \cref{fig:sdf2-sdf3-asc-priority-chains}.
+      \paragraph{Priority chains} Priority chains are used to disambiguate grammars in SDF specifications. A typical example and an explanation is given in \cref{fig:sdf3-syntax-disambiguation}. Both SDF2 and SDF3 use the concept of priority chains, but the SDF2 variant requires a repetition of the production inside the chain, whereas SDF3 uses a reference to the production. This causes the SDF2 priority chains to not be migrated to the SDF3 priority chains and requires them to be manually rebuilt. An example of the difference between priority chains in SDF2 and SDF3 is shown in \cref{fig:sdf2-sdf3-asc-priority-chains}.
 
       \begin{figure}
         \begin{subfigure}[b]{0.5\textwidth}
@@ -389,7 +389,7 @@ context-free priorities
 
       \paragraph{Transferring comments} Comments are highly recommended and important for the readability and maintainability of large software projects. However, most grammars specified in SDF2 and SDF3 declare comments as part of the layout of a program and are not represented in the abstract syntax tree. For this reason, the transformation tool does not transfer comments from SDF2 grammars to the generated SDF3. Comments must be manually copied from the SDF3 and pasted in the correct parts of the SDF3 specification.
 
-      \paragraph{Template productions} A major change in SDF3 compared to SDF2 are template productions, that allow for nice pretty printing and syntactic code completion. The productions in the generated SDF3 files are all template productions, but do not have the proper surrounding layout and indentation because there is no way to extract this information from the SDF2 source, as it it not present there. Adding the correct layout in template productions is tedious work but causes the pretty-printer to function properly. An example of SDF2, generated SDF3 and manually adjusted SDF3 is shown in \cref{fig:sdf2-sdf3-template-production}.
+      \paragraph{Template productions} A major change in SDF3 compared to SDF2 are template productions, that allow for nice pretty printing and syntactic code completion. The productions in the generated SDF3 files are all template productions, but do not have the proper surrounding layout and indentation because there is no way to extract this information from the SDF2 source, as it is not present there. Adding the correct layout in template productions is tedious work but causes the pretty-printer to function properly. An example of SDF2, generated SDF3 and manually adjusted SDF3 is shown in \cref{fig:sdf2-sdf3-template-production}.
 
       \begin{figure}
         \begin{subfigure}[b]{1\textwidth}
@@ -424,7 +424,7 @@ module WebDSL-UI
         \caption{\label{fig:sdf2-sdf3-template-production}An example of an SDF2 production, the generated SDF3 and the manually adjusted SDF3 for template productions.}
       \end{figure}
 
-      \paragraph{Deeply Embedding HQL Grammar in WebDSL} The HQL syntax definition in SDF2 is a standalone definition, and is used in the WebDSL SDF2 using parameterized imports. SDF3 has no support for this feature, which means the syntax definition has to be transformed to be a part of the WebDSL grammar. Otherwise, WebDSL applications that use HQL syntax, which are all real world applications, would no longer parse correctly. Deeply embedding the HQL syntax in the WebDSL syntax causes sorts and constructors to overlap, and this must be adjusted manually.
+      \paragraph{Deeply Embedding HQL Grammar in WebDSL} The HQL syntax definition in SDF2 is a stand-alone definition, and is used in the WebDSL SDF2 using parameterized imports. SDF3 has no support for this feature, which means the syntax definition has to be transformed to be a part of the WebDSL grammar. Otherwise, WebDSL applications that use HQL syntax, which are all real world applications, would no longer parse correctly. Deeply embedding the HQL syntax in the WebDSL syntax causes sorts and constructors to overlap, and this must be adjusted manually.
 
   \section{\label{sec:preparation-for-statix}Preparation for Statix}
 
@@ -434,7 +434,7 @@ module WebDSL-UI
 
       To understand the role of the Statix signature generator, we will explain how sorts and constructors are used in Statix to define the static semantics of a language.
 
-      Unlike SDF3 and Stratego, Statix is strongly typed which requires all sorts and constructors to be declared before they can be used in the the static semantics of a language. \Cref{fig:statix-expression-language} shows an example of declaration of the sorts and constructors of a simple expression language. These constructors and terms can be used in rules that form the static semantics.
+      Unlike SDF3 and Stratego, Statix is strongly typed which requires all sorts and constructors to be declared before they can be used in the static semantics of a language. \Cref{fig:statix-expression-language} shows an example of declaration of the sorts and constructors of a simple expression language. These constructors and terms can be used in rules that form the static semantics.
 
       \begin{wrapfigure}{r}{0.58\linewidth}
         % \vspace{-15pt}
@@ -518,7 +518,7 @@ signature
         \caption{\label{fig:sdf3-statix-explication}An example of how SDF3 injections are handled by the Statix signature generator.}
       \end{figure}
 
-      \paragraph{\label{par:optional-sorts}Optional Sorts} As mentioned in \cref{fig:sdf3-syntax-injection-repetition-optional} as part of \cref{subsec:sdf3}, SDF3 has built-in support for optional sorts, resulting in \texttt{Some(\_)} and \texttt{None()} terms. These terms cannot be  translated to Statix signatures, since it is not possible to overload the constructor for many different sorts. To work around this limitation, the SDF3 definition must be altered make the \texttt{Some} and \texttt{None} constructors unique per sort. This leads to a much more verbose syntax definition. \Cref{fig:sdf3-remove-optionals} shows how the optional constructs can be altered to be unique per sort.
+      \paragraph{\label{par:optional-sorts}Optional Sorts} As mentioned in \cref{fig:sdf3-syntax-injection-repetition-optional} as part of \cref{subsec:sdf3}, SDF3 has built-in support for optional sorts, resulting in \texttt{Some(\_)} and \texttt{None()} terms. These terms cannot be  translated to Statix signatures, since it is not possible to overload the constructor for many sorts. To work around this limitation, the SDF3 definition must be altered make the \texttt{Some} and \texttt{None} constructors unique per sort. This leads to a much more verbose syntax definition. \Cref{fig:sdf3-remove-optionals} shows how the optional constructs can be altered to be unique per sort.
 
       \begin{figure}
         \begin{subfigure}[b]{1\textwidth}
@@ -569,7 +569,7 @@ module WebDSL-UI
 
       WebDSL template calls do not require parentheses or semicolons. This allows for clean code in templates, but makes the syntax ambiguous in the case of keywords that are able to parse as a template name.
       
-      \Cref{fig:sdf3-keywords-ambiguous} shows an example of a WebDSL program where a template starts with a variable initialisation with an HQL query that fetches all names of users from the database. In HQL, the from-clause is optional, meaning that a statement such as \texttt{select user.name} syntactically correct as an HQL expression. For this reason, the words after the select clause can also be parsed as template calls.
+      \Cref{fig:sdf3-keywords-ambiguous} shows an example of a WebDSL program where a template starts with a variable initialization with an HQL query that fetches all names of users from the database. In HQL, the from-clause is optional, meaning that a statement such as \texttt{select user.name} syntactically correct as an HQL expression. For this reason, the words after the select clause can also be parsed as template calls.
 
       \begin{figure}
         \begin{minted}[firstline=2]{\webdsl}
@@ -613,7 +613,7 @@ module x
       
       \texttt{Statement.ForCountStmt = <for ( <VarId> : Int from <Exp> to <Exp> ) <Block>>}
 
-      Another option is to add all the reject rules for keywords individually. This is tedious work, but allows for better precision. In the new WebDSL SDF3, all keywords are rejected indivudually.
+      Another option is to add all the reject rules for keywords individually. This is tedious work, but allows for better precision. In the new WebDSL SDF3, all keywords are rejected individually.
 
     \subsection{Disambiguating Strings}
 
@@ -642,7 +642,7 @@ exports
         \caption{\label{fig:sdf2-webdsl-string}SDF2 definitions of a WebDSL string.}
       \end{figure}
 
-      To prevent a simple string from being parsed as a \texttt{StringInterp} with only one part, the SDF2 definition used a post-parse filter to avoid this construct in case of amgiguities.
+      To prevent a simple string from being parsed as a \texttt{StringInterp} with only one part, the SDF2 definition used a post-parse filter to avoid this construct in case of ambiguities.
       
       \Cref{fig:sdf3-webdsl-string} shows the SDF3 definition of a WebDSL string. The "simple" string constructor was dropped, to ensure no ambiguity would arise. A simple string is now a string consisting of only one part.
 
@@ -701,7 +701,7 @@ module x
         \caption{\label{fig:sdf3-non-transitive-priorities}Using non-transitive indexed priorities to disambiguate WebDSL syntax in SDF3.}
       \end{figure}
 
-      Another instance of an ambiguity that is corrected with indexed non-transitive priority rules is optional type aliasses versus a cast expression. WebDSL knows a switch-case statement on the type of an expression. \Cref{fig:sdf3-webdsl-typecase} shows an example of how it is used in WebDSL code. The typecase takes an expression as subterm, and an optional type alias. The type alias automatically is the expression cast to whatever case is relevant. However, the expression given to the typecase can also be a cast expression, making \texttt{typecase(e as t)} ambiguous.
+      Another instance of an ambiguity that is corrected with indexed non-transitive priority rules is optional type aliases versus a cast expression. WebDSL allows a switch-case statement on the type of an expression. \Cref{fig:sdf3-webdsl-typecase} shows an example of how it is used in WebDSL code. The typecase takes an expression as subterm, and an optional type alias. The type alias automatically is the expression cast to whatever case is relevant. However, the expression given to the typecase can also be a cast expression, making \texttt{typecase(e as t)} ambiguous.
 
       \begin{figure}
         \begin{minted}[firstline=2]{\webdsl}
@@ -729,7 +729,7 @@ module x
         \caption{\label{fig:sdf3-webdsl-typecase}Ambiguous WebDSL code using an optional typecase alias or a cast expression.}
       \end{figure}
 
-      \Cref{fig:sdf3-typecase-disambiguation} shows how the optional type alias versus a cast expression is ambiguated in the modernized WebDSL SDF3 definition. The index of the \texttt{<Exp>} subterm is 2 and not 0 because the index counts literals as well, \texttt{typecase} and \texttt{(} in this case.
+      \Cref{fig:sdf3-typecase-disambiguation} shows how the optional type alias versus a cast expression is disambiguated in the modernized WebDSL SDF3 definition. The index of the \texttt{<Exp>} subterm is 2 and not 0 because the index counts literals as well, \texttt{typecase} and \texttt{(} in this case.
 
       \begin{figure}
         \begin{minted}[firstline=2]{\sdfthree}

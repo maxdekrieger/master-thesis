@@ -12,7 +12,7 @@
 
   In WebDSL, all aspects of web programming are defined in the same language which creates an opportunity for strong static consistency checking \autocite{Hemel2011}. The data model is defined using entities, which are automatically translated to a database representation. These entities can be passed as arguments of pages without the need to explicitly fetch data from the database. Large amounts of boilerplate code are abstracted over by WebDSL, by providing built-in but customizable functionality for access control, relations between entities and data validation. This combination of features allows WebDSL developers to efficiently create functioning prototypes while providing the functionality to make it scale and customizable.
 
-  The rest of this chapter showcases the different aspects of WebDSL and zooms in on its non-trivial features. First, in \cref{sec:ui} we will describe how WebDSL offers functionality for creating web user interfaces. Next, in \cref{sec:data-model} we illustrate how the langauge manages data models. Thirdly, \cref{sec:access-control} contains information about WebDSL's solution for access control and in \cref{sec:functions} we highlight interesting aspects of its general-purpose object oriented function code. We conclude this chapter by elaborating on the current implementation of the WebDSL static ana;ysis in \cref{sec:current-implementation}.
+  The rest of this chapter showcases the different aspects of WebDSL and zooms in on its non-trivial features. First, in \cref{sec:ui} we will describe how WebDSL offers functionality for creating web user interfaces. Next, in \cref{sec:data-model} we illustrate how the language manages data models. Thirdly, \cref{sec:access-control} contains information about WebDSL's solution for access control and in \cref{sec:functions} we highlight interesting aspects of its general-purpose object-oriented function code. We conclude this chapter by elaborating on the current implementation of the WebDSL static analysis in \cref{sec:current-implementation}.
 
   \section{\label{sec:ui}User Interfaces}
 
@@ -85,7 +85,7 @@ application app
 
     \subsection{\label{subsec:request-processing}Request Processing and Action Code}
 
-      HTML has a notion of forms and inputs that can be submitted to a webserver, after which the webserver returns a result. WebDSL code compiles to HTML forms and takes away the responsibility of manually linking the input data to variables. \Cref{fig:webdsl-forms} shows an example of the cookbook application where the user is able to enter a name in an input field and browse to that recipe.
+      HTML has a notion of forms and inputs that can be submitted to a web server, after which the web server returns a result. WebDSL code compiles to HTML forms and takes away the responsibility of manually linking the input data to variables. \Cref{fig:webdsl-forms} shows an example of the cookbook application where the user is able to enter a name in an input field and browse to that recipe.
 
       \begin{figure}
         \begin{subfigure}[t]{0.45\textwidth}
@@ -138,7 +138,7 @@ application app
       \caption{\label{fig:webdsl-forms}An example of a WebDSL application that uses a form for navigation.}
       \end{figure}
 
-      \Cref{fig:webdsl-forms} no longer contains a fixed list with links to all possible recipes as in \cref{fig:webdsl-pages-and-templates} but now uses a form with an input and submits an action when the user presses a button. The root page contains a variable declaration as the first line, which defaults to an empty string. In the form later on the page, this variable is passed to an input element. After the input, the form has a button that send a request to the webserver to execute the action \texttt{toRecipe} when it is pressed. When this request is sent to the server, the data entered in the input field is linked to variable \texttt{s} by WebDSL, and the action code is able to use this in its body. The return value of an action is the page that should be shown as response. In the example of \cref{fig:webdsl-forms}, the result of executing the action is to show the \texttt{recipe} page with the input that the user has entered in the form.
+      \Cref{fig:webdsl-forms} no longer contains a fixed list with links to all possible recipes as in \cref{fig:webdsl-pages-and-templates} but now uses a form with an input and submits an action when the user presses a button. The root page contains a variable declaration as the first line, which defaults to an empty string. In the form later on the page, this variable is passed to an input element. After the input, the form has a button that send a request to the web server to execute the action \texttt{toRecipe} when it is pressed. When this request is sent to the server, the data entered in the input field is linked to variable \texttt{s} by WebDSL, and the action code is able to use this in its body. The return value of an action is the page that should be shown as response. In the example of \cref{fig:webdsl-forms}, the result of executing the action is to show the \texttt{recipe} page with the input that the user has entered in the form.
 
       WebDSL also sanitizes the input that the user submits using the form. If the user was to submit the form with input \texttt{another/path/}, this input would be sanitized and rendered correctly on the recipe page, instead of navigation to an unknown path.
 
@@ -250,13 +250,13 @@ application app
 
       WebDSL automatically takes care of the necessary structure to enable this functionality, such as identifiers of DOM elements, JavaScript code to query the server and JavaScript code to replace the correct elements.
 
-      As opposed to regular templates, ajax-enabled template are able to be requested on the server using a specific endpoint. The exact details of how this endpoint looks is only relevant for generated code of the WebDSL compiler, but WebDSL developers should pay attention to the fact that ajax-enabled content must be projected with proper access control rules (see \cref{sec:access-control}) to prevent exposing sensitive content.
+      As opposed to regular templates, ajax-enabled template can be requested on the server using a specific endpoint. The exact details of how this endpoint looks is only relevant for generated code of the WebDSL compiler, but WebDSL developers should pay attention to the fact that ajax-enabled content must be projected with proper access control rules (see \cref{sec:access-control}) to prevent exposing sensitive content.
 
     \subsection{\label{subsec:redefines}Dynamically Scoped Redefines}
 
-      As last part of the user interface section, we give an example of dynamically scoped redefines in WebDSL. WebDSL templates are able to be redefined (i.e. overridden) inside another template. The redefined content will be shown when the redefined template is used within the template that redefines it. This also holds for calls to the redefined template, nested arbitrarily deep.
+      As last part of the user interface section, we give an example of dynamically scoped redefines in WebDSL. WebDSL templates can be redefined (i.e. overridden) inside another template. The redefined content will be shown when the redefined template is used within the template that redefines it. This also holds for calls to the redefined template, nested arbitrarily deep.
 
-      \Cref{fig:webdsl-template-overriding} shows an example of a dynamically scoped redefinition of a template. In the figure, \texttt{templateB} redefines \texttt{templateA}, resulting in the overridden template being rendered when it is called within \texttt{templateB}. To prove that this is scoped, \texttt{templateA} is called before and after \texttt{templateB} and it renders the same (original) text. In the example of \cref{fig:webdsl-template-overriding}, the redefined template is called directly from the template where it is redefined but it has the same effect when it would be called in nested templates.
+      \Cref{fig:webdsl-template-overriding} shows an example of a dynamically scoped redefinition of a template. In the figure, \texttt{templateB} redefines \texttt{templateA}, resulting in the overridden template being rendered when it is called within \texttt{templateB}. To prove that this is scoped, \texttt{templateA} is called before and after \texttt{templateB} and it renders the same (original) text. In the example of \cref{fig:webdsl-template-overriding}, the redefined template is called directly from the template where it is redefined, but it has the same effect when it would be called in nested templates.
 
       \begin{figure}
         \begin{subfigure}[t]{0.45\textwidth}
@@ -302,7 +302,7 @@ application app
       \caption{\label{fig:webdsl-template-overriding}An example of template overriding in WebDSL.}
       \end{figure}
 
-      Apart from this redefinition of templates inside the context of other templates, WebDSL also has a notion of a one-time global redefinition. This is done using the keyword \texttt{override} on a template in the global scope. The WebDSL standard library contains many definitions that are able to be used by developers, such as an access-denied page, a login template or the input templates that are used in \cref{fig:webdsl-template-overloading}. Using the \texttt{override} keyword, developers are able to customize the style and behaviour of these templates.
+      Apart from this redefinition of templates inside the context of other templates, WebDSL also has a notion of a one-time global redefinition. This is done using the keyword \texttt{override} on a template in the global scope. The WebDSL standard library contains many definitions that are able to be used by developers, such as an access-denied page, a login template or the input templates that are used in \cref{fig:webdsl-template-overloading}. Using the \texttt{override} keyword, developers are able to customize the style and behavior of these templates.
 
   \section{\label{sec:data-model}Data Model}
 
@@ -441,9 +441,9 @@ access control rules
       \caption{\label{fig:webdsl-access-control}Access control in WebDSL}
     \end{wrapfigure}
 
-    Almost all web applications use a form of access control. Examples of access control are using a log-in system, allowing users to only edit content of which they are the author, or the assigning of roles to groups of users in a large organisation.
+    Almost all web applications use a form of access control. Examples of access control are using a log-in system, allowing users to only edit content of which they are the author, or the assigning of roles to groups of users in a large organization.
 
-    WebDSL recognizes the need for secure access control and provides a functionality where an entity is appointed as the "user" entity with some credentials. A policy can be assigned to all pages, templates and actions in WebDSL in a declarative way and separated from the implementation. Using the built-in access control functionality, WebDSL developers do not have to deal with communication and security details such as cookies and hashing.
+    WebDSL recognizes the need for secure access control and provides a functionality where an entity is appointed as the user entity with some credentials. A policy can be assigned to all pages, templates and actions in WebDSL in a declarative way and separated from the implementation. Using the built-in access control functionality, WebDSL developers do not have to deal with communication and security details such as cookies and hashing.
 
     \Cref{fig:webdsl-access-control} shows an example of a WebDSL application with access control rules. The entity \texttt{User} is declared as the entity for access control using its properties \texttt{username} and \texttt{password}. Declaring the principal causes some properties to be exposed for handling access control such as \texttt{loggedIn} of boolean type and \texttt{principal} of type \texttt{User}. Multiple rules are declared for the root page, the templates and the action within a template.
 
@@ -501,7 +501,7 @@ template outputFortyTwo {
 
     Most WebDSL constructs in previous sections are specified declaratively. However, WebDSL also supports imperative code using functions. Similar to Java functions, WebDSL functions can be scoped globally, or belong to a certain entity. These functions are able to take arguments and return a value of a certain type. Additionally, WebDSL generates many functions based on the declared entities and properties, some of which serve as hook and can be extended.
 
-    \Cref{fig:webdsl-functions} showcases some function behaviour of WebDSL. It demonstrates extending a generated setter-function of the entity \texttt{Recipe}. The \texttt{setAuthor} function, including its extension, will be called when the author of a recipe is changed. Next, the entity \texttt{User} has an entity function \texttt{appendUsername}, of which the behaviour is overridden in the \texttt{Admin} sub-entity. Lastly, a global function is defined and a template demonstrates how the template body and function code can interact.
+    \Cref{fig:webdsl-functions} showcases some function behavior of WebDSL. It demonstrates extending a generated setter-function of the entity \texttt{Recipe}. The \texttt{setAuthor} function, including its extension, will be called when the author of a recipe is changed. Next, the entity \texttt{User} has an entity function \texttt{appendUsername}, of which the behavior is overridden in the \texttt{Admin} sub-entity. Lastly, a global function is defined, and a template demonstrates how the template body and function code can interact.
   
   \section{\label{sec:advanced-webdsl-features}Advanced WebDSL Features}
 
@@ -527,7 +527,7 @@ template outputFortyTwo {
     
     The core of the current WebDSL implementation is still the same, 15 years later. While the language has matured and is extended in many useful ways, the syntax is still defined in SDF2 and the rest of the compilation chain is implemented in Stratego, using the Stratego/XT toolset which is not actively developed anymore.
     
-    An application in WebDSL is compiled to a Java program, and a persisted data model through the use of the Hibernate Query Language (HQL) in the generated Java code. Before the correct target code can be generated, the WebDSL code has to pass the compilation chain that consists of components such as the parser, desugaring, typechecking. In the rest of this section we discuss the implementation of the WebDSL static analysis in Stratego. In the next chapter (\cref{chap:sdf3}), we describe the parser generated from the WebDSL SDF2 definition.
+    An application in WebDSL is compiled to a Java program, and a persisted data model through the use of the Hibernate Query Language (HQL) in the generated Java code. Before the correct target code can be generated, the WebDSL code has to pass the compilation chain that consists of components such as the parser, desugaring, type checking. In the rest of this section we discuss the implementation of the WebDSL static analysis in Stratego. In the next chapter (\cref{chap:sdf3}), we describe the parser generated from the WebDSL SDF2 definition.
 
     \subsection{WebDSL in Stratego}
 
@@ -535,7 +535,7 @@ template outputFortyTwo {
 
       Stratego \autocite{BravenboerDOV06,VisserBT98} is a transformation language based on term rewriting. Stratego enables the definition of strategies that traverse an abstract syntax tree (AST) and applies rewrite rules. These rewrite rules may be conditional and are of the form $r : t_1 -> t_2\;\texttt{where}\;c$ with r being the name, $t_1$ and $t_2$ are terms and $c$ is the condition. For a complete overview of the capabilities of Stratego, we refer to its documentation\footnote{\url{https://www.spoofax.dev/references/stratego/}}.
 
-      The Stratego code for WebDSL consists of many Stratego rules that match an AST term with some conditions in the where clause that define the analysis. The static analysis is done through returning the same term as matched, but storing errors or warnings in the process. The rule that aggregates the individual rules is called \texttt{constraint-error} and this is applied in a bottom-up fashion. The bottom-up traversal strategy means that the rule will first be applied to subterms, and then to the term itself. The \texttt{constraint-error} rule is composed of many different rules for specific WebDSL features. The implementation and usage of \texttt{constraint-error} is shown in \cref{fig:webdsl-stratego-constraint-error}.
+      The Stratego code for WebDSL consists of many Stratego rules that match an AST term with some conditions in the where clause that define the analysis. The static analysis is done through returning the same term as matched, but storing errors or warnings in the process. The rule that aggregates the individual rules is called \texttt{constraint-error} and this is applied in a bottom-up fashion. The bottom-up traversal strategy means that the rule will first be applied to subterms, and then to the term itself. The \texttt{constraint-error} rule is composed of many rules for specific WebDSL features. The implementation and usage of \texttt{constraint-error} is shown in \cref{fig:webdsl-stratego-constraint-error}.
 
       \begin{figure}
         \begin{minted}[firstline=2]{\stratego}
@@ -550,7 +550,7 @@ module org/webdsl/dsl/languages/composition
     constraint-error = constraint-error-search
     // ...
         \end{minted}
-        \caption{\label{fig:webdsl-stratego-constraint-error}Definition of the WebDSL typechecking framework in Stratego. Some rules are ommitted for brevity.}
+        \caption{\label{fig:webdsl-stratego-constraint-error}Definition of the WebDSL type checking framework in Stratego. Some rules are ommitted for brevity.}
       \end{figure}
 
       Stratego aggregates all definitions of the same rule from multiple files and combines them into one rule. The WebDSL implementation in Stratego relies on this feature by defining multiple rules with the same name, but matching on different elements with different conditions. An example of a WebDSL static analysis rule in Stratego is shown in \cref{fig:webdsl-stratego-typecheck}.
@@ -581,7 +581,7 @@ module org/webdsl/dsl/languages/composition
 
       The \texttt{add-error} and \texttt{AddError} in \cref{fig:webdsl-stratego-typecheck} utilize dynamic rules in Stratego using the \texttt{rules(...)} block. Similar to (normal) rules in Stratego, a dynamic rule matches a term, returns a term and is able to have conditions. When dynamic rules are added during the execution of a Stratego program, it is added to the possible set of rules that can be applied. In the case of the WebDSL implementation, dynamic rules are (ab)used to store data, possibly limited to a certain scope, about the WebDSL program that is being compiled.
 
-      In the implementation, scoped dynamic rules are heavily utilized to store the internal state of the compiler. We argue that the extensive use of (scoped) dynamic rules obstructs the elegancy, readability and maintainability of the WebDSL implementation in Stratego, because the effect of the dynamic rules are hard to predict before running the compiler without extensive experience with the codebase.
+      In the implementation, scoped dynamic rules are heavily utilized to store the internal state of the compiler. We argue that the extensive use of (scoped) dynamic rules obstructs the elegance, readability and maintainability of the WebDSL implementation in Stratego, because the effect of the dynamic rules are hard to predict before running the compiler without extensive experience with the codebase.
 
   \section{\label{sec:modernization}Modernization Goal}
 

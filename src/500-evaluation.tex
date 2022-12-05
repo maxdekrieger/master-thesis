@@ -39,7 +39,7 @@ For both specifications, we will evaluate their correctness and performance on e
       \item \textbf{YellowGrass\footnote{https://yellowgrass.org/, Source code: https://github.com/webdsl/yellowgrass/}:} A tag based issue tracker similar to GitHub Issues, complete with access control and used daily by WebDSL developers. YellowGrass consists of 54 WebDSL files plus 20 WebDSL library files and 1 standard library file, coming to a total of 12,898 lines of code spread over 75 files.
     \end{itemize}
 
-    Using the parser generated from the WebDSL SDF3 specification, all files of both projects parsed succesfully without ambiguities.
+    Using the parser generated from the WebDSL SDF3 specification, all files of both projects parsed successfully without ambiguities.
 
     One thing to note in discussing correctness of the WebDSL SDF3 completeness is that, while the results are promising, the SDF3 specification has introduced many new sorts and constructors for disambiguation purposes, and to comply with the Statix signature generator expectations. The effect of this change is that we cannot automatically guarantee correctness of the disambiguation, because the resulting AST from the SDF3 definition is different compared to the SDF2 definition. Instead, we manually inspected the ASTs of handpicked snippets and no incorrect results were found.
 
@@ -65,7 +65,7 @@ For both specifications, we will evaluate their correctness and performance on e
 
     The parse table generated from the SDF3 specification has more states, gotos and actions than the parse table from the SDF2 specification. Even though the described grammar did not change, it is implemented differently, leading to the increase in parse table size. Given that the parse table of the SDF3 specification is larger, we expect that this has a negative effect on the run time. To see the impact of the larger parse table on the run time of the parser, we executed the evaluation on Reposearch, YellowGrass and all files in the analysis test suite, which contains complete WebDSL programs as opposed to the syntax test suite. The analysis test suite consists of 521 small files, with a total of 19.644 lines of code.
 
-    To execute the evaluation, we used a 2019 MacBook Pro running macOS Montery 12.2. The machine has a 2,3 GHz 8-core Intel Core i9 with 64 GB RAM available, of which 8 GB was dedicated to the evaluation scripts. The evaluation scripts\footnote{https://github.com/metaborg/jsglr2evaluation} were configured to parse the described files with the SDF2 parse table, as well as the SDF3 parse table using the JSGLR1 parser implementation. Using the Java Microbenchmark Harness\footnote{https://github.com/openjdk/jmh}, we timed the run time of the parsers using 5 warmup iterations and 10 regular iterations.
+    To execute the evaluation, we used a 2019 MacBook Pro running macOS Montery 12.2. The machine has a 2,3 GHz 8-core Intel Core i9 with 64 GB RAM available, of which 8 GB was dedicated to the evaluation scripts. The evaluation scripts\footnote{https://github.com/metaborg/jsglr2evaluation} were configured to parse the described files with the SDF2 parse table, as well as the SDF3 parse table using the JSGLR1 parser implementation. Using the Java Microbenchmark Harness\footnote{https://github.com/openjdk/jmh}, we timed the run time of the parsers using 5 warm-up iterations and 10 regular iterations.
 
     \begin{figure}
       \pgfplotstableread{
@@ -146,11 +146,11 @@ module WebDSL-UI
       \caption{\label{fig:sdf3-maintainability-1}Defining a WebDSL for-loop in SDF2 and SDF3}
     \end{figure}
 
-    However, being easier to read and understand does not automatically make the new syntax definition easier to maintain. The compliance with Statix and its Signature Generator\footnote{https://www.spoofax.dev/howtos/statix/signature-generator/} imposes constraints on the grammar, such as disallowing optional sorts, which in the worst case causes the amount of sorts in the grammar to double as described in \cref{par:optional-sorts}. Additionally, disambiguation without the \texttt{prefer} and \texttt{avoid} keywords, as described in \cref{sec:webdsl-sdf3-disambiguation}, removes the unperformant post-parse filters but does create the need for more sorts which artificially complicate the grammar definition.
+    However, being easier to read and understand does not automatically make the new syntax definition easier to maintain. The compliance with Statix and its Signature Generator\footnote{https://www.spoofax.dev/howtos/statix/signature-generator/} imposes constraints on the grammar, such as disallowing optional sorts, which in the worst case causes the amount of sorts in the grammar to double as described in \cref{par:optional-sorts}. Additionally, disambiguation without the \texttt{prefer} and \texttt{avoid} keywords, as described in \cref{sec:webdsl-sdf3-disambiguation}, removes the post-parse filters but does create the need for more sorts which artificially complicate the grammar definition.
 
 \section{\label{sec:eval-statix}Statix}
 
-  Static consistency checking through static analysis is one of the core aspects of WebDSL \autocite{Hemel2011}. However, since no formal semantics of WebDSL are described, we rely on the current implementation of the static analysis in Stratego as the ground thruth.
+  Static consistency checking through static analysis is one of the core aspects of WebDSL \autocite{Hemel2011}. However, since no formal semantics of WebDSL are described, we rely on the current implementation of the static analysis in Stratego as the ground truth.
   
   The evaluation of the Statix specification of WebDSL consists of three parts. First, we list results on the correctness; whether the static analysis allows well-formed programs to pass and whether it gives the correct feedback for erroneous programs. Next, we evaluate the performance in terms of run time on the applications Reposearch and YellowGrass. Lastly, we make qualitative observations on the maintainability of the new Statix specifications.
 
@@ -174,7 +174,7 @@ module WebDSL-UI
       \caption{\label{tbl:statix-reposearch-yellowgrass-results}Results of running the static analysis on Reposearch and Yellowgrass.}
     \end{table}
 
-    It is trivial to write a program that does not analyse anything and therefore never give an error, and it would technically suit our goal of analysing Reposearch and YellowGrass without errors. To make sure the Statix specification gives feedback when it encounters an incorrect program, we run the Statix static analysis on the analysis test suite of the current implementation in Stratego. In total, the test suite consists of 521 small programs, testing different aspects of the WebDSL language. 273 files contain a correct program and expect the analysis to give no errors, while 248 programs contain in incorrect program where the static analysis must give specific feedback. The expectation as in those 248 files are listed as first lines in the file as comments, and can be one or more of the following.
+    It is trivial to write a program that does not analyze anything and therefore never give an error, and it would technically suit our goal of analysing Reposearch and YellowGrass without errors. To make sure the Statix specification gives feedback when it encounters an incorrect program, we run the Statix static analysis on the analysis test suite of the current implementation in Stratego. In total, the test suite consists of 521 small programs, testing different aspects of the WebDSL language. 273 files contain a correct program and expect the analysis to give no errors, while 248 programs contain in incorrect program where the static analysis must give specific feedback. The expectation as in those 248 files are listed as first lines in the file as comments, and can be one or more of the following.
 
     \begin{itemize}
       \item Should give an error containing the message $s$, denoted by \texttt{//s}.
@@ -200,21 +200,39 @@ module WebDSL-UI
       \caption{\label{tbl:statix-test-suite-results}Results of the analysis test suite.}
     \end{table}
 
-    The result of the analysis test suite shows that the Statix specification of WebDSL is not yet on the level of the current static analysis in terms of correctness. While there are more passing tests than failing tests, there is room for improvement in both categories of the test suite, but particularly in the incorrect programs. The result of the analysis test suite scales with the engineering effort put in, and cannot be solely explained by Statix' shortcomings which we will highlight in the next subsection. 
+    The result of the analysis test suite shows that the Statix specification of WebDSL is not yet on the level of the current static analysis in terms of correctness. While there are more passing tests than failing tests, there is room for improvement in both categories of the test suite, but particularly in the incorrect programs. The result of the analysis test suite scales with the engineering effort put in, and cannot be solely explained by Statix' shortcomings which we will highlight in the next subsection.
 
     \subsubsection{\label{subsubsec:eval-statix-failed-tests}Discussion of Failed Tests}
 
-      Failing tests can be divided in categories. While some categories of failing tests are able to be solved by more engineering effort, others are inherent to using Statix as a language for implementing a static analysis.
+      Failing tests can be divided in categories. While some categories of failing tests can be solved by more engineering effort, others are inherent to using Statix as a language for implementing a static analysis.
 
       \paragraph{Error messages that are not specific enough} This is not something fundamentally wrong in the Statix language, as it can be improved by more development effort on the Statix specification, but at the cost of the brevity of the specification.
 
-      \paragraph{Error messages that Statix can not generate} Some tests require an error along the lines of \texttt{A function with Signature f(string, int) does not exist}. Statix is unable to format strings to produce such an error. Statix is able to use string concatenation in error messages, but the given expression will always be surrounded by quotes. Apart from the quotes, a lack of string manipulation functions in Statix prevents users from properly formatting AST terms back to human readable signatures.
+      \paragraph{Error messages that Statix can not generate} Some tests require an error along the lines of \texttt{A function with Signature f(string, int) does not exist}. Statix is unable to format strings to produce such an error. Statix is able to use string concatenation in error messages, but the given expression will always be surrounded by quotes. Apart from the quotes, a lack of string manipulation functions in Statix prevents users from properly formatting AST terms back to human-readable signatures.
 
       \paragraph{Cascading errors} This is mostly targeted by the test expectation where a certain error $s$ should not be present (\texttt{//\^{}s}). Statix as a language is not ideal for these test expectations, as errors are designed to show when the corresponding constraint fails. All generated constraints must either fail or succeed and there is no way to stop execution after a failed constraint, having the result of showing multiple errors. Consider the following expression:
       
       $$\texttt{var i : Int := nonexistingvariable + 2;}$$
       
       The error in this code snippet is that a non-existing variable is being referenced, but the expression cannot be typed properly, resulting in another error on the statement as a whole that says that the expression must be of boolean type.
+
+      When running the analysis test suite again, without taking the exact error message expectation into account, the outcome is as listed in \cref{tbl:statix-test-suite-results-no-expectation}. This simpler test suite expects a correct program to pass, and expects an incorrect program to show at least one error. The result is that more than a hundred tests now succeed, compared to the strict test suite from \cref{tbl:statix-test-suite-results}. Discarding the exact error message expectation lowers the accuracy of what is being tested, but it shows that the WebDSL Statix specification does throw errors for incorrect programs, but not always the correct amount or the expected message.
+
+      \begin{table}[h]
+        \centering
+        \begin{tabular}{ | c || c | c | }
+          \hline
+          & Test succeeded & Test failed \\
+          \hline
+          Correct programs & 231 & 42 \\
+          \hline
+          Incorrect programs & 185 & 63 \\
+          \hline\hline
+          Total & 416 & 105 \\
+          \hline
+        \end{tabular}
+        \caption{\label{tbl:statix-test-suite-results-no-expectation}Results of the analysis test suite without taking exact error message expectation into account.}
+      \end{table}
       
       \paragraph{Unimplemented features} WebDSL has an extensive history and many features were added and deprecated over time. However, the deprecated features are still present in the analysis test suite, leading to failing tests. More development effort could make the tests pass.
 
@@ -222,7 +240,7 @@ module WebDSL-UI
 
     Providing early feedback on written code to developers is an essential part of increasing productivity \autocite{Becker2019}. For this reason, we want the static analysis to give quick and accurate results. To make claims about the run time of the WebDSL specification in Statix, we run the specification on two open-source applications: Reposearch and YellowGrass, and compare it to the run time of the current static analysis in Stratego.
 
-    To execute the evaluation, we used a 2019 MacBook Pro running macOS Montery 12.2. The machine has a 2,3 GHz 8-core Intel Core i9 with 64 GB RAM available, of which 8 GB was dedicated to the evaluation scripts. The evaluation scripts\footnote{https://github.com/metaborg/statix-benchmark/} were configured to analyze the two applications. Using the Java Microbenchmark Harness\footnote{https://github.com/openjdk/jmh}, we timed the run time of the Statix specification using 5 warmup iterations and 20 regular iterations. The run time of the current static analysis in Stratego was measured using a shell-script that executed the command-line tool shipped with the WebDSL compiler\footnote{https://github.com/webdsl/webdsl}.
+    To execute the evaluation, we used a 2019 MacBook Pro running macOS Montery 12.2. The machine has a 2,3 GHz 8-core Intel Core i9 with 64 GB RAM available, of which 8 GB was dedicated to the evaluation scripts. The evaluation scripts\footnote{https://github.com/metaborg/statix-benchmark/} were configured to analyze the two applications. Using the Java Microbenchmark Harness\footnote{https://github.com/openjdk/jmh}, we timed the run time of the Statix specification using 5 warm-up iterations and 20 regular iterations. The run time of the current static analysis in Stratego was measured using a shell-script that executed the command-line tool shipped with the WebDSL compiler\footnote{https://github.com/webdsl/webdsl}.
 
     \begin{figure}
       \pgfplotstableread{
@@ -267,12 +285,12 @@ module WebDSL-UI
 
     The current WebDSL compiler uses Stratego to implement the static analysis. As stated in the introduction of this thesis, we argue that the implementation of many compiler steps (e.g. desugaring, type checking, optimization and code generation) in the same Stratego project without clear intermediate representations poses a threat to the maintainability of WebDSL. While the results of the correctness- and performance evaluation look promising, we argue that there is still room for improvement in terms of the maintainability of the Statix specification.
     
-    Where Stratego is a more general term transformation language, Statix is developped specifically for implementing static analysis using scope graphs. This smaller domain allows the language engineer to express certain concepts with ease. Examples include declaration, resolving, shadowing and overriding. Additionally, the declarative nature of Statix increases focus on the what, instead of the how. Its syntax reads closer to inference rules, with an predicate being the conclusion, and the constraints being the premises.
+    Where Stratego is a more general term transformation language, Statix is developed specifically for implementing static analysis using scope graphs. This smaller domain allows the language engineer to express certain concepts with ease. Examples include declaration, resolving, shadowing and overriding. Additionally, the declarative nature of Statix increases focus on the what, instead of the how. Its syntax reads closer to inference rules, with a predicate being the conclusion, and the constraints being the premises.
 
     A positive aspect of defining the static analysis in Statix is that, as opposed to the more imperative and handcrafted implementation in Stratego, we are able to profit from all new features introduced in Statix such as concurrency \autocite{AntwerpenV21}, incrementality \autocite{ZwaanAV22} or better editor services based on the Statix specification \autocite{PelsmaekerAV19}.
 
-    Unfortunately, the elegancy and brevity of the WebDSL Statix specification is lost due to the amount of boilerplate code, helper functions and code duplication for specific error messages. A lack of provided list functions such as a \textit{zip}, \textit{map} or \textit{filter} function requires multiple definitions of these, essentially duplicates but for different types.
+    Unfortunately, the elegance and brevity of the WebDSL Statix specification is lost due to the amount of boilerplate code, helper functions and code duplication for specific error messages. A lack of provided list functions such as a \textit{zip}, \textit{map} or \textit{filter} function requires multiple definitions of these, essentially duplicates but for different types.
 
     Next, we argue that support for string manipulation would increase the quality of error messages, and reduce code duplication by being able to pass strings to other rules and adjusting them for a specific error message. Next to better error messages, this would also increase the range of language features Statix can support, as discussed in \cref{sec:statix-string-manipulation}.
 
-    Lastly, the extensive amount of time required to analyse the Statix specification itself is a thorn in the side from a language engineer perspective, as it requires more than a minute to run the analysis on the WebDSL Statix specification.
+    Lastly, the extensive amount of time required to analyze the Statix specification itself is a thorn in the side from a language engineer perspective, as it requires more than a minute to run the analysis on the WebDSL Statix specification.
