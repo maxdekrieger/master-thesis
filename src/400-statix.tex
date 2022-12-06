@@ -270,7 +270,7 @@
           \begin{tikzpicture}
             \node (s_1) [scope]   at(-1, 0) {s1};
             \node (s_2) [scope]   at(-1, -2) {s2};
-            \node (s_3) [scope]   at(-1, -4) {s2};
+            \node (s_3) [scope]   at(-1, -4) {s3};
             \node (x_1) [decl]  at(2, -2) {x};
             \node (y_1) [decl]  at(2, -4) {y};
   
@@ -494,8 +494,6 @@ application test
         \caption{\label{fig:webdsl-basics-declaration-scope-example}Variable declarations example using a separate declaration scopes}
       \end{figure}
 
-      Another difference between the let-binding rules from an earlier example and WebDSL variables is the complexity of the shadowing rules. The WebDSL variable shadowing rules which we reverse-engineered from the current compiler and static analysis implementation, state that the same variable identifier may be used multiple times, but never twice in the ``environment''. Such environments are: module scope, entity properties, functions, templates, etc. If a variable reference has multiple declarations in reach, the closest one according to the shadowing rules will be picked. The regular expression that defines the reachability of variables (left out in \textbf{line 9} of \cref{fig:webdsl-simple-variable-declaration-and-resolving}) is shown in \cref{fig:webdsl-simple-variable-well-formedness}.
-
       \begin{wrapfigure}{r}{0.5\textwidth}
         \begin{minted}[frame=single]{text}
     P*
@@ -507,6 +505,8 @@ application test
         \end{minted}
         \caption{\label{fig:webdsl-simple-variable-well-formedness}Well-formedness predicate for variable paths}
       \end{wrapfigure}
+
+      Another difference between the let-binding rules from an earlier example and WebDSL variables is the complexity of the shadowing rules. The WebDSL variable shadowing rules which we reverse-engineered from the current compiler and static analysis implementation, state that the same variable identifier may be used multiple times, but never twice in the ``environment''. Such environments are: module scope, entity properties, functions, templates, etc. If a variable reference has multiple declarations in reach, the closest one according to the shadowing rules will be picked. The regular expression that defines the reachability of variables (left out in \textbf{line 9} of \cref{fig:webdsl-simple-variable-declaration-and-resolving}) is shown in \cref{fig:webdsl-simple-variable-well-formedness}.
 
       The edge label \texttt{P} as introduced in \cref{fig:webdsl-simple-variable-declaration-scope} is the edge label used for linking consecutive statements together. The other edge labels such as complicate this regular expression, and will be explained in more details in later sections when their use is discussed.
 
@@ -1121,6 +1121,8 @@ rules
       \end{figure}
 
   \section{\label{sec:advanced-entity-features}Advanced Entity Features}
+
+    In \cref{subsec:simple-entities}, the basic implementation of entities is explained. In this section, we will discuss the implementation of entity features such as inheritance, overriding functions, property annotations and the entity hierarchy.
   
     \subsection{\label{subsec:inheritance}Inheritance}
 
@@ -1538,7 +1540,7 @@ rules
   mostSpecificSigs : list(TYPE) * list((string * TYPE)) -> list((string * TYPE))
   // In case no functions are compatible, return empty list
   mostSpecificSigs(args, []) = [].
-  // In case of only one compatible signature, return that
+  // In case of only one compatible signature, return tha
   mostSpecificSigs(args, fs@[_]) = fs.
   mostSpecificSigs(args, sigs) = mostSpecificSigs_helper(args, sigs, 
     matchingSigs(stripRefTypes(args), sigs)).
@@ -1680,7 +1682,7 @@ rules
 module m
 
 entity Person {
-  firstname : String
+  firstname : Strin
 }
 
 extend entity Person {
@@ -1777,11 +1779,7 @@ rules
 
     The paper that introduced WebDSL \autocite{Visser2007} contains the following description of its module system: {``a very simple module system has been chosen that supports distributing functionality over files, without separate compilation''}. We describe the current WebDSL module system as having transitive and symmetric imports. The implementation of the module system in the current compiler maintains a list of modules of which an application consists. When a module is imported by the main application file or transitively imported, the module is added to the list and its definitions are visible to all other modules in the list. An example application with these semantics and its scope graph is visualized in \cref{fig:current-module-system}. The implementation of these semantics are listed in \cref{fig:current-module-system-statix}.
 
-    The modelling of this system causes an explosion in this amount of import edges between module scopes, as it is a fully connected graph for all modules that are (transitively) imported by the application root. The amount of import edges would scale quadratically with the number of imported modules:
-
-    $$import edges = \#modules(\#modules - 1) + \#modules$$
-
-    The additional $+ \#modules$ in this calculation is for the import edges to the global scope.
+    The modelling of this system requires that multiple \texttt{IMPORT} edges may be followed to find a definition. The result of allowing multiple \texttt{IMPORT} edges is that there are paths routes to the same definition. For example, resolving a definition within a module can be done using zero import edges, or by taking one import edge to another module and one back. In order to make sure every definition is only returned once by Statix queries, there must be shadowing rules in the queries that prune the results.
 
     \begin{figure}
       \begin{subfigure}[b]{0.2\textwidth}
@@ -1840,9 +1838,6 @@ module m3
 
           \draw[scope edge] (s_a.west) to [bend right]  node[midway, sloped, yshift=1ex] {IMPORT} (s_m1.north);
           \draw[scope edge] (s_m1.north) to [bend right]  node[midway, sloped, yshift=-1ex] {IMPORT} (s_a.west);
-          
-          \draw[scope edge] (s_a.east) to [bend right]  node[midway, sloped, yshift=-1ex] {IMPORT} (s_m2.north);
-          \draw[scope edge] (s_m2.north) to [bend right]  node[midway, sloped, yshift=1ex] {IMPORT} (s_a.east);
 
           \draw[scope edge] (s_m1.east) to [bend right]  node[midway, sloped, yshift=-1ex] {IMPORT} (s_m2.west);
           \draw[scope edge] (s_m2.west) to [bend right]  node[midway, sloped, yshift=1ex] {IMPORT} (s_m1.east);
@@ -1892,7 +1887,7 @@ rules
 
     This representation of the WebDSL module system in scope graphs is functional, however, we found this to be extremely taxing on the run time performance of an analysis. To gather information about the performance of the current module system semantics in the WebDSL Statix specification, we conducted an experiment where the same program was analyzed multiple times, but with the addition of extra empty modules. The result as shown in \cref{fig:statix-performance-current-modules} confirms our suspicion.
 
-    To run the experiment, we used a 2019 MacBook Pro running macOS Montery 12.2. The machine has a 2,3 GHz 8-core Intel Core i9 with 64 GB RAM available, of which 8 GB was dedicated to the evaluation scripts. The evaluation scripts\footnote{https://github.com/metaborg/statix-benchmark/} were configured to analyze the same application with different amounts of empty modules. Using the Java Microbenchmark Harness\footnote{https://github.com/openjdk/jmh}, we timed the run time of the Statix specification using 5 warm-up iterations and 20 regular iterations.
+    To run the experiment, we used a 2019 MacBook Pro running macOS Montery 12.2. The machine has a 2,3 GHz 8-core Intel Core i9 with 64 GB RAM available, of which 8 GB was dedicated to the evaluation scripts. The evaluation scripts\footnote{\url{https://github.com/metaborg/statix-benchmark/}} were configured to analyze the same application with different amounts of empty modules. Using the Java Microbenchmark Harness\footnote{\url{https://github.com/openjdk/jmh}}, we timed the run time of the Statix specification using 5 warm-up iterations and 20 regular iterations.
 
     \begin{figure}
       \pgfplotstableread{

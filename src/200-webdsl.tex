@@ -207,7 +207,7 @@ application app
 
       To enable refreshing or replacing parts of a page with new content that is fetched from the server, WebDSL has support for placeholders that can be populated with content using \textit{asynchronous JavaScript and XML} (ajax). Without ajax functionalities, refreshing data on a page would require a full page reload.
 
-      \Cref{fig:webdsl-ajax} shows an example of a WebDSL application that defines a placeholder named \texttt{ph} which is initially empty. On the bottom of the page, a clickable link with an inline action is defined. When the action is executed, it will replace the content of the placeholder with the content of the ajax-enabled template \texttt{hello()}. The calling of the action does not incur a full page refresh, but instead fires an asynchronous request that returns the content of the ajax template, after which the placeholder content is replaced using JavaScript.
+      \Cref{fig:webdsl-ajax} shows an example WebDSL application that defines an initially empty placeholder named \texttt{ph}. On the bottom of the page, a clickable link with an inline action is defined. When the action is executed, it will replace the content of the placeholder with the content of the ajax-enabled template \texttt{hello()}. The calling of the action does not incur a full page refresh, but instead fires an asynchronous request that returns the content of the ajax template, after which the placeholder content is replaced using JavaScript.
 
       \begin{figure}
         \begin{subfigure}[t]{0.45\textwidth}
@@ -390,8 +390,7 @@ section user interface
 
   \section{\label{sec:access-control}Access Control}
 
-    \begin{wrapfigure}{r}{0.5\linewidth}
-      \capstart
+    \begin{figure}
       \begin{minted}[firstline=1]{\webdsl}
 application accesscontrol
 
@@ -439,7 +438,7 @@ access control rules
   }
       \end{minted}
       \caption{\label{fig:webdsl-access-control}Access control in WebDSL}
-    \end{wrapfigure}
+    \end{figure}
 
     Almost all web applications use a form of access control. Examples of access control are using a log-in system, allowing users to only edit content of which they are the author, or the assigning of roles to groups of users in a large organization.
 
@@ -453,8 +452,7 @@ access control rules
 
   \section{\label{sec:functions}Functions}
 
-  \begin{wrapfigure}{r}{0.5\linewidth}
-    \capstart
+  \begin{figure}
     \begin{minted}[firstline=1]{\webdsl}
 application cookbook
 entity Recipe {
@@ -497,7 +495,7 @@ template outputFortyTwo {
 }
     \end{minted}
     \caption{\label{fig:webdsl-functions}Functions in WebDSL}
-  \end{wrapfigure}
+  \end{figure}
 
     Most WebDSL constructs in previous sections are specified declaratively. However, WebDSL also supports imperative code using functions. Similar to Java functions, WebDSL functions can be scoped globally, or belong to a certain entity. These functions are able to take arguments and return a value of a certain type. Additionally, WebDSL generates many functions based on the declared entities and properties, some of which serve as hook and can be extended.
 
