@@ -2,7 +2,7 @@
 
 \chapter{\label{chap:webdsl}WebDSL}
 
-  In this chapter we describe WebDSL. WebDSL is a domain-specific language for developing web applications. The language incorporates ideas from various web programming frameworks and produces code for all tiers in a web application \autocite{Groenewegen2020}. Ever since its introduction over 15 years ago \autocite{Visser2007}, WebDSL has been a vehicle for research (cite some papers here) and on top of that, it is the programming language underpinning several applications used daily by thousands of users. Examples of WebDSL applications include:
+  In this chapter we describe WebDSL. WebDSL is a domain-specific language for developing web applications. The language incorporates ideas from various web programming frameworks and produces code for all tiers in a web application \autocite{Groenewegen2020}. Ever since its introduction over 15 years ago \autocite{Visser2007}, WebDSL has been a vehicle for research and on top of that, it is the programming language underpinning several applications used daily by thousands of users. Examples of WebDSL applications include:
 
   \begin{itemize}
     \item \textbf{WebLab}: An online learning management system, used by the Delft University of Technology.
@@ -250,7 +250,7 @@ application app
 
       WebDSL automatically takes care of the necessary structure to enable this functionality, such as identifiers of DOM elements, JavaScript code to query the server and JavaScript code to replace the correct elements.
 
-      As opposed to regular templates, ajax-enabled template can be requested on the server using a specific endpoint. The exact details of how this endpoint looks is only relevant for generated code of the WebDSL compiler, but WebDSL developers should pay attention to the fact that ajax-enabled content must be projected with proper access control rules (see \cref{sec:access-control}) to prevent exposing sensitive content.
+      As opposed to regular templates, ajax-enabled template can be requested on the server using a specific endpoint. The exact details of how this endpoint looks is only relevant for generated code of the WebDSL compiler, but WebDSL developers should pay attention to the fact that ajax-enabled content must be protected with proper access control rules (see \cref{sec:access-control}) to prevent exposing sensitive content.
 
     \subsection{\label{subsec:redefines}Dynamically Scoped Redefines}
 
@@ -531,7 +531,7 @@ template outputFortyTwo {
 
       Apart from the syntax definition, every component of the WebDSL compiler is implemented in Stratego. For the scope of this thesis, we will focus on the implementation of the WebDSL static analysis in Stratego and we will not discuss the implementation of code generation.
 
-      Stratego \autocite{BravenboerDOV06,VisserBT98} is a transformation language based on term rewriting. Stratego enables the definition of strategies that traverse an abstract syntax tree (AST) and applies rewrite rules. These rewrite rules may be conditional and are of the form $r : t_1 -> t_2\;\texttt{where}\;c$ with r being the name, $t_1$ and $t_2$ are terms and $c$ is the condition. For a complete overview of the capabilities of Stratego, we refer to its documentation\footnote{\url{https://www.spoofax.dev/references/stratego/}}.
+      Stratego \autocite{BravenboerDOV06,VisserBT98} is a transformation language based on term rewriting. Stratego enables the definition of strategies that traverse an abstract syntax tree (AST) and applies rewrite rules. These rewrite rules may be conditional and are of the form \texttt{r : t1 -> t2 where c} with r being the name, \texttt{t1} and \texttt{t2} are terms and \texttt{c} is the condition. For a complete overview of the capabilities of Stratego, we refer to its documentation\footnote{\url{https://www.spoofax.dev/references/stratego/}}.
 
       The Stratego code for WebDSL consists of many Stratego rules that match an AST term with some conditions in the where clause that define the analysis. The static analysis is done through returning the same term as matched, but storing errors or warnings in the process. The rule that aggregates the individual rules is called \texttt{constraint-error} and this is applied in a bottom-up fashion. The bottom-up traversal strategy means that the rule will first be applied to subterms, and then to the term itself. The \texttt{constraint-error} rule is composed of many rules for specific WebDSL features. The implementation and usage of \texttt{constraint-error} is shown in \cref{fig:webdsl-stratego-constraint-error}.
 
@@ -583,7 +583,7 @@ module org/webdsl/dsl/languages/composition
 
   \section{\label{sec:modernization}Modernization Goal}
 
-    As discussed in the previous section, WebDSL is implemented in the Stratego/XT toolset which is not actively maintained anymore. Spoofax is the successor of the deprecated Stratego/XT toolset and features an extensive meta-languages, each specialized for defining different components of a language in a declarative way.
+    As discussed in the previous section, WebDSL is implemented in the Stratego/XT toolset which is not actively maintained anymore. Spoofax is the successor of the deprecated Stratego/XT toolset and features an extensive set of meta-languages, each specialized for defining different components of a language in a declarative way.
 
     SDF3 \autocite{VollebregtKV12,AmorimV20} is the meta-language in Spoofax for syntax definition in a declarative way. From an SDF3 grammar, Spoofax generates a parser, a pretty-printer and syntactic code completions. Statix \autocite{VanAntwerpen2018} is a constraint-based declarative language for the specification of type systems in Spoofax, using the concept of scope graphs \autocite{Neron2015} to model programs.
 

@@ -166,7 +166,7 @@
       var : string * TYPE
         \end{minted}
         \caption{\label{fig:statix-let-binding-signatures}Statix signature for let-bindings}
-        % \vspace{-40pt}
+        \vspace{-40pt}
       \end{wrapfigure}
 
       The first step in implementing let-bindings in Statix is adding the signature. In addition to the new constructors on \textbf{line 3 and 4}, we now introduce an edge label \texttt{P} and the relation \texttt{var}. The edge labels defined in the constructor provide the set of allowed labels to use in rules later on. The relation \texttt{var} on \textbf{line 11} specifies that any declaration made under the \texttt{var} relation in a scope, maps an identifier to its type.
@@ -283,6 +283,7 @@
         \end{subfigure}
         \caption{\label{fig:statix-let-binding-example}Constructed scope graph after the example specification solved its constraints}
       \end{figure}
+      \clearpage
 
   \section{\label{sec:simple-type-systems}Encoding the WebDSL Basics}
 
@@ -920,7 +921,7 @@ module m
         \caption{\label{fig:webdsl-page-and-template-decl}An example of a module with a page \texttt{p} and a template \texttt{t}}
       \end{figure}
 
-      Type-checking a page reference is easier than the that of a template, since a page definition cannot be overloaded. In order for a page reference to be well-typed, the page must be defined exactly once, and the types of the passed arguments must be compatible with the parameter types of the page. The Statix rules that ticks those boxes is shown in \cref{fig:webdsl-page-type-checking}. The resolving of templates is similar to that of functions and will be explained later in \cref{sec:function-template-overloading}.
+      Type-checking a page reference is easier than that of a template, since a page definition cannot be overloaded. In order for a page reference to be well-typed, the page must be defined exactly once, and the types of the passed arguments must be compatible with the parameter types of the page. The Statix rules that ticks those boxes is shown in \cref{fig:webdsl-page-type-checking}. The resolving of templates is similar to that of functions and will be explained later in \cref{sec:function-template-overloading}.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\statix}
@@ -1908,7 +1909,7 @@ rules
             bar width=30,
             ymin=0,
             ylabel={Run time (s)},
-            xlabel={Amount of modules},
+            xlabel={Number of modules},
             nodes near coords,
             xtick=data,
             xticklabels={1, 2, 5, 10, 20, 50, 100},
@@ -1966,7 +1967,7 @@ rules
               },
               ymin=0,
               ylabel={Run time (s)},
-              xlabel={Amount of modules},
+              xlabel={Number of modules},
               nodes near coords,
               every node near coord/.append style={font=\tiny},
               xtick=data,
@@ -2025,7 +2026,7 @@ rules
         \begin{axis} [ybar,
           axis on top,
           width=\textwidth,
-          title={Effect of Pre-Analayzing on Run Time},
+          title={Effect of Pre-Analyzing on Run Time},
           legend style={
             legend columns=2,
             at={(xticklabel cs:0.5)},

@@ -301,7 +301,7 @@ strategies
 
       Not all SDF2 constructs can be expressed in SDF3. For this reason, the WebDSL SDF2 must be adjusted manually to be able to use the tool provided by Spoofax that transforms SDF2 specifications to SDF3 specifications.
 
-      \paragraph{Sorts} Non-terminals are named \textit{Sorts} in SDF2 and SDF3. A production in SDF2 reduces a sequence of terminals and non-terminals to a certain sort, as listed in the example of \cref{fig:sdf2-sections}. In SDF2 the sort does not have to be declared in a separate \texttt{sorts} section, while it does in SDF3. Additionally, SDF2 does not differentiate lexical sorts from context-free sorts. The result of this difference in design is that SDF2 sorts cannot be migrated to SDF2, since the transformation tool does not know if an SDF2 sort is used as lexical or context-free sort. To be able to translate the SDF2 specification to SDF3, we must remove the sort declarations.
+      \paragraph{Sorts} Non-terminals are named \textit{Sorts} in SDF2 and SDF3. A production in SDF2 reduces a sequence of terminals and non-terminals to a certain sort, as listed in the example of \cref{fig:sdf2-sections}. In SDF2 the sort does not have to be declared in a separate \texttt{sorts} section, while it does in SDF3. Additionally, SDF2 does not differentiate lexical sorts from context-free sorts. The result of this difference in design is that SDF2 sorts cannot be migrated to SDF3, since the transformation tool does not know if an SDF2 sort is used as lexical or context-free sort. To be able to translate the SDF2 specification to SDF3, we must remove the sort declarations.
 
       \paragraph{Alternations} Another manual adjustment we must make to the SDF2 specification is removing alternations. An alternation is a production of the form \texttt{"a" | "b" -> S}. This construct is not supported anymore in SDF3 and therefore the transformation tool is not able to handle this construct. Fortunately, the alternation can easily be split in two production rules. However, the transformation tool does not automate this process because the original production may contain a constructor annotation (\texttt{"a" | "b" -> S \{cons("AorB")\}}) and the duplicate constructors for the same sort are not allowed in SDF3. For this reason must manually remove alternations in SDF2 productions.
 
@@ -324,7 +324,7 @@ exports
 
       The generated SDF3 specification of WebDSL according to the manually adjusted SDF2 is suboptimal SDF3 code. SDF2 can be seen as a more low-level version of SDF3 and not all constructs of SDF2 transform into the most elegant SDF3 code. Parts of the generated SDF3 code do not even adhere to the static semantics of SDF3. For this reason, the generated SDF3 code has to be manually adjusted.
 
-      \paragraph{Missing and duplicate constructors} In SDF2, constructors are defined as an annotation on a production. An example of the different production syntax of SDF2 and SDF3 is shown in \cref{fig:sdf2-sections}. The constructor annotation is not required in SDF2, but in SDF3 it is necessary to provide a constructor for every production. In the WebDSL SDF2 definition, some constructors are missing and there were are duplicate constructors that denoted alternative syntax for the same construct, essentially providing syntactic sugar. The SDF2 definition and generated SDF3 definition for the \texttt{ascending} and \texttt{descending} ordering is shown in \cref{fig:sdf2-sdf3-asc-desc}.
+      \paragraph{Missing and duplicate constructors} In SDF2, constructors are defined as an annotation on a production. An example of the different production syntax of SDF2 and SDF3 is shown in \cref{fig:sdf2-sections}. The constructor annotation is not required in SDF2, but in SDF3 it is necessary to provide a constructor for every production. In the WebDSL SDF2 definition, some constructors are missing and there are duplicate constructors that denoted alternative syntax for the same construct, essentially providing syntactic sugar. The SDF2 definition and generated SDF3 definition for the \texttt{ascending} and \texttt{descending} ordering is shown in \cref{fig:sdf2-sdf3-asc-desc}.
 
       \begin{figure}
         \begin{subfigure}[b]{1\textwidth}
@@ -463,7 +463,7 @@ module WebDSL-UI
 
       As mentioned and demonstrated in the previous subsection, Statix requires a definition of the constructors and sorts of the language to be analyzed. Defining these manually in Statix would essentially be code duplication because they are already defined in SDF3. However, Statix sorts and constructors do not support overloading and injections and is therefore stricter than the SDF3 type system.
 
-      To prevent manual redefinition of the sorts in Statix code, the Statix signature generator is part of Spoofax. This tool takes an SDF3 definition as input, and generates importable Statix files that contain the sorts and constructors from the syntax definition. For the Statix signature generator to work properly, Additional constraints are imposed on the SDF3 definition.
+      To prevent manual redefinition of the sorts in Statix code, the Statix signature generator is part of Spoofax. This tool takes an SDF3 definition as input, and generates importable Statix files that contain the sorts and constructors from the syntax definition. For the Statix signature generator to work properly, additional constraints are imposed on the SDF3 definition.
 
       \paragraph{Explicitly Declare Sorts} To define static semantics of all sorts in a language, these must be explicitly declared in Statix. In SDF3 this is not enforced. To be able to use the Statix signature generator, we have to explicitly declare all sorts in the WebDSL SDF3. Additionally, Statix views all lexical sorts as strings, so the SDF3 sorts have to be divided in lexical sorts and context-free sorts.
 
@@ -609,7 +609,7 @@ module x
         \caption{\label{fig:sdf3-template-options-reject}An example of rejecting keywords in template options.}
       \end{figure}
 
-      Rejecting all keywords in the WebDSL language using the template options of SDF3 would be effective, but too rigorous. For example, the WebDSL grammar contains productions such as the following. Rejecting all keywords would imply also rejecting \texttt{Int} as identifier, meaning that it is now allowed as type anymore.
+      Rejecting all keywords in the WebDSL language using the template options of SDF3 would be effective, but too rigorous. For example, the WebDSL grammar contains productions such as the following. Rejecting all keywords would imply also rejecting \texttt{Int} as identifier, meaning that it is not allowed as type anymore.
       
       \texttt{Statement.ForCountStmt = <for ( <VarId> : Int from <Exp> to <Exp> ) <Block>>}
 
@@ -617,7 +617,7 @@ module x
 
     \subsection{Disambiguating Strings}
 
-      WebDSL strings are defined in SDF2 using kernel syntax. Kernel syntax does not allow implicit layout (whitespace) between the different elements of a production. The SDF2 productions for a WebDSL string are shown in \cref{fig:sdf2-webdsl-string}. A string can be either a "simple" string or a string containing one or more expressions that have to be evaluated. These expressions must be prefixed by a tilde (\texttt{~}) to be parsed as interpolation.
+      WebDSL strings are defined in SDF2 using kernel syntax. Kernel syntax does not allow implicit layout (whitespace) between the different elements of a production. The SDF2 productions for a WebDSL string are shown in \cref{fig:sdf2-webdsl-string}. A string can be either a "simple" string or a string containing one or more expressions that have to be evaluated. These expressions must be prefixed by a tilde (\texttt{$\sim$}) to be parsed as interpolation.
 
       \begin{figure}
         \begin{minted}[firstline=3]{\sdftwo}
